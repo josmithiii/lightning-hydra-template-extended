@@ -10,8 +10,6 @@ project extends the original [Lightning-Hydra-Template](https://github.com/ashle
 - **New convenience make targets** for streamlined development and testing workflow
 - **Original Lightning-Hydra-Template Compatibility** for pre-existing configs, models, and datasets
 
-See [docs/extensions.md](docs/extensions.md) for details
-
 ## 🎯 Multihead Dataset Support (VIMH Format)
 
 This template now includes comprehensive support for **Variable Image MultiHead (VIMH)** datasets, enabling advanced multihead neural network training with self-describing metadata.
@@ -24,6 +22,12 @@ This template now includes comprehensive support for **Variable Image MultiHead 
 - **Automatic Model Configuration**: Models auto-configure from dataset metadata
 - **Efficient Loading**: Optimized dimension detection with cross-validation
 - **Comprehensive Testing**: 27 tests covering all VIMH functionality
+
+### Documentation
+
+See [docs/extensions.md](docs/extensions.md) for more on the LHTE extensions to LHT.
+
+See [docs/index.md](docs/index.md) for an overview of all documention and tutorials available.
 
 ### 🚀 Quick Start
 
@@ -75,8 +79,6 @@ defaults:
 - **Computer Vision**: Multi-target regression tasks
 - **Scientific Computing**: Parameter prediction from visual data
 - **Research**: Multihead neural network architectures
-
-For detailed documentation, see [docs/vimh.md](docs/vimh.md) and [docs/multihead.md](docs/multihead.md).
 
 ---
 
