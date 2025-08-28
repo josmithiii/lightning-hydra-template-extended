@@ -82,14 +82,14 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     if 'vimh' in cfg.data._target_.lower() and hasattr(cfg.model, 'auto_configure_from_dataset') and cfg.model.auto_configure_from_dataset:
         try:
             from src.utils.vimh_utils import get_parameter_names_from_metadata, get_heads_config_from_metadata, get_image_dimensions_from_metadata
-            
+
             # Auto-configure input channels from dataset metadata
             if hasattr(cfg.model, 'net') and hasattr(cfg.model.net, 'input_channels'):
                 height, width, channels = get_image_dimensions_from_metadata(cfg.data.data_dir)
                 if cfg.model.net.input_channels != channels:
                     log.info(f"Auto-configuring network input channels: {cfg.model.net.input_channels} -> {channels}")
                     cfg.model.net.input_channels = channels
-            
+
             parameter_names = get_parameter_names_from_metadata(cfg.data.data_dir)
             if parameter_names and hasattr(cfg.model, 'net'):
                 log.info(f"Configuring model with parameter names from dataset: {parameter_names}")
@@ -168,6 +168,33 @@ def main(cfg: DictConfig) -> Optional[float]:
     # apply extra utilities
     # (e.g. ask for tags if none are provided in cfg, print cfg tree, etc.)
     extras(cfg)
+
+    # Print the key configs being used
+    log.info("="*60)
+    # Extract config names from hydra context
+    try:
+        from hydra.core.hydra_config import HydraConfig
+        hydra_cfg = HydraConfig.get()
+        model_config = hydra_cfg.runtime.choices.get('model', 'unknown')
+        data_config = hydra_cfg.runtime.choices.get('data', 'unknown')
+        trainer_config = hydra_cfg.runtime.choices.get('trainer', 'unknown')
+    except:
+        # Fallback if hydra context not available
+        model_config = 'unknown'
+        data_config = 'unknown'
+        trainer_config = 'unknown'
+
+    log.info(f"MODEL CONFIG:     {model_config} ({cfg.model._target_})")
+    log.info(f"DATA CONFIG:      {data_config} ({cfg.data._target_})")
+    log.info(f"TRAINER CONFIG:   {trainer_config} ({cfg.trainer._target_})")
+    if cfg.get("experiment"):
+        log.info(f"EXPERIMENT:       {cfg.experiment}")
+    else:
+        log.info(f"EXPERIMENT:       none")
+    log.info(f"TAGS:             {cfg.get('tags', 'none')}")
+    if cfg.get("seed"):
+        log.info(f"SEED:             {cfg.seed}")
+    log.info("="*60)
 
     # train the model
     metric_dict, _ = train(cfg)
