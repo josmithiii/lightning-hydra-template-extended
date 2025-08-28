@@ -45,19 +45,19 @@ class VIMHDataset(MultiheadDatasetBase):
             # Load from directory structure
             self.data_dir = data_path
             self.metadata_file = self.data_dir / 'vimh_dataset_info.json'
-            
+
             # Try both pickle and binary formats (pickle format first for backward compatibility)
             candidate_files = [
                 self.data_dir / ('train_batch' if train else 'test_batch'),  # pickle format
                 self.data_dir / ('train' if train else 'test')                # binary format
             ]
-            
+
             self.batch_file = None
             for candidate in candidate_files:
                 if candidate.exists():
                     self.batch_file = candidate
                     break
-            
+
             if self.batch_file is None:
                 raise FileNotFoundError(
                     f"No {'training' if train else 'test'} data found in {self.data_dir}. "
@@ -176,7 +176,12 @@ class VIMHDataset(MultiheadDatasetBase):
             raise IndexError(f"Index {idx} out of range")
 
         # Parse metadata from the sample's label structure
-        _, labels = self.samples[idx]
+        # Handle both 2-tuple (pickle format) and 3-tuple (binary format) cases
+        sample = self.samples[idx]
+        if len(sample) == 2:
+            _, labels = sample
+        else:
+            _, labels, _ = sample
 
         # Extract parameter information
         metadata = {
