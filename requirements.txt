@@ -10,7 +10,7 @@ hydra-colorlog==1.2.0
 hydra-optuna-sweeper==1.2.0
 
 # --------- loggers --------- #
-tensorboard>=2.10.0  # required for TensorBoardLogger (used in logger configs)
+tensorboard>=2.15.0  # required for TensorBoardLogger (used in logger configs)
 # wandb
 # neptune-client
 # mlflow
@@ -24,4 +24,5 @@ rich            # beautiful text formatting in terminal
 pytest          # tests
 torchview       # model visualization
 torchviz        # computational graph visualization
+matplotlib      # for displaying VIMH datasets
 # sh            # for running bash commands in some tests (linux/macos only)
