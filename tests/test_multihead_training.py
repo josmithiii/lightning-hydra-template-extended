@@ -13,7 +13,8 @@ from lightning import Trainer
 from lightning.pytorch.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 
-from src.models.multihead_vimh_module import MultiheadLitModule
+from src.models.multihead_vimh_module import MultiheadLitModule as VIMHLitModule
+from src.models.multihead_lit_module import MultiheadLitModule as GeneralLitModule
 from src.data.cifar100mh_datamodule import CIFAR100MHDataModule
 from src.data.cifar100mh_dataset import CIFAR100MHDataset
 from src.data.vimh_datamodule import VIMHDataModule
@@ -33,6 +34,14 @@ class TestMultiheadNet(nn.Module):
         if heads_config is None:
             heads_config = {'param_0': 10, 'param_1': 19}
 
+        self.heads_config = heads_config
+        self.heads = nn.ModuleDict({
+            head_name: nn.Linear(32, num_classes)
+            for head_name, num_classes in heads_config.items()
+        })
+
+    def _build_heads(self, heads_config):
+        """Rebuild heads with new configuration."""
         self.heads_config = heads_config
         self.heads = nn.ModuleDict({
             head_name: nn.Linear(32, num_classes)
@@ -133,7 +142,7 @@ class TestMultiheadLitModule:
         """Test initialization with auto-configure enabled."""
         net = TestMultiheadNet()
 
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -154,7 +163,7 @@ class TestMultiheadLitModule:
         }
         loss_weights = {'param_0': 1.0, 'param_1': 0.5}
 
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -171,7 +180,7 @@ class TestMultiheadLitModule:
         """Test backward compatibility with single criterion."""
         net = TestMultiheadNet(heads_config={'head_0': 10})
 
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -184,7 +193,7 @@ class TestMultiheadLitModule:
     def test_model_step_multihead(self):
         """Test model step with multihead data."""
         net = TestMultiheadNet()
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -214,7 +223,7 @@ class TestMultiheadLitModule:
     def test_model_step_single_head(self):
         """Test model step with single head (backward compatibility)."""
         net = TestMultiheadNet(heads_config={'head_0': 10})
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -237,7 +246,7 @@ class TestMultiheadLitModule:
     def test_training_step(self):
         """Test training step."""
         net = TestMultiheadNet()
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -263,7 +272,7 @@ class TestMultiheadLitModule:
     def test_validation_step(self):
         """Test validation step."""
         net = TestMultiheadNet()
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -287,7 +296,7 @@ class TestMultiheadLitModule:
     def test_test_step(self):
         """Test test step."""
         net = TestMultiheadNet()
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -313,7 +322,7 @@ class TestMultiheadLitModule:
         net = TestMultiheadNet()
         loss_weights = {'param_0': 2.0, 'param_1': 0.5}
 
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -464,7 +473,7 @@ class TestMultiheadTrainingIntegration:
 
         # Create model
         net = TestMultiheadNet()
-        model = MultiheadLitModule(
+        model = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -514,7 +523,7 @@ class TestMultiheadTrainingIntegration:
             input_size=32
         )
 
-        model = MultiheadLitModule(
+        model = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -559,7 +568,7 @@ class TestMultiheadTrainingIntegration:
 
         # Create model
         net = TestMultiheadNet()
-        model = MultiheadLitModule(
+        model = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -603,7 +612,7 @@ class TestMultiheadTrainingIntegration:
 
         # Create model with auto-configuration
         net = TestMultiheadNet(heads_config={'param_0': 100, 'param_1': 100})  # Wrong initial config
-        model = MultiheadLitModule(
+        model = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -649,7 +658,7 @@ class TestMultiheadTrainingIntegration:
 
         # Create model
         net = TestMultiheadNet()
-        model = MultiheadLitModule(
+        model = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -717,7 +726,7 @@ class TestErrorHandling:
 
         # Should handle missing heads_config gracefully
         with pytest.raises(ValueError, match="Must provide either"):
-            MultiheadLitModule(
+            GeneralLitModule(
                 net=net,
                 optimizer=torch.optim.Adam,
                 scheduler=torch.optim.lr_scheduler.StepLR,
@@ -727,7 +736,7 @@ class TestErrorHandling:
     def test_inconsistent_labels(self):
         """Test handling of inconsistent label keys."""
         net = TestMultiheadNet()
-        module = MultiheadLitModule(
+        module = GeneralLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -753,7 +762,7 @@ class TestErrorHandling:
 
         # Should raise error for empty criteria without auto-configure
         with pytest.raises(ValueError, match="Must provide either"):
-            MultiheadLitModule(
+            GeneralLitModule(
                 net=net,
                 optimizer=torch.optim.Adam,
                 scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -876,7 +885,7 @@ class TestVIMHTrainingIntegration:
             heads_config={'note_number': 256, 'note_velocity': 256}
         )
 
-        model = MultiheadLitModule(
+        model = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -1004,7 +1013,7 @@ class TestVIMHTrainingIntegration:
             heads_config={'note_number': 256}
         )
 
-        model = MultiheadLitModule(
+        model = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),
@@ -1125,7 +1134,7 @@ class TestVIMHTrainingIntegration:
             heads_config={'digit_class': 256}
         )
 
-        model = MultiheadLitModule(
+        model = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(optimizer, step_size=10),

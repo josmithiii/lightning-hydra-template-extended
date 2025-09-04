@@ -1,4 +1,4 @@
-_target_: src.models.multihead_vimh_module.MultiheadLitModule
+_target_: src.models.multihead_lit_module.MultiheadLitModule
 
 optimizer:
   _target_: torch.optim.Adam

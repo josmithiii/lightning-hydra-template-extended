@@ -19,17 +19,8 @@ from lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification.accuracy import Accuracy
 
-
-class MultiheadDatasetBase:
-    """Base class for datasets that support multi-head configurations."""
-
-    def get_heads_config(self) -> Dict[str, int]:
-        """Get the configuration of heads (name -> num_classes).
-
-        Returns:
-            Dictionary mapping head names to number of classes
-        """
-        raise NotImplementedError
+# Import the actual multihead dataset base class
+from ..data.multihead_dataset_base import MultiheadDatasetBase
 
 
 class MultiheadLitModule(LightningModule):
@@ -236,11 +227,12 @@ class MultiheadLitModule(LightningModule):
                 self.net.parameter_names = list(heads_config.keys())
 
             # If the network has a _build_heads method, use it to rebuild heads
-            # Call for networks that need dynamic head rebuilding (VisionTransformer, SimpleCNN in regression mode)
+            # Call for networks that need dynamic head rebuilding (VisionTransformer, SimpleCNN in regression mode, TestMultiheadNet)
             if hasattr(self.net, '_build_heads') and callable(getattr(self.net, '_build_heads')):
                 network_name = type(self.net).__name__
                 if (network_name == 'VisionTransformer' or
-                    (network_name == 'SimpleCNN' and getattr(self.net, 'output_mode', None) == 'regression')):
+                    (network_name == 'SimpleCNN' and getattr(self.net, 'output_mode', None) == 'regression') or
+                    network_name == 'TestMultiheadNet'):
                     self.net._build_heads(heads_config)
                     # Update the network's multihead flag after rebuilding
                     if hasattr(self.net, 'is_multihead'):
