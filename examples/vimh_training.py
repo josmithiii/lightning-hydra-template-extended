@@ -34,7 +34,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data.vimh_datamodule import VIMHDataModule
-from src.models.multihead_vimh_module import MultiheadLitModule
+from src.models.multihead_vimh_module import VIMHLitModule
 from src.models.components.simple_cnn import SimpleCNN
 
 console = Console()
@@ -196,7 +196,7 @@ def create_model_from_dataset(datamodule: VIMHDataModule,
         raise ValueError(f"Unknown model type: {model_type}")
 
     # Create Lightning module with auto-configuration
-    model = MultiheadLitModule(
+    model = VIMHLitModule(
         net=net,
         optimizer=torch.optim.Adam,
         scheduler=lambda optimizer: torch.optim.lr_scheduler.StepLR(

@@ -8,7 +8,7 @@ from ..data.multihead_dataset_base import MultiheadDatasetBase
 from .losses import OrdinalRegressionLoss, QuantizedRegressionLoss, WeightedCrossEntropyLoss, NormalizedRegressionLoss
 
 
-class MultiheadLitModule(LightningModule):
+class VIMHLitModule(LightningModule):
     """Generic Lightning module for multihead classification tasks.
 
     This module supports:
@@ -60,7 +60,7 @@ class MultiheadLitModule(LightningModule):
         auto_configure_from_dataset: bool = True,
         output_mode: str = "classification",
     ) -> None:
-        """Initialize a `MultiheadLitModule`.
+        """Initialize a `VIMHLitModule`.
 
         :param net: The model to train.
         :param optimizer: The optimizer to use for training.
@@ -582,5 +582,5 @@ class MultiheadLitModule(LightningModule):
 
 if __name__ == "__main__":
     # Basic test
-    print("MultiheadLitModule class created successfully")
-    print("Use this module for generic multihead classification tasks")
+    print("VIMHLitModule class created successfully")
+    print("Use this module for VIMH multihead classification and regression tasks")

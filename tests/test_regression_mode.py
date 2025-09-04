@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from src.models.components.simple_cnn import SimpleCNN
 from src.models.losses import NormalizedRegressionLoss
-from src.models.multihead_vimh_module import MultiheadLitModule
+from src.models.multihead_vimh_module import VIMHLitModule
 
 
 class TestRegressionNetworkArchitecture:
@@ -222,7 +222,7 @@ class TestMultiheadRegressionModule:
             )
         }
 
-        module = MultiheadLitModule(
+        module = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau,
@@ -259,7 +259,7 @@ class TestMultiheadRegressionModule:
             )
         }
 
-        module = MultiheadLitModule(
+        module = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau,
@@ -317,7 +317,7 @@ class TestMultiheadRegressionModule:
             )
         }
 
-        module = MultiheadLitModule(
+        module = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau,
@@ -351,7 +351,7 @@ class TestMultiheadRegressionModule:
             input_size=32
         )
 
-        module = MultiheadLitModule(
+        module = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau,
@@ -398,7 +398,7 @@ class TestRegressionModeIntegration:
         }
 
         # Create module
-        module = MultiheadLitModule(
+        module = VIMHLitModule(
             net=net,
             optimizer=torch.optim.Adam,
             scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau,
