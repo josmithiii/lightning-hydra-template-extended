@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from src.models.components.simple_cnn import SimpleCNN
 from src.models.losses import NormalizedRegressionLoss
-from src.models.multihead_module import MultiheadLitModule
+from src.models.multihead_vimh_module import MultiheadLitModule
 
 
 class TestRegressionNetworkArchitecture:

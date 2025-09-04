@@ -13,7 +13,7 @@ from lightning import Trainer
 from lightning.pytorch.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
 
-from src.models.multihead_module import MultiheadLitModule
+from src.models.multihead_vimh_module import MultiheadLitModule
 from src.data.cifar100mh_datamodule import CIFAR100MHDataModule
 from src.data.cifar100mh_dataset import CIFAR100MHDataset
 from src.data.vimh_datamodule import VIMHDataModule

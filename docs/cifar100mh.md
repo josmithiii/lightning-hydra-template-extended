@@ -156,7 +156,7 @@ train_transform:
 
 ```yaml
 # configs/model/cifar100mh_cnn_64k.yaml
-_target_: src.models.multihead_module.MultiheadLitModule
+_target_: src.models.multihead_vimh_module.MultiheadLitModule
 
 # Auto-configure from dataset
 auto_configure_from_dataset: true

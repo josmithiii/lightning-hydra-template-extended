@@ -13,7 +13,7 @@ import rootutils
 # Setup project root
 rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
-from src.models.multihead_module import MultiheadLitModule
+from src.models.multihead_vimh_module import MultiheadLitModule
 from src.models.mnist_module import MNISTLitModule
 from src.data.cifar10_datamodule import CIFAR10DataModule
 from src.data.mnist_datamodule import MNISTDataModule
@@ -143,7 +143,7 @@ def demo_single_sample_inference():
     single_sample = torch.randn(1, 1, 28, 28)  # Batch size = 1
 
     from src.models.components.simple_cnn import SimpleCNN
-    from src.models.multihead_module import MultiheadLitModule
+    from src.models.multihead_vimh_module import MultiheadLitModule
 
     # Create multihead model
     net = SimpleCNN(heads_config={'digit': 10, 'thickness': 5})

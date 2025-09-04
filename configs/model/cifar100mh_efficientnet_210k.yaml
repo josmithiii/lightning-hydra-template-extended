@@ -1,4 +1,4 @@
-_target_: src.models.multihead_module.MultiheadLitModule
+_target_: src.models.multihead_vimh_module.MultiheadLitModule
 
 net:
   _target_: src.models.components.simple_efficientnet.SimpleEfficientNet
