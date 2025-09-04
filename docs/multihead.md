@@ -395,7 +395,7 @@ This template now includes a generic `MultiheadLitModule` that can work with any
 ### Usage with Auto-Configuration
 
 ```python
-from src.models.multihead_vimh_module import VIMHLitModule
+from src.models.vimh_lit_module import VIMHLitModule
 
 # Auto-configure from dataset
 model = VIMHLitModule(
@@ -439,7 +439,7 @@ model = MultiheadLitModule(
 
 ```yaml
 # configs/model/generic_multihead.yaml
-_target_: src.models.multihead_vimh_module.VIMHLitModule
+_target_: src.models.vimh_lit_module.VIMHLitModule
 
 # Auto-configure from dataset
 auto_configure_from_dataset: true

@@ -34,7 +34,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data.vimh_datamodule import VIMHDataModule
-from src.models.multihead_vimh_module import VIMHLitModule
+from src.models.vimh_lit_module import VIMHLitModule
 from src.models.components.simple_cnn import SimpleCNN
 
 console = Console()
