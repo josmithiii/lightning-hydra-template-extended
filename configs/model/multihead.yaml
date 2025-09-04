@@ -1,0 +1,58 @@
+# @package _global_
+
+# Multi-head model configuration for multi-task learning
+# Example configuration - can be customized for different architectures and tasks
+
+defaults:
+  - _self_
+
+model:
+  _target_: src.models.multihead_lit_module.MultiheadLitModule
+  net:
+    _target_: src.models.components.simple_cnn.SimpleCNN
+    input_channels: 1
+    # heads_config will be auto-configured from dataset if auto_configure_from_dataset=True
+    heads_config:
+      digit: 10
+      thickness: 5
+      smoothness: 3
+
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 0.001
+    weight_decay: 0.0
+
+  scheduler:
+    _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+    _partial_: true
+    mode: min
+    factor: 0.5
+    patience: 10
+    min_lr: 0.0
+
+  # Auto-configure heads and criteria from dataset metadata
+  auto_configure_from_dataset: true
+
+  # Output mode: "classification" or "regression"
+  output_mode: "classification"
+
+  # Multi-head specific loss weights (optional, defaults to equal weights)
+  loss_weights:
+    digit: 1.0
+    thickness: 0.5
+    smoothness: 0.5
+
+  # Compile model for better performance (optional)
+  compile: false
+
+# Note: This configuration will automatically adapt to the dataset's heads_config
+# when auto_configure_from_dataset=true. The heads_config above serves as a fallback.
+
+# Override the optimized metric for multihead models
+hydra:
+  job:
+    chdir: true
+
+# For multihead models, we optimize the primary head's accuracy
+optimized_metric: "val/digit_acc"

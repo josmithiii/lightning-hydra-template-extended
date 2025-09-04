@@ -56,8 +56,81 @@ from src.utils import (
     log_hyperparameters,
     task_wrapper,
 )
+from src.utils.architecture_utils import (
+    ArchitectureMetadataExtractor,
+)
 
 log = RankedLogger(__name__, rank_zero_only=True)
+
+
+def _preflight_check_label_diversity(datamodule: LightningDataModule, max_batches: int = 3) -> None:
+    """Validate that training labels vary across a few batches per head.
+
+    Raises a ValueError if any head shows a single unique class across the sampled batches.
+    """
+    try:
+        # Ensure setup ran so loaders are available
+        try:
+            datamodule.setup("fit")
+        except Exception:
+            # If the Trainer will call setup later, it's still OK — we just need loaders now
+            pass
+
+        loader = datamodule.train_dataloader()
+        it = iter(loader)
+        uniques: Dict[str, set] = {}
+        sampled = 0
+        while sampled < max_batches:
+            try:
+                batch = next(it)
+            except StopIteration:
+                break
+            sampled += 1
+
+            # Handle different batch formats
+            if len(batch) >= 2:
+                images, labels = batch[0], batch[1]
+
+                # Check if labels is a dict (multihead) or tensor (single head)
+                if isinstance(labels, dict):
+                    for head, tens in labels.items():
+                        if head not in uniques:
+                            uniques[head] = set()
+                        try:
+                            if tens.ndim == 1 and tens.dtype in (torch.int8, torch.int16, torch.int32, torch.int64):
+                                uniques[head].update(tens.tolist())
+                        except Exception:
+                            # Non-scalar labels or different dtype – skip diversity check for this head
+                            pass
+                else:
+                    # Single head case
+                    head = 'main'
+                    if head not in uniques:
+                        uniques[head] = set()
+                    try:
+                        if labels.ndim == 1 and labels.dtype in (torch.int8, torch.int16, torch.int32, torch.int64):
+                            uniques[head].update(labels.tolist())
+                    except Exception:
+                        # Non-scalar labels or different dtype – skip diversity check
+                        pass
+
+        # Log a brief summary of unique labels observed per head
+        for head in sorted(uniques.keys()):
+            vals = sorted(list(uniques[head]))
+            preview = ", ".join(map(str, vals[:10])) + (" …" if len(vals) > 10 else "")
+            log.info(f"Preflight head '{head}': {len(vals)} unique label(s) across {sampled} batch(es): [{preview}]")
+
+        problems = [h for h, s in uniques.items() if len(s) <= 1]
+        if problems:
+            details = ", ".join(f"{h}: {sorted(list(uniques[h]))}" for h in problems)
+            raise ValueError(
+                f"Label preflight failed: non-diverse targets for heads [{', '.join(problems)}]. "
+                f"Observed unique labels across {sampled} batch(es): {details}. "
+                f"This often indicates label decoding issues."
+            )
+    except Exception as e:
+        # Re-raise with clearer context
+        raise
 
 
 @task_wrapper
@@ -113,6 +186,15 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     log.info(f"Instantiating model <{cfg.model._target_}>")
     model: LightningModule = hydra.utils.instantiate(cfg.model)
 
+    # Log important model configuration details
+    if hasattr(model, 'output_mode'):
+        log.info(f"Model output mode: {model.output_mode}")
+    if hasattr(model, 'criteria') and model.criteria:
+        criteria_info = {name: type(criterion).__name__ for name, criterion in model.criteria.items()}
+        log.info(f"Model loss functions: {criteria_info}")
+    if hasattr(model, 'is_multihead'):
+        log.info(f"Model is multihead: {model.is_multihead}")
+
     log.info("Instantiating callbacks...")
     callbacks: List[Callback] = instantiate_callbacks(cfg.get("callbacks"))
 
@@ -135,7 +217,32 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         log.info("Logging hyperparameters!")
         log_hyperparameters(object_dict)
 
+    # Extract and store architecture metadata for checkpoint reconstruction
+    if hasattr(model, 'net'):
+        metadata_extractor = ArchitectureMetadataExtractor()
+        metadata_extractor.extract_and_store_metadata(model, datamodule)
+
     if cfg.get("train"):
+        # Preflight: ensure label diversity across a few batches before fitting
+        enabled = True
+        batches = 3
+        try:
+            if hasattr(cfg, 'preflight'):
+                enabled = getattr(cfg.preflight, 'enabled', True)
+                batches = getattr(cfg.preflight, 'label_diversity_batches', 3)
+        except Exception:
+            pass
+
+        if enabled:
+            try:
+                _preflight_check_label_diversity(datamodule, max_batches=int(batches))
+                log.info("Label preflight passed (diverse targets across heads)")
+            except Exception as e:
+                log.error(f"Label preflight failed: {e}")
+                raise
+        else:
+            log.info("Preflight checks disabled via config")
+
         log.info("Starting training!")
         trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.get("ckpt_path"))
 
