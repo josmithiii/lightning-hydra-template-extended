@@ -19,10 +19,10 @@ class EmbedLayer(nn.Module):
 
     Input:
         x (tensor): Image Tensor of shape B, C, IW, IH
-    
+
     Returns:
         Tensor: Embedding of the image of shape B, S, E
-    """    
+    """
     def __init__(self, n_channels: int, embed_dim: int, image_size: int, patch_size: int, dropout: float = 0.0):
         super().__init__()
         self.conv1 = nn.Conv2d(n_channels, embed_dim, kernel_size=patch_size, stride=patch_size)
@@ -36,7 +36,8 @@ class EmbedLayer(nn.Module):
         x = x.reshape([B, x.shape[1], -1])                                        # B, E, IH/P, IW/P --> B, E, (IH/P*IW/P) --> B, E, N
         x = x.permute(0, 2, 1)                                                    # B, E, N          --> B, N, E
         x = x + self.pos_embedding                                                # B, N, E          --> B, N, E
-        x = torch.cat((torch.repeat_interleave(self.cls_token, B, 0), x), dim=1)  # B, N, E          --> B, (N+1), E       --> B, S, E
+        cls_tokens = self.cls_token.expand(B, -1, -1)  # 1, 1, E --> B, 1, E
+        x = torch.cat((cls_tokens, x), dim=1)  # B, N, E          --> B, (N+1), E       --> B, S, E
         x = self.dropout(x)
         return x
 
@@ -48,13 +49,13 @@ class SelfAttention(nn.Module):
     Parameters:
         embed_dim (int)        : Embedding dimension
         n_attention_heads (int): Number of attention heads to use for performing MultiHeadAttention
-    
+
     Input:
         x (tensor): Tensor of shape B, S, E
 
     Returns:
         Tensor: Output after Self-Attention Module of shape B, S, E
-    """    
+    """
     def __init__(self, embed_dim: int, n_attention_heads: int):
         super().__init__()
         self.embed_dim = embed_dim
@@ -103,19 +104,19 @@ class Encoder(nn.Module):
         n_attention_heads (int) : Number of attention heads to use for performing MultiHeadAttention
         forward_mul (int)       : Used to calculate dimension of the hidden fc layer = embed_dim * forward_mul
         dropout (float)         : Dropout parameter
-    
+
     Input:
         x (tensor): Tensor of shape B, S, E
 
     Returns:
         Tensor: Output of the encoder block of shape B, S, E
-    """    
+    """
     def __init__(self, embed_dim: int, n_attention_heads: int, forward_mul: int, dropout: float = 0.0):
         super().__init__()
         self.norm1 = nn.LayerNorm(embed_dim)
         self.attention = SelfAttention(embed_dim, n_attention_heads)
         self.dropout1 = nn.Dropout(dropout)
-        
+
         self.norm2 = nn.LayerNorm(embed_dim)
         self.fc1 = nn.Linear(embed_dim, embed_dim * forward_mul)
         self.activation = nn.GELU()
@@ -135,13 +136,13 @@ class Classifier(nn.Module):
     Parameters:
         embed_dim (int) : Embedding dimension
         n_classes (int) : Number of classes
-    
+
     Input:
         x (tensor): Tensor of shape B, S, E
 
     Returns:
         Tensor: Logits of shape B, CL
-    """    
+    """
     def __init__(self, embed_dim: int, n_classes: int):
         super().__init__()
         self.fc1 = nn.Linear(embed_dim, embed_dim)
@@ -151,7 +152,7 @@ class Classifier(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x[:, 0, :]              # B, S, E --> B, E          Get CLS token
         x = self.fc1(x)             # B, E    --> B, E
-        x = self.activation(x)      # B, E    --> B, E    
+        x = self.activation(x)      # B, E    --> B, E
         x = self.fc2(x)             # B, E    --> B, CL
         return x
 
@@ -172,13 +173,13 @@ class VisionTransformer(nn.Module):
         output_size (int)       : Number of classes
         dropout (float)         : dropout value
         use_torch_layers (bool) : Whether to use PyTorch's built-in transformer layers
-    
+
     Input:
         x (tensor): Image Tensor of shape B, C, IW, IH
 
     Returns:
         Tensor: Logits of shape B, CL
-    """    
+    """
     def __init__(
         self,
         input_size: int = 784,  # For backward compatibility with template, will be ignored
@@ -194,32 +195,32 @@ class VisionTransformer(nn.Module):
         use_torch_layers: bool = False,
     ):
         super().__init__()
-        
+
         self.use_torch_layers = use_torch_layers
-        
+
         # Always use custom embedding layer
         self.embedding = EmbedLayer(n_channels, embed_dim, image_size, patch_size, dropout=dropout)
-        
+
         if use_torch_layers:
             # Use PyTorch's built-in transformer layers
             encoder_layer = nn.TransformerEncoderLayer(
-                d_model=embed_dim, 
-                nhead=n_attention_heads, 
-                dim_feedforward=forward_mul * embed_dim, 
-                dropout=dropout, 
-                activation=nn.GELU(), 
-                batch_first=True, 
+                d_model=embed_dim,
+                nhead=n_attention_heads,
+                dim_feedforward=forward_mul * embed_dim,
+                dropout=dropout,
+                activation=nn.GELU(),
+                batch_first=True,
                 norm_first=True
             )
             self.encoder = nn.TransformerEncoder(encoder_layer, n_layers, norm=nn.LayerNorm(embed_dim))
         else:
             # Use custom scratch implementation
             self.encoder = nn.ModuleList([
-                Encoder(embed_dim, n_attention_heads, forward_mul, dropout=dropout) 
+                Encoder(embed_dim, n_attention_heads, forward_mul, dropout=dropout)
                 for _ in range(n_layers)
             ])
             self.norm = nn.LayerNorm(embed_dim)
-            
+
         self.classifier = Classifier(embed_dim, output_size)
 
         self.apply(self._init_weights)
@@ -250,16 +251,16 @@ class VisionTransformer(nn.Module):
             # Assume square image
             img_size = int((x.size(1) // self.embedding.conv1.in_channels) ** 0.5)
             x = x.view(batch_size, self.embedding.conv1.in_channels, img_size, img_size)
-            
+
         x = self.embedding(x)
-        
+
         if self.use_torch_layers:
             x = self.encoder(x)
         else:
             for block in self.encoder:
                 x = block(x)
             x = self.norm(x)
-            
+
         x = self.classifier(x)
         return x
 
@@ -267,7 +268,7 @@ class VisionTransformer(nn.Module):
 if __name__ == "__main__":
     # Test the Vision Transformer
     print("Testing Vision Transformer:")
-    
+
     # Test with MNIST-like input
     model = VisionTransformer(
         n_channels=1,
@@ -280,16 +281,16 @@ if __name__ == "__main__":
         output_size=10,
         dropout=0.1
     )
-    
+
     x = torch.randn(2, 1, 28, 28)  # Batch of 2 MNIST images
     output = model(x)
     print(f"Input shape: {x.shape}")
     print(f"Output shape: {output.shape}")
-    
+
     # Test parameter count
     total_params = sum(p.numel() for p in model.parameters())
     print(f"Total parameters: {total_params:,}")
-    
+
     # Test PyTorch layers version
     print("\nTesting Vision Transformer with PyTorch layers:")
     model_torch = VisionTransformer(
@@ -304,9 +305,9 @@ if __name__ == "__main__":
         dropout=0.1,
         use_torch_layers=True
     )
-    
+
     output_torch = model_torch(x)
     print(f"PyTorch layers output shape: {output_torch.shape}")
-    
+
     total_params_torch = sum(p.numel() for p in model_torch.parameters())
     print(f"PyTorch layers total parameters: {total_params_torch:,}")

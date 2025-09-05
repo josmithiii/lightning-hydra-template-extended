@@ -109,7 +109,7 @@ class ArchitectureMetadataExtractor:
             return self._extract_cnn_metadata(model, dataset_metadata)
 
         else:
-            log.info("Could not detect model architecture type")
+            log.info("Could not detect model architecture type in metadata")
             return {}
 
     def _extract_vit_metadata(self, model: LightningModule, dataset_metadata: Dict[str, Any]) -> Dict[str, Any]:
