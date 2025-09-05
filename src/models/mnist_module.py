@@ -76,8 +76,9 @@ class MNISTLitModule(LightningModule):
         self.loss_weights = loss_weights or {name: 1.0 for name in criteria.keys()}
         self.is_multihead = len(criteria) > 1
 
-        # Set example input for TensorBoard graph logging (MNIST: 1x28x28)
-        self.example_input_array = torch.randn(1, 1, 28, 28)
+        # Set example input for TensorBoard graph logging - infer from network
+        input_channels = self._infer_input_channels()
+        self.example_input_array = torch.randn(1, input_channels, 32, 32)
 
         # Dynamic metric creation based on network heads config
         if hasattr(net, 'heads_config'):
@@ -109,6 +110,18 @@ class MNISTLitModule(LightningModule):
         :return: A tensor of logits (single head) or dict of logits (multihead).
         """
         return self.net(x)
+
+    def _infer_input_channels(self) -> int:
+        """Infer input channels from the network architecture."""
+        if hasattr(self.net, 'conv_layers') and len(self.net.conv_layers) > 0:
+            first_layer = self.net.conv_layers[0]
+            if hasattr(first_layer, 'in_channels'):
+                return first_layer.in_channels
+        elif hasattr(self.net, 'embedding') and hasattr(self.net.embedding, 'conv1'):
+            if hasattr(self.net.embedding.conv1, 'in_channels'):
+                return self.net.embedding.conv1.in_channels
+        # Default fallback
+        return 1
 
     def on_train_start(self) -> None:
         """Lightning hook that is called when training begins."""

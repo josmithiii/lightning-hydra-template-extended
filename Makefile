@@ -39,7 +39,7 @@ d deactivate: ## Deactivate the uv environment
 
 # TRAIN-QUICKLY TARGETS "tq"
 
-tq train-quick: ## Train quickly SimpleDenseNet, 1 epoch
+tq train-quick: ## Train quickly on the defaults (SimpleDenseNet on MNIST), 1 epoch
 	python src/train.py trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
 
 tqc train-quick-cnn: ## Train quickly SimpleCNN, 1 epoch
