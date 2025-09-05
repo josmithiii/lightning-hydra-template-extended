@@ -32,14 +32,56 @@ See [docs/index.md](docs/index.md) for an overview of all documention and tutori
 ### 🚀 Quick Start
 
 ```bash
-# Train with VIMH dataset
-python src/train.py experiment=vimh_cnn
+# Set up the environment (uv)
+sh setup.sh
 
-# Run complete training example
-python examples/vimh_training.py
+# Look over all make targets available
+make h
 
-# Quick demo with visualizations
-python examples/vimh_training.py --demo --save-plots
+# ===== DATASET GENERATION =====
+
+# Generate small synthetic dataset (256 samples)
+make sds    # or: python generate_vimh.py --config-name=synth/generate_simple_saw
+
+# Generate large synthetic dataset (16k samples)
+make sdl    # or: python generate_vimh.py --config-name=synth/generate_simple_saw dataset.size=16384
+
+# Generate all Moog VCF datasets (basic, envelope, resonance)
+make sdma
+
+# ===== DATASET DISPLAY =====
+
+# Display most recently created dataset
+make ddr    # or: python display_vimh.py
+
+# Display specific datasets
+make dds    # small dataset
+make ddl    # large dataset
+
+# ===== TRAINING EXPERIMENTS =====
+
+# Train a CNN on MNIST to 99.1% accuracy - config specs in ./configs/experiment/cnn_mnist.yaml
+python src/train.py experiment=cnn_mnist
+
+# Do the same thing using a convenience make target:
+make exp-cnn-mnist  # long form
+make ecm            # abbreviation
+
+# Find all make targets using a CNN model architecture:
+make h | grep cnn
+
+# Find all experiment configs using a CNN model architecture:
+ls ./configs/experiment/*cnn*
+
+# Find all make targets using the MNIST dataset:
+make h | grep mnist
+
+# Find all experiment configs using the MNIST dataset:
+ls ./configs/experiment/*mnist*
+
+# Etc. for datasets 'cifar' (CIFAR-10/100), and 'vimh' (Variable Image Multi-Head)
+
+# Etc. for architectures 'convnext', 'vit' (Vision Transformer), and 'sdn' (MLP)
 ```
 
 ### 📊 Dataset Format
@@ -65,13 +107,6 @@ defaults:
   - override /data: vimh
   - override /model: vimh_cnn_64k
 ```
-
-### 📈 Performance
-
-- **Loading Optimization**: 10x faster initialization with efficient dimension detection
-- **Memory Efficiency**: Optimized transform adjustment for different image sizes
-- **Training Speed**: Comparable to single-head models with minimal overhead
-- **Scalability**: Supports datasets up to 1M+ samples
 
 ### 🛠️ Use Cases
 
