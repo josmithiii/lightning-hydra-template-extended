@@ -109,7 +109,7 @@ class ArchitectureMetadataExtractor:
             return self._extract_cnn_metadata(model, dataset_metadata)
 
         else:
-            log.warning("Could not detect model architecture type")
+            log.info("Could not detect model architecture type")
             return {}
 
     def _extract_vit_metadata(self, model: LightningModule, dataset_metadata: Dict[str, Any]) -> Dict[str, Any]:
@@ -136,7 +136,7 @@ class ArchitectureMetadataExtractor:
             })
         else:
             # Fallback - try to infer from model structure and dataset
-            log.warning("Could not access ViT hyperparameters, using inference from model")
+            log.info("Could not access ViT hyperparameters, using inference from model")
             metadata.update(self._infer_vit_from_structure(net, dataset_metadata))
 
         return metadata
@@ -167,7 +167,7 @@ class ArchitectureMetadataExtractor:
                 metadata['input_size'] = getattr(net_hparams, 'input_size', self.default_values['input_size'])
         else:
             # Fallback - try to infer from model structure
-            log.warning("Could not access CNN hyperparameters, using inference from model")
+            log.info("Could not access CNN hyperparameters, using inference from model")
             metadata.update(self._infer_cnn_from_structure(net, dataset_metadata))
 
         return metadata

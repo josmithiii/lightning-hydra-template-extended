@@ -37,43 +37,6 @@ d deactivate: ## Deactivate the uv environment
 	@echo "Add to ~/.tcshrc: alias d 'echo deactivate && deactivate'"
 	@echo "Then just type: d"
 
-# TRAINING TARGETS "tr"
-
-tr train train-sdn: ## Train the default model (a small SimpleDenseNet) 
-	time python src/train.py
-
-
-trc trcnn train-cnn: ## Train with CNN architecture
-	time python src/train.py model=mnist_cnn_small
-
-tg train-with-gradients: ## Train with gradient statistics tracking enabled
-	python src/train.py callbacks=grouped_progress_bar_with_gradients logger=tensorboard
-	@echo "Check gradient stats at http://localhost:6006/#scalars&tagFilter=grad_stats"
-
-trvs train-vit-small: ## Train small ViT (~38K params)
-	time python src/train.py model=mnist_vit_38k
-
-trvm train-vit-medium: ## Train with ViT architecture (~210K params)
-	time python src/train.py model=mnist_vit_210k
-
-trvl train-vit-large: ## Train large ViT (~821K params)
-	time python src/train.py model=mnist_vit_821k
-
-
-trvp train-vit-pytorch: ## Train ViT using PyTorch layers
-	time python src/train.py model=mnist_vit_pytorch
-
-trcns train-convnext-small: ## Train ConvNeXt-V2 small (~68K params)
-	time python src/train.py model=mnist_convnext_68k
-
-trcnm train-convnext-medium: ## Train ConvNeXt-V2 medium (~210K params)
-	time python src/train.py model=mnist_convnext_210k
-
-trcnl train-convnext-large: ## Train ConvNeXt-V2 large (~821K params)
-	time python src/train.py model=mnist_convnext_821k
-
-
-
 # TRAIN-QUICKLY TARGETS "tq"
 
 tq train-quick: ## Train quickly SimpleDenseNet, 1 epoch

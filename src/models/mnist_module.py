@@ -76,6 +76,9 @@ class MNISTLitModule(LightningModule):
         self.loss_weights = loss_weights or {name: 1.0 for name in criteria.keys()}
         self.is_multihead = len(criteria) > 1
 
+        # Set example input for TensorBoard graph logging (MNIST: 1x28x28)
+        self.example_input_array = torch.randn(1, 1, 28, 28)
+
         # Dynamic metric creation based on network heads config
         if hasattr(net, 'heads_config'):
             head_configs = net.heads_config
