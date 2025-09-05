@@ -78,7 +78,7 @@ class MNISTLitModule(LightningModule):
 
         # Set example input for TensorBoard graph logging - infer from network
         input_channels = self._infer_input_channels()
-        self.example_input_array = torch.randn(1, input_channels, 32, 32)
+        self.example_input_array = torch.randn(1, input_channels, 28, 28)
 
         # Dynamic metric creation based on network heads config
         if hasattr(net, 'heads_config'):
