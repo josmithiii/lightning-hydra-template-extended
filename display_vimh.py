@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Interactive dataset viewer for VIMH format audio spectrogram datasets.
-Displays synthesis parameters and mel spectrograms with support for variable parameter counts.
+Interactive dataset viewer for VIMH format spectrogram datasets.
+Displays parameters and spectrograms with support for variable parameter counts.
 """
 
 import argparse
@@ -16,7 +16,6 @@ import numpy as np
 from matplotlib.widgets import Button
 from mpl_toolkits.mplot3d import Axes3D
 
-from src.utils.synth_utils import SimpleSawSynth
 from src.data.vimh_dataset import VIMHDataset
 
 
@@ -55,15 +54,9 @@ class VIMHViewer:
 
         self.total_samples = len(self.dataset)
 
-        # Initialize synthesizer for audio generation
-        sample_rate = self.dataset_info.get("sample_rate", 8000)
-        self.synth = SimpleSawSynth(sample_rate=sample_rate)
-
         # Setup matplotlib - create all figures first so tabs are accounted for
-        self.audio_waterfall_created = True
         self.setup_plot()
         self.setup_waterfall_plot()
-        self.setup_audio_waterfall_plot()
 
         # Force redraw of Figure 1 after all figures exist (for proper tab spacing)
         self.fig.canvas.draw()
@@ -71,7 +64,7 @@ class VIMHViewer:
 
 
     def get_sample_info(self, idx: int) -> Tuple[np.ndarray, Dict[str, Any]]:
-        """Get spectrogram data and synthesis parameters for sample idx."""
+        """Get spectrogram data and parameters for sample idx."""
         # Get the sample from the dataset (returns torch tensor in CHW format)
         sample_data = self.dataset[idx]
 
@@ -87,7 +80,7 @@ class VIMHViewer:
         # Get metadata for this sample
         sample_metadata = self.dataset._get_sample_metadata(idx)
 
-        # Extract synthesis parameters from the dataset info
+        # Extract parameters from the dataset info
         param_info = {
             "vimh_labels": sample_metadata.get("labels", {}),
             "sample_index": idx,
@@ -323,15 +316,6 @@ class VIMHViewer:
             # Reset view angle
             self.ax_3d.view_init(elev=20, azim=45)
             self.fig_3d.canvas.draw()
-        elif event.key == "a":
-            # Toggle audio waterfall plot
-            if not self.audio_waterfall_created:
-                self.setup_audio_waterfall_plot()
-                self.audio_waterfall_created = True
-            else:
-                if hasattr(self, "fig_audio") and plt.fignum_exists(self.fig_audio.number):
-                    plt.close(self.fig_audio)
-                    self.audio_waterfall_created = False
         elif event.key == "cmd+1":
             # Bring Figure 1 (main spectrogram) to front
             if hasattr(self, "fig") and plt.fignum_exists(self.fig.number):
@@ -342,148 +326,9 @@ class VIMHViewer:
             if hasattr(self, "fig_3d") and plt.fignum_exists(self.fig_3d.number):
                 self.fig_3d.canvas.manager.show()
                 self.fig_3d.canvas.draw()
-        elif event.key == "cmd+3":
-            # Bring Figure 3 (audio waterfall) to front
-            if hasattr(self, "fig_audio") and plt.fignum_exists(self.fig_audio.number):
-                self.fig_audio.canvas.manager.show()
-                self.fig_audio.canvas.draw()
 
-    def setup_audio_waterfall_plot(self):
-        """Setup the audio waterfall plot in a third window."""
-        self.fig_audio = plt.figure(figsize=(12, 8))
-        self.fig_audio.suptitle("Audio Waveform Waterfall - Raw Audio Frames", fontsize=14, y=0.95)
 
-        # Create 3D axis with top margin
-        self.ax_audio = self.fig_audio.add_subplot(111, projection="3d")
-        self.fig_audio.subplots_adjust(top=0.85)
-        self.ax_audio.set_xlabel("Waveform Sample Index")
-        self.ax_audio.set_ylabel("Time Frame")
-        self.ax_audio.set_zlabel("Amplitude")
 
-        # Connect keyboard events for the audio plot
-        self.fig_audio.canvas.mpl_connect("key_press_event", self.on_key_press_audio)
-
-        # Initial audio waterfall display
-        self.update_audio_waterfall_display()
-
-    def update_audio_waterfall_display(self):
-        """Update the audio waterfall plot with current sample."""
-        spectrogram, info = self.get_sample_info(self.current_idx)
-
-        # Clear previous plot
-        self.ax_audio.clear()
-
-        # Generate audio from synthesis parameters
-        actual_params = info["actual_values"]
-
-        # Ensure duration is set
-        if "duration" not in actual_params:
-            actual_params["duration"] = self.dataset_info.get("duration", 1.0)
-
-        audio = self.synth.generate_audio(actual_params)
-
-        # Calculate frame parameters based on STFT config
-        stft_config = self.dataset_info.get("spectrogram_config", {})
-        n_fft = stft_config.get("n_fft", 512)
-        hop_length = stft_config.get("hop_length", 64)
-
-        # Split audio into frames for waterfall display
-        num_frames = (len(audio) - n_fft) // hop_length + 1
-        frame_indices = np.arange(n_fft)
-
-        # Plot audio frames as waterfall
-        for frame_idx in range(0, min(num_frames, 32), max(1, num_frames // 32)):
-            start_sample = frame_idx * hop_length
-            end_sample = start_sample + n_fft
-
-            if end_sample <= len(audio):
-                audio_frame = audio[start_sample:end_sample]
-                frame_line = np.full_like(frame_indices, frame_idx)
-
-                self.ax_audio.plot(
-                    frame_indices,
-                    frame_line,
-                    audio_frame,
-                    color=plt.cm.viridis(frame_idx / num_frames),
-                    linewidth=1.0,
-                    alpha=0.8,
-                )
-
-        # Set labels and title
-        self.ax_audio.set_xlabel("Waveform Sample Index")
-        self.ax_audio.set_ylabel("Time Frame")
-        self.ax_audio.set_zlabel("Amplitude")
-
-        # Update title with sample info
-        labels = info["vimh_labels"]
-        if isinstance(labels, dict):
-            labels_str = " ".join(f"{k}={v:.3f}" for k, v in labels.items())
-        else:
-            labels_str = " ".join(map(str, labels))
-        if len(labels_str) > 50:
-            labels_str = labels_str[:50] + "..."
-        title = f"Sample {self.current_idx + 1}/{self.total_samples}\nVIMH Parameter Labels: [{labels_str}]"
-        self.fig_audio.suptitle(
-            f"Audio Waveform Waterfall - Raw Audio Frames\n{title}", fontsize=12, y=0.95
-        )
-
-        # Set symmetric Z-axis limits for audio amplitude
-        z_max = np.abs(audio).max()
-        self.ax_audio.set_zlim(-z_max, z_max)
-
-        # Set viewing angle for better perspective
-        self.ax_audio.view_init(elev=20, azim=45)
-
-        # Draw the plot
-        self.fig_audio.canvas.draw()
-        self.fig_audio.canvas.flush_events()
-
-    def on_key_press_audio(self, event):
-        """Handle keyboard shortcuts for audio plot."""
-        if event.key in ["left", "p"]:
-            self.prev_sample()
-        elif event.key in ["right", "n"]:
-            self.next_sample()
-        elif event.key in ["up", "u"]:
-            self.prev_channel()
-        elif event.key in ["down", "d"]:
-            self.next_channel()
-        elif event.key == "q":
-            plt.close(self.fig_audio)
-        elif event.key in ["home", "h"]:
-            self.current_idx = 0
-            self.update_display()
-        elif event.key in ["end", "e"]:
-            self.current_idx = self.total_samples - 1
-            self.update_display()
-        elif event.key == "r":
-            # Reset view angle
-            self.ax_audio.view_init(elev=20, azim=45)
-            self.fig_audio.canvas.draw()
-        elif event.key == "a":
-            # Toggle audio waterfall plot
-            if not self.audio_waterfall_created:
-                self.setup_audio_waterfall_plot()
-                self.audio_waterfall_created = True
-            else:
-                if hasattr(self, "fig_audio") and plt.fignum_exists(self.fig_audio.number):
-                    plt.close(self.fig_audio)
-                    self.audio_waterfall_created = False
-        elif event.key == "cmd+1":
-            # Bring Figure 1 (main spectrogram) to front
-            if hasattr(self, "fig") and plt.fignum_exists(self.fig.number):
-                self.fig.canvas.manager.show()
-                self.fig.canvas.draw()
-        elif event.key == "cmd+2":
-            # Bring Figure 2 (waterfall) to front
-            if hasattr(self, "fig_3d") and plt.fignum_exists(self.fig_3d.number):
-                self.fig_3d.canvas.manager.show()
-                self.fig_3d.canvas.draw()
-        elif event.key == "cmd+3":
-            # Bring Figure 3 (audio waterfall) to front
-            if hasattr(self, "fig_audio") and plt.fignum_exists(self.fig_audio.number):
-                self.fig_audio.canvas.manager.show()
-                self.fig_audio.canvas.draw()
 
     def update_display(self):
         """Update the display with current sample."""
@@ -507,8 +352,8 @@ class VIMHViewer:
         dataset_name = self.dataset_info.get("dataset_name", self.dataset_path.name)
         self.fig.suptitle(f"VIMH Dataset: {dataset_name}\n{title}", fontsize=11, y=0.98)
 
-        # Display synthesis parameters
-        self.ax_params.set_title("Synthesis Parameters", fontsize=12)
+        # Display parameters
+        self.ax_params.set_title("Parameters", fontsize=12)
         self.ax_params.axis("off")
 
         param_text = []
@@ -635,7 +480,7 @@ class VIMHViewer:
 
         # Update navigation info with channel label
         current_channel_label = self.channel_labels[self.channel] if self.channel < len(self.channel_labels) else f"Ch{self.channel}"
-        nav_text = f"Left/Right: samples, Up/Down: channels, Q: quit, A: audio waterfall, Cmd+1/2/3: figures\nSample {self.current_idx + 1}/{self.total_samples}, Channel {self.channel + 1}/{self.num_channels} ({current_channel_label})"
+        nav_text = f"Left/Right: samples, Up/Down: channels, Q: quit, Cmd+1/2: figures\nSample {self.current_idx + 1}/{self.total_samples}, Channel {self.channel + 1}/{self.num_channels} ({current_channel_label})"
         self.fig.text(0.5, 0.02, nav_text, ha="center", fontsize=10)
 
         # Force complete redraw
@@ -645,10 +490,6 @@ class VIMHViewer:
         # Update waterfall plot if it exists
         if hasattr(self, "fig_3d") and plt.fignum_exists(self.fig_3d.number):
             self.update_waterfall_display()
-
-        # Update audio waterfall plot if it exists
-        if hasattr(self, "fig_audio") and plt.fignum_exists(self.fig_audio.number):
-            self.update_audio_waterfall_display()
 
     def prev_sample(self, event=None):
         """Go to previous sample."""
@@ -692,15 +533,6 @@ class VIMHViewer:
         elif event.key in ["end", "e"]:
             self.current_idx = self.total_samples - 1
             self.update_display()
-        elif event.key == "a":
-            # Toggle audio waterfall plot
-            if not self.audio_waterfall_created:
-                self.setup_audio_waterfall_plot()
-                self.audio_waterfall_created = True
-            else:
-                if hasattr(self, "fig_audio") and plt.fignum_exists(self.fig_audio.number):
-                    plt.close(self.fig_audio)
-                    self.audio_waterfall_created = False
         elif event.key == "cmd+1":
             # Bring Figure 1 (main spectrogram) to front
             if hasattr(self, "fig") and plt.fignum_exists(self.fig.number):
@@ -711,11 +543,6 @@ class VIMHViewer:
             if hasattr(self, "fig_3d") and plt.fignum_exists(self.fig_3d.number):
                 self.fig_3d.canvas.manager.show()
                 self.fig_3d.canvas.draw()
-        elif event.key == "cmd+3":
-            # Bring Figure 3 (audio waterfall) to front
-            if hasattr(self, "fig_audio") and plt.fignum_exists(self.fig_audio.number):
-                self.fig_audio.canvas.manager.show()
-                self.fig_audio.canvas.draw()
 
     def show(self):
         """Display the interactive viewer."""
@@ -745,7 +572,7 @@ def find_most_recent_dataset() -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Interactive VIMH dataset viewer for audio spectrograms"
+        description="Interactive VIMH dataset viewer for spectrograms"
     )
     parser.add_argument(
         "dataset_path",
@@ -779,8 +606,7 @@ def main():
         print("  Up/Down arrows or U/D: Previous/Next channel")
         print("  Home/H: First sample")
         print("  End/E: Last sample")
-        print("  A: Toggle audio waterfall plot")
-        print("  Cmd+1/2/3: Bring Figure 1/2/3 to front")
+        print("  Cmd+1/2: Bring Figure 1/2 to front")
         print("  Q: Quit")
         print("")
         print("NOTE: If Figure 1 title is cut off initially, resize the window to fix layout.")
