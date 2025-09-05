@@ -1,45 +1,47 @@
 # Lightning-Hydra-Template-Extended Documentation
 
-Welcome to the comprehensive documentation for the Lightning-Hydra-Template-Extended project. This documentation is organized to help you quickly find the information you need.
+Expert-focused documentation for power users. Get up to speed quickly on what's here and how to use it.
 
-## 📚 Documentation Structure
+## ⚡ Quick Start (5 min)
+```bash
+source .venv/bin/activate          # Setup environment
+make h                            # See all make targets
+make tqa                          # Test all architectures (3 min)
+make cbqa                         # Quick CIFAR validation (15 min)
+make ca                           # Compare architectures (10 min)
+```
 
-### 🚀 Getting Started
-- **[features.md](features.md)** - High-level overview and key features summary
-- **[tutorial_sequence.md](tutorial_sequence.md)** - From setup to advanced experiments (using `make` targets)
+## 🎯 Core Extensions
+- **5 Architectures**: CNN, ConvNeXt, ViT, EfficientNet, MLP (8K-7M params)
+- **CIFAR Benchmarks**: Literature-competitive baselines (85-95% CIFAR-10)
+- **VIMH Multihead**: Variable Image MultiHead format with auto-config
+- **50+ Make Targets**: `tq` `cb10c` `evit` `cbs` - abbreviated expert shortcuts
 
-### 🏗️ Technical Details
-- **[architectures.md](architectures.md)** - Detailed architecture documentation, parameter comparisons, and usage guides
-- **[benchmarks.md](benchmarks.md)** - CIFAR benchmark system, expected performance, and automated testing
-- **[multihead.md](multihead.md)** - Multihead classification system, synthetic label generation, and multi-task learning
+## 📚 Documentation Map
 
-### 🛠️ Usage and Reference
-- **[configuration.md](configuration.md)** - Configuration patterns, experiment system, and best practices
+### Essential (Read First)
+- **[architectures.md](architectures.md)** - 5 architectures, params, usage patterns
+- **[vimh.md](vimh.md)** - VIMH dataset format, multihead classification
 
-### 👩‍💻 Development
-- **[development.md](development.md)** - Development guide, extension patterns, and integration approach
+### Benchmarking & Research
+- **[benchmarks.md](benchmarks.md)** - CIFAR system, expected performance, automation
+- **[configuration.md](configuration.md)** - Hydra patterns, experiments, best practices
 
-### 📋 Main Documentation
-- **[extensions.md](extensions.md)** - Complete overview of all extensions and capabilities
-- **[../README.md](../README.md)** - Main project README with original template documentation
+### Advanced Usage
+- **[multihead.md](multihead.md)** - Multi-task learning details and implementation
+- **[development.md](development.md)** - Extension patterns, integration guide
 
-## 🎯 Quick Navigation
+## 🔧 Expert Navigation
+| Goal | Command | Doc | Time |
+|------|---------|-----|------|
+| Architecture comparison | `make ca` | architectures.md | 10 min |
+| CIFAR benchmarks | `make cbs10` | benchmarks.md | 2h |
+| VIMH training | `make evimh` | vimh.md | 15 min |
+| Custom experiment | `python src/train.py experiment=X` | configuration.md | varies |
+| Add architecture | Edit configs/model/ | development.md | 30 min |
 
-**I want to...**
-- Learn about the extended features → [features.md](features.md)
-- Understand the available architectures → [architectures.md](architectures.md)
-- Run CIFAR benchmarks → [benchmarks.md](benchmarks.md)
-- Use multihead classification → [multihead.md](multihead.md)
-- Find make commands → [makefile.md](makefile.md)
-- Configure experiments → [configuration.md](configuration.md)
-- Extend the template → [development.md](development.md)
-
-## 🔗 External Links
-
-- [Original Lightning-Hydra-Template](https://github.com/ashleve/lightning-hydra-template)
-- [PyTorch Lightning Documentation](https://pytorch-lightning.readthedocs.io/)
-- [Hydra Documentation](https://hydra.cc/)
-
----
-
-*This documentation covers the extended features. For the original template documentation, see [../README.md](../README.md)*
+## 📖 Reference
+- **[quickref.md](quickref.md)** - Expert cheat sheet (start here)
+- **[../README.md](../README.md)** - Main project documentation
+- **[extensions.md](extensions.md)** - Complete feature overview
+- **Makefile** - 50+ targets with h, tq, cb, e prefixes

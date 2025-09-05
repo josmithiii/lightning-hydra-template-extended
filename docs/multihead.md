@@ -1,25 +1,23 @@
 # Multihead Classification System
 
-## Overview
+Multi-task learning with shared backbone and task-specific heads. One model, multiple predictions, better generalization.
 
-The multihead classification system enables a single neural network to predict multiple related tasks simultaneously. This approach leverages shared feature learning while maintaining separate prediction heads for each task, providing efficiency and regularization benefits.
+- **Concept**: One CNN backbone → multiple prediction heads (digit + thickness + smoothness)
+- **Benefits**: Shared learning, regularization, efficiency, research applications
+- **MNIST Example**: 10-class digit + 5-class thickness + 3-class smoothness
+- **Usage**: `make emhcm` or `python src/train.py experiment=multihead_cnn_mnist`
 
-## 🎯 Concept
+## ⚡ Quick Start
+```bash
+# MNIST multihead CNN (~99.1% digit, ~85% thickness, ~75% smoothness)
+make emhcm
 
-### What is Multihead Classification?
+# CIFAR-10 multihead CNN
+make emhcc10
 
-Multihead classification allows one model to solve multiple related prediction tasks:
-- **Shared backbone**: Common feature extraction layers
-- **Multiple heads**: Task-specific prediction layers
-- **Joint training**: Simultaneous optimization across all tasks
-- **Efficiency**: One forward pass, multiple predictions
-
-### Benefits
-
-1. **Shared Learning**: Features learned for one task benefit others
-2. **Regularization**: Multi-task objective prevents overfitting
-3. **Efficiency**: Single model vs. multiple separate models
-4. **Research Value**: Enables multi-task learning experiments
+# VIMH dataset with real multihead labels
+make evimh
+```
 
 ## 🧠 MNIST Multihead Implementation
 
