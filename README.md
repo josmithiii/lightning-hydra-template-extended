@@ -35,8 +35,14 @@ See [docs/index.md](docs/index.md) for an overview of all documention and tutori
 # Set up the environment (uv)
 sh setup.sh
 
-# Look over all make targets available
+# Look over all make targets available (help)
 make h
+
+# Look over all model, dataset, and experiment configs (list-configs):
+make lc
+
+# Find all diagram-related make targets:
+make h | grep diagram
 
 # ===== VIMH DATASET DISPLAY =====
 

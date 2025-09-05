@@ -20,7 +20,7 @@ cl clean-logs: ## Clean logs
 f format: ## Run pre-commit hooks
 	pre-commit run -a
 
-s sync: ## Merge changes from main branch to your current branch
+sy sync: ## Merge changes from main branch to your current branch
 	git pull
 	git pull origin main
 
@@ -120,7 +120,7 @@ tdsc10 test-diagram-simple-cifar10: ## Generate simple diagrams for CIFAR-10 arc
 	python viz/simple_model_diagram.py --config cifar10_mh_cnn_64k
 	python viz/simple_model_diagram.py --config cifar10_vit_210k
 
-ca compare-arch: ## Compare medium sized architectures on three epochs
+zca compare-arch: ## Compare medium sized architectures on three epochs
 	@echo "=== Training SimpleDenseNet ==="
 	python src/train.py trainer.max_epochs=3 tags="[arch_comparison,dense]"
 	@echo "=== Training SimpleCNN ==="
@@ -251,17 +251,17 @@ cbq100cn10m cifar100-quick-convnext-10m: ## Quick CIFAR-100 ConvNeXt 10M validat
 cbq100cc cifar100-quick-coarse: ## Quick CIFAR-100 coarse validation (5 epochs)
 	python src/train.py experiment=cifar100_coarse_cnn trainer.max_epochs=5 trainer.min_epochs=1
 
-cbqa cifar-quick-all: cbq10c cbq10cn cbq10cn64 cbq10cn128 cbq100sdn cbq100cnn1m cbq100cn10m cbq100c cbq100cc  ## Run all quick CIFAR validations
+cbqa cifar-quick-all: cbq10c sep cbq10cn sep cbq10cn64 sep cbq10cn128 sep cbq100sdn sep cbq100cnn1m sep cbq100cn10m sep cbq100c sep cbq100cc  ## Run all quick CIFAR validations
 
 # CIFAR BENCHMARK SUITES "cbs" - Systematic Comparisons
 
 cbs benchmark-suite: ## Run automated CIFAR benchmark suite
 	python benchmarks/scripts/benchmark_cifar.py
 
-cbs10 benchmark-cifar10: cb10c cb10cn cb10v cb10e ## Run all CIFAR-10 benchmarks
+cbs10 benchmark-cifar10: cb10c sep cb10cn sep cb10v sep cb10e ## Run all CIFAR-10 benchmarks
 	@echo "=== CIFAR-10 benchmark suite complete ==="
 
-cbs100 benchmark-cifar100: cb100c cb100cn cb100v cb100e cb100sdn cb100cnn1m cb100cn1m cb100cn10m cb100cc cb100ccn ## Run all CIFAR-100 benchmarks
+cbs100 benchmark-cifar100: cb100c sep cb100cn sep cb100v sep cb100e sep cb100sdn sep cb100cnn1m sep cb100cn1m sep cb100cn10m sep cb100cc sep cb100ccn ## Run all CIFAR-100 benchmarks
 	@echo "=== CIFAR-100 benchmark suite complete ==="
 
 cbsa benchmark-all: cbs10 cbs100 ## Run complete CIFAR benchmark suite

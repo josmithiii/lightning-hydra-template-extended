@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Lightning-Hydra-Template-Extended supports multiple neural network architectures optimized for different use cases. All architectures are easily switchable through Hydra configuration.
+The Lightning-Hydra-Template-Extended supports multiple neural network
+architectures optimized for different use cases. All architectures are
+easily switchable through Hydra configuration.
 
 ## 🏗️ Architecture Comparison
 
