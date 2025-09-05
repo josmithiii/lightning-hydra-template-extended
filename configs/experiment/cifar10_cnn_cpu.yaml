@@ -1,26 +1,29 @@
 # @package _global_
 
 # to execute this experiment run:
-# python train.py experiment=cifar100_coarse_cnn
+# python train.py experiment=cifar10_cnn_cpu
+
+# NOTE: Uses CPU trainer due to MPS compatibility issue with adaptive pooling
+# in SimpleCNN architecture. MPS requires input sizes divisible by output sizes
+# for adaptive pooling operations.
 
 defaults:
-  - override /data: cifar100_coarse
-  - override /model: cifar100_coarse_cnn_64k
+  - override /data: cifar10
+  - override /model: cifar10_cnn_64k
   - override /callbacks: default
-  - override /trainer: default
+  - override /trainer: cpu
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
-task_name: "cifar100_coarse_cnn"
-
-tags: ["cifar100", "cnn", "coarse_grained", "20_classes"]
+task_name: "cifar10_cnn_cpu"
+tags: ["cifar10", "cnn", "baseline", "cpu"]
 
 seed: 12345
 
 trainer:
   min_epochs: 10
-  max_epochs: 60  # Coarse classification is easier, fewer epochs needed
+  max_epochs: 50
   gradient_clip_val: 1.0
 
 model:
@@ -35,11 +38,11 @@ model:
 data:
   batch_size: 128
   num_workers: 4
-  pin_memory: true
+  pin_memory: false  # Not needed for CPU
 
 logger:
   wandb:
     tags: ${tags}
-    group: "cifar100_coarse"
+    group: "cifar10"
   aim:
-    experiment: "cifar100_coarse"
+    experiment: "cifar10"

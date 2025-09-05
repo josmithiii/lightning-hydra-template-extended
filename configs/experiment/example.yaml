@@ -17,6 +17,8 @@ defaults:
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
+task_name: "example"
+
 tags: ["mnist", "simple_dense_net"]
 
 seed: 12345

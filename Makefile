@@ -133,6 +133,9 @@ ca compare-arch: ## Compare medium sized architectures on three epochs
 e esdn exp-sdn: ## Run original example experiment (reproducible baseline)
 	time python src/train.py experiment=example
 
+ec10c exp-cifar10-cnn: ## Run CIFAR-10 CNN benchmark (85-92% expected accuracy)
+	time python src/train.py experiment=cifar10_cnn_cpu
+
 evit exp-vit: ## Run ViT experiment
 	time python src/train.py experiment=vit_mnist
 

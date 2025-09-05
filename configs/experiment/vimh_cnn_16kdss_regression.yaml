@@ -8,6 +8,8 @@ defaults:
   - override /model: vimh_cnn_64k_regression
   - override /trainer: default
 
+task_name: "vimh_cnn_16kdss_regression"
+
 # Tags for experiment tracking
 tags: ["vimh", "cnn", "resonarium", "16kdss", "regression", "sigmoid", "continuous"]
 

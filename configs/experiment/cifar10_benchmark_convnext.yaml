@@ -9,6 +9,8 @@ defaults:
   - override /callbacks: default
   - override /trainer: default
 
+task_name: "cifar10_benchmark_convnext"
+
 tags: ["cifar10", "convnext", "benchmark", "210k_params"]
 
 seed: 42

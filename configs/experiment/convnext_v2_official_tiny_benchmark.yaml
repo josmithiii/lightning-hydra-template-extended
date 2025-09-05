@@ -14,6 +14,8 @@ defaults:
   - override /callbacks: default
   - override /trainer: default
 
+task_name: "convnext_v2_official_tiny_benchmark"
+
 # Canonical experiment tags for benchmarking
 tags: ["convnext", "benchmark", "official", "tiny", "acid-test"]
 

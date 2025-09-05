@@ -9,6 +9,8 @@ defaults:
   - override /callbacks: default
   - override /trainer: default
 
+task_name: "cifar100_benchmark_cnn"
+
 tags: ["cifar100", "cnn", "benchmark", "1m_params", "fine_grained"]
 
 seed: 42

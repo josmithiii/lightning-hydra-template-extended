@@ -11,6 +11,8 @@ defaults:
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
+task_name: "multihead_cnn_mnist"
+
 tags: ["mnist", "multihead", "cnn"]
 
 seed: 12345

@@ -8,6 +8,8 @@ defaults:
   - override /model: vimh_cnn_64k_ordinal
   - override /trainer: default
 
+task_name: "vimh_cnn_16kdss_ordinal"
+
 # Tags for experiment tracking
 tags: ["vimh", "cnn", "resonarium", "16kdss", "ordinal-regression", "distance-aware"]
 

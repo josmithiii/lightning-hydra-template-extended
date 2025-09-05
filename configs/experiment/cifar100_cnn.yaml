@@ -12,6 +12,8 @@ defaults:
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
+task_name: "cifar100_cnn"
+
 tags: ["cifar100", "cnn", "fine_grained", "100_classes"]
 
 seed: 12345
