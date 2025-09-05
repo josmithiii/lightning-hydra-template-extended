@@ -1,6 +1,7 @@
 # AVIX Cherry-Pick Plan
 
 ## Overview
+
 This document outlines the general-purpose features from the AVIX project that should be cherry-picked back into the Lightning-Hydra-Template-Extended project. The AVIX project (Audio-Visual Index eXtraction) started as a fork of this template and added many enhancements for audio synthesis parameter prediction. We want to bring back the general-purpose improvements while excluding audio-specific features.
 
 ## Cherry-Pick Categories
