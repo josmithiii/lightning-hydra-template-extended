@@ -65,13 +65,15 @@ python src/train.py experiment=cnn_mnist
 
 # Do the same thing using a convenience make target:
 make exp-cnn-mnist  # long form
-make ecm            # abbreviation
+make ecm            # abbreviated form
 
 # Find all make targets using a CNN model architecture:
 make h | grep cnn
 
 # Find all experiment configs using a CNN model architecture:
 ls ./configs/experiment/*cnn*
+
+# Etc. for architectures 'convnext', 'vit' (Vision Transformer), and 'sdn' (MLP)
 
 # Find all make targets using the MNIST dataset:
 make h | grep mnist
@@ -81,7 +83,6 @@ ls ./configs/experiment/*mnist*
 
 # Etc. for datasets 'cifar' (CIFAR-10/100), and 'vimh' (Variable Image Multi-Head)
 
-# Etc. for architectures 'convnext', 'vit' (Vision Transformer), and 'sdn' (MLP)
 ```
 
 ### 📊 Dataset Format
