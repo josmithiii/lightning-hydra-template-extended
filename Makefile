@@ -51,7 +51,10 @@ tqv train-quick-vit: ## Train quickly ViT, 1 epoch
 tqcn train-quick-convnext: ## Train quickly ConvNeXt-V2, 1 epoch
 	python src/train.py model=mnist_convnext_68k trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
 
-tqa train-quick-all: tq tqc tqv tqcn ## Train quickly all architectures supported
+tqvh train-quick-vimh: ## Train quickly SimpleCNN on VIMH examples dataset, 1 epoch
+	python src/train.py experiment=vimh_cnn trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
+
+tqa train-quick-all: tq tqc tqv tqcn tqvh ## Train quickly all architectures supported on mnist and one vimh
 
 # TESTING TARGETS "t"
 

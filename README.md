@@ -38,18 +38,7 @@ sh setup.sh
 # Look over all make targets available
 make h
 
-# ===== DATASET GENERATION =====
-
-# Generate small synthetic dataset (256 samples)
-make sds    # or: python generate_vimh.py --config-name=synth/generate_simple_saw
-
-# Generate large synthetic dataset (16k samples)
-make sdl    # or: python generate_vimh.py --config-name=synth/generate_simple_saw dataset.size=16384
-
-# Generate all Moog VCF datasets (basic, envelope, resonance)
-make sdma
-
-# ===== DATASET DISPLAY =====
+# ===== VIMH DATASET DISPLAY =====
 
 # Display most recently created dataset
 make ddr    # or: python display_vimh.py
@@ -59,6 +48,9 @@ make dds    # small dataset
 make ddl    # large dataset
 
 # ===== TRAINING EXPERIMENTS =====
+
+# Note: MNIST, CIFAR-10, and CIFAR-100 datasets will download automatically when needed.
+#       An arbitrary VIMH dataset similar to CIFAR-100 will be auto-generated when needed.
 
 # Train a CNN on MNIST to 99.1% accuracy - config specs in ./configs/experiment/cnn_mnist.yaml
 python src/train.py experiment=cnn_mnist
