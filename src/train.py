@@ -153,6 +153,13 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     log.info(f"Instantiating datamodule <{cfg.data._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(cfg.data)
 
+    # Ensure data is prepared before model auto-configuration
+    if 'vimh' in cfg.data._target_.lower():
+        try:
+            datamodule.prepare_data()
+        except Exception as e:
+            log.warning(f"Failed to prepare data during auto-configuration: {e}")
+
     # For VIMH datasets, configure model with parameter names from metadata
     if 'vimh' in cfg.data._target_.lower() and hasattr(cfg.model, 'auto_configure_from_dataset') and cfg.model.auto_configure_from_dataset:
         try:
