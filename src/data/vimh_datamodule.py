@@ -134,10 +134,10 @@ class VIMHDataModule(LightningDataModule):
     def _adjust_transforms_for_image_size(self, height: int, width: int) -> None:
         """Adjust transforms based on actual image dimensions."""
         # Update the default train transforms with proper padding/cropping
-        
+
         # Get the number of channels to determine normalization
         channels = self.image_shape[0] if hasattr(self, 'image_shape') and self.image_shape else 3
-        
+
         if height == 32 and width == 32:
             if channels == 1:
                 # Use 32x32 grayscale transforms
@@ -488,9 +488,40 @@ class VIMHDataModule(LightningDataModule):
 
         Do not use it to assign state (self.x = y).
         """
-        # For VIMH, we assume the data is already prepared/downloaded
-        # This method can be extended to handle automatic dataset download/preparation
-        pass
+        from pathlib import Path
+
+        data_dir = Path(self.hparams.data_dir)
+        metadata_file = data_dir / 'vimh_dataset_info.json'
+        train_file = data_dir / 'train_batch'
+        test_file = data_dir / 'test_batch'
+
+        # Check if dataset exists and is complete
+        if not (data_dir.exists() and metadata_file.exists() and
+                train_file.exists() and test_file.exists()):
+
+            print(f"VIMH dataset not found at {data_dir}, generating synthetic dataset...")
+
+            # Auto-generate dataset using CIFAR-100-like characteristics
+            from .vimh_generator import generate_vimh_dataset
+
+            # Extract configuration from data_dir name or use defaults
+            complexity = "cifar100"  # Default complexity
+            num_samples = 50000      # Default sample count
+
+            # Try to infer parameters from directory name
+            if 'cifar10' in str(data_dir).lower():
+                complexity = "cifar10"
+                num_samples = 10000
+            elif any(x in str(data_dir).lower() for x in ['small', '1k', '2k']):
+                num_samples = min(2000, num_samples)
+
+            generate_vimh_dataset(
+                output_dir=str(data_dir),
+                num_samples=num_samples,
+                complexity=complexity
+            )
+
+            print(f"✓ Generated synthetic VIMH dataset with {complexity} complexity")
 
     def setup(self, stage: Optional[str] = None) -> None:
         """Load data. Set variables: `self.data_train`, `self.data_val`, `self.data_test`.
