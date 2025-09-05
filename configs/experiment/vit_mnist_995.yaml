@@ -2,7 +2,7 @@
 
 # To execute this experiment run (in the top-level directory):
 #
-#   python src/train.py experiment=mnist_vit_995
+#   python src/train.py experiment=vit_mnist_995
 #
 # This is equivalent to running
 #

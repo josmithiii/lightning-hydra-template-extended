@@ -29,10 +29,15 @@ See [docs/extensions.md](docs/extensions.md) for more on the LHTE extensions to 
 
 See [docs/index.md](docs/index.md) for an overview of all documention and tutorials available.
 
+For a fast start, see:
+- Onboarding guide: [docs/onboarding.md](docs/onboarding.md)
+- Expert cheat sheet: [docs/quickref.md](docs/quickref.md)
+
 ### 🚀 Quick Start
 
 ```bash
 # Set up the environment (uv)
+# Requires uv (install: curl -LsSf https://astral.sh/uv/install.sh | sh)
 sh setup.sh
 
 # Look over all make targets available (help)
@@ -51,8 +56,8 @@ make dv     # or: python display_vimh.py data/vimh-dataset-name
 
 # ===== TRAIN QUICKLY VARIOUS ARCHS AND DATASETS AS A SIMPLE TEST =====
 
-# Quickly partially train an MLP, CNN, ViT, and ConvNeXt-V2 on MNIST, and a CNN on VIMH
-make dv     # or: python display_vimh.py data/vimh-dataset-name
+# Quickly run short smoke-trains across architectures (MNIST) and VIMH
+make tqa    # or: python src/train.py trainer.max_epochs=1 +trainer.limit_train_batches=10
 
 # List train-quickly make targets
 make h | grep tq
@@ -63,7 +68,7 @@ make t
 # List all make targets for running tests
 make h | grep test
 
-# ===== TRAINING EXPERIMENTS (`./configs/experiments/`) =====
+# ===== TRAINING EXPERIMENTS (`./configs/experiment/`) =====
 
 # Note: MNIST, CIFAR-10, and CIFAR-100 datasets will download automatically when needed the first time.
 #       An arbitrary VIMH dataset similar to CIFAR-100 will be auto-generated when needed the first time.
@@ -90,6 +95,41 @@ make h | grep mnist
 ls ./configs/experiment/*mnist*
 
 # Etc. for datasets 'cifar' (CIFAR-10/100), and 'vimh' (Variable Image Multi-Head)
+
+# ===== HARDWARE & VISUALIZATION =====
+
+# Prefer MPS on Mac; use GPU if available
+python src/train.py trainer=mps   # macOS
+python src/train.py trainer=gpu   # CUDA GPU
+
+# Launch TensorBoard for training logs
+make tensorboard
+
+### Common Pitfalls
+- On macOS, prefer `trainer=mps`. For VIMH on MPS, use `num_workers: 0`.
+- MNIST/CIFAR auto-download on first use; allow time and network.
+- Checkpoints must be local (remote URL loading is disabled for safety).
+
+### Config Groups (Map)
+- Data (`configs/data/`): `mnist`, `cifar10`, `cifar100`, `cifar100mh`, `multihead_mnist`, `multihead_cifar10`, `vimh`, `vimh_16kdss`
+- Model (`configs/model/`):
+  - MNIST: `mnist_cnn_68k`, `mnist_vit_38k`, `mnist_efficientnet_22k`, `mnist_sdn_68k`, `mnist_mh_cnn_422k`
+  - CIFAR-10: `cifar10_cnn_64k`, `cifar10_convnext_210k`, `cifar10_vit_210k`, `cifar10_efficientnet_210k`, `cifar10_mh_cnn_64k`
+  - VIMH: `vimh_cnn_64k`, `vimh_cnn_64k_ordinal`, `vimh_cnn_64k_regression`
+- Trainer (`configs/trainer/`): `cpu`, `gpu`, `mps`
+
+Examples
+```bash
+# Switch data/model/trainer groups
+python src/train.py data=cifar10 model=cifar10_convnext_210k trainer=gpu
+
+# MNIST ViT on Mac with quick limits
+python src/train.py data=mnist model=mnist_vit_38k trainer=mps +trainer.limit_train_batches=10
+
+# Multihead examples
+python src/train.py data=multihead_mnist model=mnist_mh_cnn_422k trainer=mps
+python src/train.py data=vimh model=vimh_cnn_64k trainer=cpu
+```
 
 # ===== BENCHMARK EXPERIMENTS =====
 

@@ -77,6 +77,54 @@ python src/train.py experiment=vimh_cnn_16kdss
 python src/train.py experiment=vimh_cnn_16kdss_ordinal
 ```
 
+## Hydra Overrides Cheat Sheet
+```bash
+# Override nested values
+python src/train.py model.optimizer.lr=1e-3 trainer.max_epochs=5
+
+# Add new keys with '+'
+python src/train.py +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
+
+# Switch config groups
+python src/train.py model=mnist_vit_38k data=mnist trainer=mps
+
+# Combine experiment with overrides
+python src/train.py experiment=cifar10_benchmark_cnn trainer.max_epochs=50 data.batch_size=128
+
+# Change logger (see configs/logger/)
+python src/train.py logger=tensorboard
+```
+
+## Config Group Map
+- Data (`configs/data/`):
+  - MNIST → [configs/data/mnist.yaml](../configs/data/mnist.yaml)
+  - CIFAR-10 → [configs/data/cifar10.yaml](../configs/data/cifar10.yaml)
+  - CIFAR-100 → [configs/data/cifar100.yaml](../configs/data/cifar100.yaml)
+  - Multihead (MNIST/CIFAR-10) → [configs/data/multihead_mnist.yaml](../configs/data/multihead_mnist.yaml), [configs/data/multihead_cifar10.yaml](../configs/data/multihead_cifar10.yaml)
+  - CIFAR-100-MH → [configs/data/cifar100mh.yaml](../configs/data/cifar100mh.yaml)
+  - VIMH / VIMH (16K) → [configs/data/vimh.yaml](../configs/data/vimh.yaml), [configs/data/vimh_16kdss.yaml](../configs/data/vimh_16kdss.yaml)
+- Model (`configs/model/`):
+  - MNIST → [mnist_cnn_68k](../configs/model/mnist_cnn_68k.yaml), [mnist_vit_38k](../configs/model/mnist_vit_38k.yaml), [mnist_efficientnet_22k](../configs/model/mnist_efficientnet_22k.yaml), [mnist_mh_cnn_422k](../configs/model/mnist_mh_cnn_422k.yaml)
+  - CIFAR-10 → [cifar10_cnn_64k](../configs/model/cifar10_cnn_64k.yaml), [cifar10_convnext_210k](../configs/model/cifar10_convnext_210k.yaml), [cifar10_vit_210k](../configs/model/cifar10_vit_210k.yaml), [cifar10_efficientnet_210k](../configs/model/cifar10_efficientnet_210k.yaml), [cifar10_mh_cnn_64k](../configs/model/cifar10_mh_cnn_64k.yaml)
+  - VIMH → [vimh_cnn_64k](../configs/model/vimh_cnn_64k.yaml), [vimh_cnn_64k_ordinal](../configs/model/vimh_cnn_64k_ordinal.yaml), [vimh_cnn_64k_regression](../configs/model/vimh_cnn_64k_regression.yaml)
+- Trainer (`configs/trainer/`):
+  - CPU → [configs/trainer/cpu.yaml](../configs/trainer/cpu.yaml)
+  - GPU (CUDA) → [configs/trainer/gpu.yaml](../configs/trainer/gpu.yaml)
+  - MPS (macOS) → [configs/trainer/mps.yaml](../configs/trainer/mps.yaml)
+
+Examples:
+```bash
+# Switch data/model/trainer groups
+python src/train.py data=cifar10 model=cifar10_convnext_210k trainer=gpu
+
+# MNIST ViT on Mac with quick limits
+python src/train.py data=mnist model=mnist_vit_38k trainer=mps +trainer.limit_train_batches=10
+
+# Multihead examples
+python src/train.py data=multihead_mnist model=mnist_mh_cnn_422k trainer=mps
+python src/train.py data=vimh model=vimh_cnn_64k trainer=cpu
+```
+
 ## Expected Performance
 | Dataset | Architecture | Expected | Training Time |
 |---------|-------------|----------|---------------|
@@ -128,3 +176,5 @@ python src/train.py model=mnist_cnn data=vimh_16kdss
 - **VIMH training** → Set `num_workers: 0` (MPS limitation)
 - **Memory issues** → Reduce batch size: `data.batch_size=32`
 - **Slow training** → Use quick tests first: `make tq*`
+- **First-run downloads** → MNIST/CIFAR auto-download on first use
+- **Checkpoints** → Remote URLs are blocked; use local files only

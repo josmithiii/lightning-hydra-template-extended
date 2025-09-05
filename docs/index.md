@@ -4,11 +4,11 @@ Expert-focused documentation for power users. Get up to speed quickly on what's 
 
 ## ⚡ Quick Start (5 min)
 ```bash
-source .venv/bin/activate          # Setup environment
-make h                            # See all make targets
-make tqa                          # Test all architectures (3 min)
-make cbqa                         # Quick CIFAR validation (15 min)
-make ca                           # Compare architectures (10 min)
+source .venv/bin/activate        # Setup environment
+make h                           # See all make targets
+make tqa                         # Test all architectures (3 min)
+make cbqa                        # Quick CIFAR validation (15 min)
+make ca                          # Compare architectures (10 min)
 ```
 
 ## 🎯 Core Extensions
@@ -22,6 +22,7 @@ make ca                           # Compare architectures (10 min)
 ### Essential (Read First)
 - **[architectures.md](architectures.md)** - 5 architectures, params, usage patterns
 - **[vimh.md](vimh.md)** - VIMH dataset format, multihead classification
+- **[onboarding.md](onboarding.md)** - 15-minute onboarding guide
 
 ### Benchmarking & Research
 - **[benchmarks.md](benchmarks.md)** - CIFAR system, expected performance, automation
@@ -42,6 +43,13 @@ make ca                           # Compare architectures (10 min)
 
 ## 📖 Reference
 - **[quickref.md](quickref.md)** - Expert cheat sheet (start here)
+- Hydra overrides → see section in [quickref.md](quickref.md)
+- Config Group Map → in [quickref.md](quickref.md#config-group-map) and README
 - **[../README.md](../README.md)** - Main project documentation
 - **[extensions.md](extensions.md)** - Complete feature overview
 - **Makefile** - 50+ targets with h, tq, cb, e prefixes
+
+## ⚠️ Common Pitfalls
+- Use `trainer=mps` on macOS; set `num_workers: 0` for VIMH on MPS.
+- First run may download datasets; allow time and network.
+- Checkpoints must be local (remote URL loading is disabled).

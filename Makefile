@@ -120,7 +120,7 @@ tdsc10 test-diagram-simple-cifar10: ## Generate simple diagrams for CIFAR-10 arc
 	python viz/simple_model_diagram.py --config cifar10_mh_cnn_64k
 	python viz/simple_model_diagram.py --config cifar10_vit_210k
 
-zca compare-arch: ## Compare medium sized architectures on three epochs
+ca compare-arch: ## Compare medium sized architectures on three epochs
 	@echo "=== Training SimpleDenseNet ==="
 	python src/train.py trainer.max_epochs=3 tags="[arch_comparison,dense]"
 	@echo "=== Training SimpleCNN ==="
@@ -144,7 +144,7 @@ evit exp-vit: ## Run ViT experiment
 
 
 ev995 exp-vit-995: ## Run ViT experiment achieving SOTA 99.5% validation accuracy
-	time python src/train.py experiment=mnist_vit_995
+	time python src/train.py experiment=vit_mnist_995
 	# == python src/train.py model=mnist_vit_995 data=mnist_vit_995 trainer.max_epochs=200 trainer.min_epochs=10 trainer.gradient_clip_val=1.0 data.batch_size=128 seed=12345 tags="[mnist,vit,995,optimized]"
 
 ecm exp-cnn-mnist: ## Run single-head CNN MNIST classification experiment - accuracy ~99.1%
