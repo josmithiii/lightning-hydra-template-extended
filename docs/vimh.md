@@ -10,6 +10,13 @@
 - **Efficient**: 8-bit quantization with ~100 perceptual resolution steps
 - **Format Flexible**: Works with RGB (32x32x3), grayscale (28x28x1), and custom sizes
 
+### 🛠️ Use Cases
+
+- **Audio Synthesis**: Image-to-audio parameter mapping (separate head each parameter)
+- **Computer Vision**: Multi-target regression tasks
+- **Scientific Computing**: Parameter prediction from visual data
+- **Research**: Multihead neural network architectures
+
 ## Output Formats
 
 - **Binary**: Self-describing binary format for efficient loading
@@ -197,7 +204,7 @@ VIMH datasets automatically configure neural network models based on their metad
 
 ```python
 # Model automatically configures from VIMH dataset info
-python src/train.py experiment=vimh_cnn_16kdss
+python src/train.py experiment=vimh_cnn
 # Reads data-vimh/*/vimh_dataset_info.json to determine:
 # - Input image dimensions (height, width, channels)
 # - Number of output heads (equal to varying_parameters)

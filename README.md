@@ -43,10 +43,24 @@ make h
 # Display most recently created VIMH dataset
 make dv     # or: python display_vimh.py data/vimh-dataset-name
 
-# ===== TRAINING EXPERIMENTS =====
+# ===== TRAIN QUICKLY VARIOUS ARCHS AND DATASETS AS A SIMPLE TEST =====
 
-# Note: MNIST, CIFAR-10, and CIFAR-100 datasets will download automatically when needed.
-#       An arbitrary VIMH dataset similar to CIFAR-100 will be auto-generated when needed.
+# Quickly partially train an MLP, CNN, ViT, and ConvNeXt-V2 on MNIST, and a CNN on VIMH
+make dv     # or: python display_vimh.py data/vimh-dataset-name
+
+# List train-quickly make targets
+make h | grep tq
+
+# Run fast pytest tests
+make t
+
+# List all make targets for running tests
+make h | grep test
+
+# ===== TRAINING EXPERIMENTS (`./configs/experiments/`) =====
+
+# Note: MNIST, CIFAR-10, and CIFAR-100 datasets will download automatically when needed the first time.
+#       An arbitrary VIMH dataset similar to CIFAR-100 will be auto-generated when needed the first time.
 
 # Train a CNN on MNIST to 99.1% accuracy - config specs in ./configs/experiment/cnn_mnist.yaml
 python src/train.py experiment=cnn_mnist
@@ -73,36 +87,14 @@ ls ./configs/experiment/*mnist*
 
 ```
 
-### 📊 Dataset Format
+### VIMH Dataset Format
 
-VIMH datasets use a structured format with:
-- **Images**: Variable dimensions (e.g., 32x32x3, 28x28x1)
+This template supports the classic MNIST, CIFAR-10, and CIFAR-100 dataset formats, and a new one called
+**Variable Image Multi-Head (VIMH)** format:
+- **Images**: Variable dimensions (e.g., 32x32x3, 28x28x1, etc., up to 255x255x255)
 - **Labels**: `[N] [param1_id] [param1_val] [param2_id] [param2_val] ...`
 - **Metadata**: JSON file with parameter mappings and dataset info
-- **Validation**: Cross-validation across directory name, JSON, and binary sources
-
-### 🔧 Configuration
-
-```yaml
-# configs/data/vimh.yaml
-_target_: src.data.vimh_datamodule.VIMHDataModule
-data_dir: data-vimh/vimh-32x32_8000Hz_1p0s_256dss_resonarium_2p
-batch_size: 128
-num_workers: 4
-
-# Model auto-configures from dataset
-# configs/experiment/vimh_cnn.yaml
-defaults:
-  - override /data: vimh
-  - override /model: vimh_cnn_64k
-```
-
-### 🛠️ Use Cases
-
-- **Audio Synthesis**: Image-to-audio parameter mapping
-- **Computer Vision**: Multi-target regression tasks
-- **Scientific Computing**: Parameter prediction from visual data
-- **Research**: Multihead neural network architectures
+- [**Documentation:**](docs/vimh.md)
 
 ---
 
