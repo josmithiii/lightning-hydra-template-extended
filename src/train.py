@@ -71,9 +71,11 @@ def _preflight_check_label_diversity(datamodule: LightningDataModule, max_batche
     try:
         # Ensure setup ran so loaders are available
         try:
+            datamodule.prepare_data()
             datamodule.setup("fit")
-        except Exception:
+        except Exception as e:
             # If the Trainer will call setup later, it's still OK — we just need loaders now
+            log.warning(f"DataModule setup failed during preflight: {e}")
             pass
 
         loader = datamodule.train_dataloader()
