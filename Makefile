@@ -37,6 +37,11 @@ d deactivate: ## Deactivate the uv environment
 	@echo "Add to ~/.tcshrc: alias d 'echo deactivate && deactivate'"
 	@echo "Then just type: d"
 
+# DISPLAY VIMH DATASET
+
+dv display-vimh: ## Display most recently created VIMH dataset
+	python display_vimh.py
+
 # TRAIN-QUICKLY TARGETS "tq"
 
 tq train-quick: ## Train quickly on the defaults (SimpleDenseNet on MNIST), 1 epoch

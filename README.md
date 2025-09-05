@@ -40,12 +40,8 @@ make h
 
 # ===== VIMH DATASET DISPLAY =====
 
-# Display most recently created dataset
-make ddr    # or: python display_vimh.py
-
-# Display specific datasets
-make dds    # small dataset
-make ddl    # large dataset
+# Display most recently created VIMH dataset
+make dv     # or: python display_vimh.py data/vimh-dataset-name
 
 # ===== TRAINING EXPERIMENTS =====
 
