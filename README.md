@@ -91,6 +91,16 @@ ls ./configs/experiment/*mnist*
 
 # Etc. for datasets 'cifar' (CIFAR-10/100), and 'vimh' (Variable Image Multi-Head)
 
+# ===== BENCHMARK EXPERIMENTS =====
+
+# Benchmarks are experiments devoted to replicating some published benchmark.
+# As a result, they tend to run longer, and a GPU is especially nice to have.
+
+# Find all make targets running benchmark experiments
+make h | grep benchmark
+
+# Find all make targets running fast validation runs for benchmark experiments
+make h | grep validation
 ```
 
 ### VIMH Dataset Format

@@ -14,7 +14,6 @@ Welcome to the comprehensive documentation for the Lightning-Hydra-Template-Exte
 - **[multihead.md](multihead.md)** - Multihead classification system, synthetic label generation, and multi-task learning
 
 ### 🛠️ Usage and Reference
-- **[makefile.md](makefile.md)** - Complete make targets reference with abbreviations and workflows
 - **[configuration.md](configuration.md)** - Configuration patterns, experiment system, and best practices
 
 ### 👩‍💻 Development
