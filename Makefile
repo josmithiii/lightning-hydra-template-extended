@@ -17,46 +17,6 @@ dc dclean: ## Clean data files
 cl clean-logs: ## Clean logs
 	rm -rf logs/**
 
-f format: ## Run pre-commit hooks
-	pre-commit run -a
-
-fp format-preview: ## Preview docformatter actions
-	docformatter -c -d -r --black --wrap-summaries=99 --wrap-descriptions=99 --style=sphinx src tests
-
-fdc format-docstrings-check: ## Run docformatter pre-commit hook (manual stage)
-	pre-commit run docformatter --hook-stage manual -a
-
-fm format-markdown: ## Run Prettier on Markdown/YAML only
-	pre-commit run prettier -a
-
-fn flake8-now: ## Run flake8 lint manually on src/tests and key scripts
-	pre-commit run flake8 --hook-stage manual -a
-
-fc format-configs: ## Prettier-format only YAML in configs/
-	@FILES=$(shell git ls-files 'configs/**/*.yaml' 'configs/*.yaml'); \
-	if [ -n "$$FILES" ]; then \
-		pre-commit run prettier --files $$FILES; \
-	else \
-		echo "No config YAML files found"; \
-	fi
-
-sy sync: ## Merge changes from main branch to your current branch
-	git pull
-	git pull origin main
-
-tb tensorboard: ## Launch TensorBoard on port 6006
-	@lsof -i :6006 >/dev/null 2>&1 && echo "TensorBoard already running on port 6006" || \
-		(echo "Starting TensorBoard on port 6006..." && tensorboard --logdir logs/train/runs/ --reload_interval 1 --port 6006 &)
-	@echo "Open http://localhost:6006/"
-
-a activate: ## Activate the uv environment
-	@echo "Add to ~/.tcshrc: alias a 'echo \"source .venv/bin/activate.csh\" && source .venv/bin/activate.csh'"
-	@echo "Then just type: a"
-
-d deactivate: ## Deactivate the uv environment
-	@echo "Add to ~/.tcshrc: alias d 'echo deactivate && deactivate'"
-	@echo "Then just type: d"
-
 # DISPLAY VIMH DATASET
 
 dv display-vimh: ## Display most recently created VIMH dataset
@@ -78,9 +38,6 @@ tqcn train-quick-convnext: ## Train quickly ConvNeXt-V2, 1 epoch
 
 tqvh train-quick-vimh: ## Train quickly SimpleCNN on VIMH examples dataset, 1 epoch
 	python src/train.py experiment=vimh_cnn trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
-
-sep:
-	@printf '%*s\n' 180 '' | tr ' ' '+'
 
 tqa train-quick-all: tq sep tqc sep tqv sep tqcn sep tqvh ## Train quickly all architectures supported on mnist and cnn on vimh
 
@@ -291,6 +248,46 @@ allqt all-quick-tests: tqa cbqa ## All quick tests
 
 # UTILITY TARGETS
 
+f format: ## Run pre-commit hooks
+	pre-commit run -a
+
+fp format-preview: ## Preview docformatter actions
+	docformatter -c -d -r --black --wrap-summaries=99 --wrap-descriptions=99 --style=sphinx src tests
+
+fdc format-docstrings-check: ## Run docformatter pre-commit hook (manual stage)
+	pre-commit run docformatter --hook-stage manual -a
+
+fm format-markdown: ## Run Prettier on Markdown/YAML only
+	pre-commit run prettier -a
+
+fn flake8-now: ## Run flake8 lint manually on src/tests and key scripts
+	pre-commit run flake8 --hook-stage manual -a
+
+fc format-configs: ## Prettier-format only YAML in configs/
+	@FILES=$(shell git ls-files 'configs/**/*.yaml' 'configs/*.yaml'); \
+	if [ -n "$$FILES" ]; then \
+		pre-commit run prettier --files $$FILES; \
+	else \
+		echo "No config YAML files found"; \
+	fi
+
+sy sync: ## Merge changes from main branch to your current branch
+	git pull
+	git pull origin main
+
+tb tensorboard: ## Launch TensorBoard on port 6006
+	@lsof -i :6006 >/dev/null 2>&1 && echo "TensorBoard already running on port 6006" || \
+		(echo "Starting TensorBoard on port 6006..." && tensorboard --logdir logs/train/runs/ --reload_interval 1 --port 6006 &)
+	@echo "Open http://localhost:6006/"
+
+a activate: ## Activate the uv environment
+	@echo "Add to ~/.tcshrc: alias a 'echo \"source .venv/bin/activate.csh\" && source .venv/bin/activate.csh'"
+	@echo "Then just type: a"
+
+d deactivate: ## Deactivate the uv environment
+	@echo "Add to ~/.tcshrc: alias d 'echo deactivate && deactivate'"
+	@echo "Then just type: d"
+
 lc list-configs: ## List available model configurations
 	@echo "Available model configs:"
 	@find configs/model -name "*.yaml" | sed 's|configs/model/||' | sed 's|\.yaml||' | sort
@@ -298,3 +295,6 @@ lc list-configs: ## List available model configurations
 	@find configs/data -name "*.yaml" | sed 's|configs/data/||' | sed 's|\.yaml||' | sort
 	@echo "\nAvailable experiment configs:"
 	@find configs/experiment -name "*.yaml" | sed 's|configs/experiment/||' | sed 's|\.yaml||' | sort
+
+sep:
+	@printf '%*s\n' 180 '' | tr ' ' '+'
