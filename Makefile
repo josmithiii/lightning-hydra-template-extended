@@ -26,6 +26,20 @@ fp format-preview: ## Preview docformatter actions
 fdc format-docstrings-check: ## Run docformatter pre-commit hook (manual stage)
 	pre-commit run docformatter --hook-stage manual -a
 
+fm format-markdown: ## Run Prettier on Markdown/YAML only
+	pre-commit run prettier -a
+
+fn flake8-now: ## Run flake8 lint manually on src/tests and key scripts
+	pre-commit run flake8 --hook-stage manual -a
+
+fc format-configs: ## Prettier-format only YAML in configs/
+	@FILES=$(shell git ls-files 'configs/**/*.yaml' 'configs/*.yaml'); \
+	if [ -n "$$FILES" ]; then \
+		pre-commit run prettier --files $$FILES; \
+	else \
+		echo "No config YAML files found"; \
+	fi
+
 sy sync: ## Merge changes from main branch to your current branch
 	git pull
 	git pull origin main

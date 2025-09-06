@@ -4,7 +4,7 @@
 # python src/train.py experiment=multihead_cnn_cifar10
 
 defaults:
-  - override /data: cifar10_mh
+  - override /data: multihead_cifar10
   - override /model: cifar10_mh_cnn_64k
   - override /trainer: default
 

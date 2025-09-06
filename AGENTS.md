@@ -37,3 +37,10 @@
 - Checkpoints: loading remote URLs is blocked; use local files only.
 - Config: prefer Hydra overrides (e.g., `trainer.max_epochs=3`) instead of editing YAML.
 - Env: see `.env.example`, `requirements.txt`, and `environment.yaml`; `rootutils` sets `PROJECT_ROOT` for stable paths.
+
+## YAML & Hydra Conventions
+- Quote numeric-like strings: write `"995"` (tags, IDs) to avoid unintended numeric parsing.
+- Keep Hydra interpolations unquoted: `${paths.root_dir}` (strings resolved at runtime).
+- Lists: prefer inline lists for tags, e.g., `tags: ["mnist", "vit", "995"]`.
+- Booleans/Nulls: use lowercase YAML forms (`true`, `false`, `null`) unless you need string literals.
+- Paths: use `${paths.*}` for portability; avoid hardcoding absolute paths.

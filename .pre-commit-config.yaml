@@ -1,3 +1,16 @@
+# Pre-commit hooks overview
+# - pre-commit-hooks: Generic hygiene (whitespace, EOF, YAML/TOML checks)
+# - black: Code formatting (Python) — opinionated, stable
+# - isort: Import sorting (Python) — black-compatible profile
+# - pyupgrade: Modernize syntax to target Python 3.8+
+# - docformatter: Docstring reflow — manual, check-only (educational preview)
+# - interrogate: Docstring coverage — limited to src/tests
+# - flake8: Lint (style/errors) — manual, focused on src/tests and select top-level scripts
+# - bandit: Security lint — focused on src/tests and select top-level scripts
+# - prettier: Markdown/YAML formatting — GFM-friendly
+# - shellcheck: Shell script linter
+# - codespell/nbstripout/nbqa: Spellcheck notebooks; run black/isort/flake8 inside notebooks
+
 default_language_version:
   python: python3
 
@@ -7,8 +20,10 @@ repos:
     hooks:
       # list of supported hooks: https://pre-commit.com/hooks.html
       - id: trailing-whitespace
+        # Avoid touching logs/ and archive/ even if present locally
         exclude: ^(logs/|archive/)
       - id: end-of-file-fixer
+        # Avoid touching logs/ and archive/ even if present locally
         exclude: ^(logs/|archive/)
       - id: check-docstring-first
       - id: check-yaml
@@ -25,6 +40,8 @@ repos:
     hooks:
       - id: black
         args: [--line-length, "99"]
+        exclude: ^(.githooks/)
+        # Runs on all tracked Python files by default
 
   # python import sorting
   - repo: https://github.com/PyCQA/isort
@@ -32,6 +49,7 @@ repos:
     hooks:
       - id: isort
         args: ["--profile", "black", "--filter-files"]
+        # Runs on all tracked Python files by default
 
   # python upgrading syntax to newer version
   - repo: https://github.com/asottile/pyupgrade
@@ -39,6 +57,7 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
+        # Modernizes Python syntax; behavior-only changes are rare
 
   # python docstring formatting
   - repo: https://github.com/myint/docformatter
@@ -55,13 +74,15 @@ repos:
             --style=sphinx,
             --black,
           ]
+        # Manual: run via `make fdc` or `make fp` for preview; does not block format
 
   # python docstring coverage checking
   - repo: https://github.com/econchick/interrogate
     rev: 1.5.0 # or master if you're bold
     hooks:
       - id: interrogate
-        files: ^(src|tests)/
+        # Check docstring coverage only within library and tests
+        files: ^(src/|tests/)
         args:
           [
             --verbose,
@@ -79,7 +100,8 @@ repos:
     hooks:
       - id: flake8
         stages: [manual]
-        files: ^(src|tests)/
+        # Lint only src/tests and selected top-level scripts
+        files: ^(src/|tests/|examples/|viz/|scripts/|display_vimh\.py$|single_step_inference\.py$|plot_loss_analysis\.py$)
         args:
           [
             "--extend-ignore",
@@ -94,7 +116,8 @@ repos:
     rev: "1.7.9"
     hooks:
       - id: bandit
-        files: ^(src|tests)/
+        # Security lint only for src/tests and selected top-level scripts
+        files: ^(src/|tests/|examples/|viz/|scripts/|display_vimh\.py$|single_step_inference\.py$|plot_loss_analysis\.py$)
         args: ["-s", "B101,B403,B110,B404,B603", "-lll"]
         additional_dependencies: [pbr]
 
@@ -111,6 +134,7 @@ repos:
     rev: v0.9.0.2
     hooks:
       - id: shellcheck
+        # Lint shell scripts (sh/bash); no auto-fix
 
   # markdown formatting via Prettier (supports GFM)
   # expand to markdown as well as yaml
@@ -120,6 +144,7 @@ repos:
       - id: prettier
         types: [yaml, markdown]
         exclude: "environment.yaml"
+        # Formats Markdown (GFM-friendly) and YAML consistently
 
   # word spelling linter
   - repo: https://github.com/codespell-project/codespell
@@ -129,12 +154,14 @@ repos:
         args:
           - --skip=logs/**,data/**,*.ipynb
           # - --ignore-words-list=abc,def
+        # Spellcheck; skips data/logs and notebooks
 
   # jupyter notebook cell output clearing
   - repo: https://github.com/kynan/nbstripout
     rev: 0.6.1
     hooks:
       - id: nbstripout
+        # Cleans notebook outputs only
 
   # jupyter notebook linting
   - repo: https://github.com/nbQA-dev/nbQA
@@ -150,3 +177,4 @@ repos:
             "--extend-ignore=E203,E402,E501,F401,F841",
             "--exclude=logs/*,data/*",
           ]
+        # Runs black/isort/flake8 inside notebooks
