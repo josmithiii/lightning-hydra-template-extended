@@ -2,8 +2,8 @@ _target_: src.models.mnist_module.MNISTLitModule
 
 net:
   _target_: src.models.components.convnext_v2.convnext_v2_mnist_base
-  input_size: 32  # CIFAR-10 is 32x32
-  in_chans: 3     # CIFAR-10 has 3 color channels
+  input_size: 32 # CIFAR-10 is 32x32
+  in_chans: 3 # CIFAR-10 has 3 color channels
   output_size: 10 # CIFAR-10 has 10 classes
 
 optimizer:
@@ -15,7 +15,7 @@ optimizer:
 scheduler:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   _partial_: true
-  T_max: 50  # Adjusted for CIFAR-10 training
+  T_max: 50 # Adjusted for CIFAR-10 training
   eta_min: 1e-5
 
 criterion:

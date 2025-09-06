@@ -1,6 +1,6 @@
 _target_: src.data.vimh_datamodule.VIMHDataModule
 data_dir: ${paths.root_dir}/data/vimh-cifar100-like
 batch_size: 128 # Needs to be divisible by the number of devices (e.g., if in a distributed setup)
-num_workers: 0  # Set to 0 for MPS compatibility (multiprocessing not supported on MPS)
+num_workers: 0 # Set to 0 for MPS compatibility (multiprocessing not supported on MPS)
 pin_memory: False
 persistent_workers: True

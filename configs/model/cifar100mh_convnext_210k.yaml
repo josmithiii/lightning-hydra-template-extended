@@ -2,22 +2,22 @@ _target_: src.models.multihead_lit_module.MultiheadLitModule
 
 net:
   _target_: src.models.components.convnext_v2.convnext_v2_mnist_base
-  input_size: 32  # CIFAR-100-MH is 32x32
-  in_chans: 3     # CIFAR-100-MH has 3 color channels
+  input_size: 32 # CIFAR-100-MH is 32x32
+  in_chans: 3 # CIFAR-100-MH has 3 color channels
   heads_config:
-    param_0: 100  # Default - will be overridden by dataset
-    param_1: 100  # Default - will be overridden by dataset
+    param_0: 100 # Default - will be overridden by dataset
+    param_1: 100 # Default - will be overridden by dataset
 
 optimizer:
   _target_: torch.optim.AdamW
   _partial_: true
   lr: 0.001
-  weight_decay: 0.01  # Higher weight decay for ConvNeXt
+  weight_decay: 0.01 # Higher weight decay for ConvNeXt
 
 scheduler:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   _partial_: true
-  T_max: 100  # Longer training for multihead CIFAR-100-MH
+  T_max: 100 # Longer training for multihead CIFAR-100-MH
   eta_min: 1e-5
 
 # Different criterion per head (will be auto-configured based on dataset)

@@ -38,7 +38,7 @@ model:
 data:
   batch_size: 128
   num_workers: 4
-  pin_memory: false  # Not needed for CPU
+  pin_memory: false # Not needed for CPU
 
 logger:
   wandb:

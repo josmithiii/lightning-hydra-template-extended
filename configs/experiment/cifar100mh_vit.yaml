@@ -19,7 +19,7 @@ seed: 12345
 
 trainer:
   min_epochs: 10
-  max_epochs: 100  # CIFAR-100-MH is challenging, needs more epochs
+  max_epochs: 100 # CIFAR-100-MH is challenging, needs more epochs
   gradient_clip_val: 1.0
 
 model:
@@ -32,7 +32,7 @@ model:
   compile: false
 
 data:
-  batch_size: 64  # Smaller batch size for ViT due to memory requirements
+  batch_size: 64 # Smaller batch size for ViT due to memory requirements
   num_workers: 4
   pin_memory: true
 

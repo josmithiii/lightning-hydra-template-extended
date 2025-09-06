@@ -2,10 +2,10 @@ _target_: src.models.multihead_lit_module.MultiheadLitModule
 
 net:
   _target_: src.models.components.simple_efficientnet.SimpleEfficientNet
-  input_channels: 3  # CIFAR-100-MH has 3 color channels
+  input_channels: 3 # CIFAR-100-MH has 3 color channels
   heads_config:
-    param_0: 100  # Default - will be overridden by dataset
-    param_1: 100  # Default - will be overridden by dataset
+    param_0: 100 # Default - will be overridden by dataset
+    param_1: 100 # Default - will be overridden by dataset
   dropout_rate: 0.3
 
 optimizer:

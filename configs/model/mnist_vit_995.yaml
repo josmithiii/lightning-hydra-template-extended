@@ -10,13 +10,13 @@ net:
   n_attention_heads: 4
   forward_mul: 2
   output_size: 10
-  dropout: 0.1          # Back to original 0.1
+  dropout: 0.1 # Back to original 0.1
 
 optimizer:
   _target_: torch.optim.AdamW
   _partial_: true
-  lr: 0.0005           # Keep original lr
-  weight_decay: 0.001  # Back to original weight decay
+  lr: 0.0005 # Keep original lr
+  weight_decay: 0.001 # Back to original weight decay
 
 scheduler:
   _target_: torch.optim.lr_scheduler.CosineAnnealingLR

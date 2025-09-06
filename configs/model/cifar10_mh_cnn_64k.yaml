@@ -33,16 +33,16 @@ loss_weights:
 
 net:
   _target_: src.models.components.simple_cnn.SimpleCNN
-  input_channels: 3  # CIFAR-10 has 3 color channels
+  input_channels: 3 # CIFAR-10 has 3 color channels
   conv1_channels: 64
   conv2_channels: 128
   fc_hidden: 512
   heads_config:
-    class: 10     # Original 10 classes
-    domain: 2     # Living vs non-living
-    mobility: 3   # Stationary/mobile/highly mobile
-    size: 3       # Small/medium/large
+    class: 10 # Original 10 classes
+    domain: 2 # Living vs non-living
+    mobility: 3 # Stationary/mobile/highly mobile
+    size: 3 # Small/medium/large
   dropout: 0.5
-  input_size: 32  # CIFAR-10 image size
+  input_size: 32 # CIFAR-10 image size
 
 compile: false

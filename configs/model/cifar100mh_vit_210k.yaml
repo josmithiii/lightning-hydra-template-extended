@@ -2,14 +2,14 @@ _target_: src.models.multihead_lit_module.MultiheadLitModule
 
 net:
   _target_: src.models.components.vision_transformer.VisionTransformer
-  n_channels: 3     # CIFAR-100-MH has 3 color channels
-  image_size: 32    # CIFAR-100-MH is 32x32
-  patch_size: 4     # Smaller patches for 32x32 images
-  embed_dim: 384    # Embedding dimension
-  n_layers: 12      # Number of transformer layers
-  n_attention_heads: 6  # Number of attention heads
-  forward_mul: 2    # Forward multiplier
-  output_size: 100  # Default - will be overridden by dataset (single head)
+  n_channels: 3 # CIFAR-100-MH has 3 color channels
+  image_size: 32 # CIFAR-100-MH is 32x32
+  patch_size: 4 # Smaller patches for 32x32 images
+  embed_dim: 384 # Embedding dimension
+  n_layers: 12 # Number of transformer layers
+  n_attention_heads: 6 # Number of attention heads
+  forward_mul: 2 # Forward multiplier
+  output_size: 100 # Default - will be overridden by dataset (single head)
   dropout: 0.1
 
 optimizer:
