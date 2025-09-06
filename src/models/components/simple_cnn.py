@@ -1,6 +1,8 @@
+from typing import Dict, List, Optional, Tuple
+
 import torch
 from torch import nn
-from typing import Dict, Optional, List, Tuple
+
 
 class SimpleCNN(nn.Module):
     """A simple convolutional neural network for MNIST classification."""
@@ -58,9 +60,9 @@ class SimpleCNN(nn.Module):
             # Backward compatibility: convert old single-head config to multihead
             if heads_config is None:
                 if output_size is not None:
-                    heads_config = {'digit': output_size}
+                    heads_config = {"digit": output_size}
                 else:
-                    heads_config = {'digit': 10}  # Default MNIST
+                    heads_config = {"digit": 10}  # Default MNIST
 
         self.heads_config = heads_config
         self.is_multihead = len(heads_config) > 1
@@ -83,19 +85,19 @@ class SimpleCNN(nn.Module):
             nn.BatchNorm2d(conv1_channels),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-
             # Second conv block
             nn.Conv2d(conv1_channels, conv2_channels, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(conv2_channels),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-
             # Adaptive pooling with MPS-safe size
             nn.AdaptiveAvgPool2d(self.adaptive_pool_size),
         )
 
         # Calculate linear layer input size based on adaptive pool size
-        linear_input_size = conv2_channels * self.adaptive_pool_size[0] * self.adaptive_pool_size[1]
+        linear_input_size = (
+            conv2_channels * self.adaptive_pool_size[0] * self.adaptive_pool_size[1]
+        )
 
         self.shared_features = nn.Sequential(
             nn.Flatten(),
@@ -123,27 +125,25 @@ class SimpleCNN(nn.Module):
         if self.is_multihead:
             if output_mode == "regression":
                 # For regression, create heads with sigmoid activation
-                self.heads = nn.ModuleDict({
-                    head_name: nn.Sequential(
-                        nn.Linear(combined_feature_size, 1),
-                        nn.Sigmoid()
-                    )
-                    for head_name in heads_config.keys()
-                })
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
+                        for head_name in heads_config.keys()
+                    }
+                )
             else:
                 # Classification heads
-                self.heads = nn.ModuleDict({
-                    head_name: nn.Linear(combined_feature_size, num_classes)
-                    for head_name, num_classes in heads_config.items()
-                })
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Linear(combined_feature_size, num_classes)
+                        for head_name, num_classes in heads_config.items()
+                    }
+                )
         else:
             # Single head (backward compatibility)
             head_name, num_classes = next(iter(heads_config.items()))
             if output_mode == "regression":
-                self.classifier = nn.Sequential(
-                    nn.Linear(combined_feature_size, 1),
-                    nn.Sigmoid()
-                )
+                self.classifier = nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
             else:
                 self.classifier = nn.Linear(combined_feature_size, num_classes)
 
@@ -151,7 +151,8 @@ class SimpleCNN(nn.Module):
         """Perform a single forward pass through the network.
 
         :param x: Input tensor of shape (batch_size, channels, height, width).
-        :param auxiliary: Optional auxiliary input tensor of shape (batch_size, auxiliary_input_size).
+        :param auxiliary: Optional auxiliary input tensor of shape (batch_size,
+            auxiliary_input_size).
         :return: A tensor of logits (single head) or dict of logits (multihead).
         """
         # Process main input through CNN
@@ -166,10 +167,7 @@ class SimpleCNN(nn.Module):
             combined_features = shared_features
 
         if self.is_multihead:
-            return {
-                head_name: head(combined_features)
-                for head_name, head in self.heads.items()
-            }
+            return {head_name: head(combined_features) for head_name, head in self.heads.items()}
         else:
             # Single head output (backward compatibility)
             return self.classifier(combined_features)
@@ -186,13 +184,12 @@ class SimpleCNN(nn.Module):
             combined_feature_size = self.fc_hidden
 
         # Create regression heads with sigmoid activation
-        self.heads = nn.ModuleDict({
-            head_name: nn.Sequential(
-                nn.Linear(combined_feature_size, 1),
-                nn.Sigmoid()
-            )
-            for head_name in heads_config.keys()
-        })
+        self.heads = nn.ModuleDict(
+            {
+                head_name: nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
+                for head_name in heads_config.keys()
+            }
+        )
 
         self.heads_config = heads_config
         self.is_multihead = len(heads_config) > 1
@@ -209,7 +206,7 @@ if __name__ == "__main__":
 
     # Test multihead mode
     print("\nTesting multihead mode:")
-    model_multi = SimpleCNN(heads_config={'digit': 10, 'thickness': 5, 'smoothness': 3})
+    model_multi = SimpleCNN(heads_config={"digit": 10, "thickness": 5, "smoothness": 3})
     output_multi = model_multi(x)
     print(f"Multihead output type: {type(output_multi)}")
     for head_name, logits in output_multi.items():
