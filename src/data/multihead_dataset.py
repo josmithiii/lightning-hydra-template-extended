@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
-
 import torch
 from torch.utils.data import Dataset
+from typing import Dict, Any, Optional
+from abc import ABC, abstractmethod
 
 
 class MultiheadLabelStrategy(ABC):
@@ -19,9 +18,9 @@ class MNISTStrategy(MultiheadLabelStrategy):
 
     def get_multihead_labels(self, digit_label: int) -> Dict[str, int]:
         return {
-            "digit": digit_label,  # Original digit (0-9)
-            "thickness": self._get_thickness(digit_label),  # Digit-dependent thickness
-            "smoothness": self._get_smoothness(digit_label),  # Digit-dependent smoothness
+            'digit': digit_label,                           # Original digit (0-9)
+            'thickness': self._get_thickness(digit_label),  # Digit-dependent thickness
+            'smoothness': self._get_smoothness(digit_label) # Digit-dependent smoothness
         }
 
     def _get_thickness(self, digit: int) -> int:
@@ -62,24 +61,16 @@ class CIFAR10Strategy(MultiheadLabelStrategy):
     def __init__(self):
         # CIFAR-10 class names for reference
         self.cifar10_classes = [
-            "airplane",
-            "automobile",
-            "bird",
-            "cat",
-            "deer",
-            "dog",
-            "frog",
-            "horse",
-            "ship",
-            "truck",
+            'airplane', 'automobile', 'bird', 'cat', 'deer',
+            'dog', 'frog', 'horse', 'ship', 'truck'
         ]
 
     def get_multihead_labels(self, class_label: int) -> Dict[str, int]:
         return {
-            "class": class_label,  # Original class (0-9)
-            "domain": self._get_domain_cifar10(class_label),  # Living vs non-living
-            "mobility": self._get_mobility_cifar10(class_label),  # Mobile vs stationary
-            "size": self._get_size_cifar10(class_label),  # Small vs large objects
+            'class': class_label,                                # Original class (0-9)
+            'domain': self._get_domain_cifar10(class_label),     # Living vs non-living
+            'mobility': self._get_mobility_cifar10(class_label), # Mobile vs stationary
+            'size': self._get_size_cifar10(class_label)          # Small vs large objects
         }
 
     def _get_domain_cifar10(self, class_id: int) -> int:
@@ -98,7 +89,7 @@ class CIFAR10Strategy(MultiheadLabelStrategy):
             int: 0=stationary, 1=mobile, 2=highly_mobile
         """
         highly_mobile = [0, 1, 2]  # airplane, automobile, bird
-        mobile = [3, 4, 5, 7, 8]  # cat, deer, dog, horse, ship
+        mobile = [3, 4, 5, 7, 8]   # cat, deer, dog, horse, ship
         # stationary = [6, 9]       # frog, truck
 
         if class_id in highly_mobile:
@@ -114,13 +105,13 @@ class CIFAR10Strategy(MultiheadLabelStrategy):
         Returns:
             int: 0=small, 1=medium, 2=large
         """
-        small = [2, 3, 6]  # bird, cat, frog
+        small = [2, 3, 6]      # bird, cat, frog
         large = [0, 1, 4, 7, 8, 9]  # airplane, automobile, deer, horse, ship, truck
         # medium = [5]           # dog
 
         if class_id in small:
             return 0
-        elif class_id == 5:  # dog
+        elif class_id == 5:    # dog
             return 1
         else:
             return 2
@@ -132,34 +123,19 @@ class CIFAR100Strategy(MultiheadLabelStrategy):
     def __init__(self):
         # CIFAR-100 coarse categories (20 classes)
         self.cifar100_coarse = [
-            "aquatic_mammals",
-            "fish",
-            "flowers",
-            "food_containers",
-            "fruit_vegetables",
-            "household_electrical",
-            "household_furniture",
-            "insects",
-            "large_carnivores",
-            "large_man-made_outdoor",
-            "large_natural_outdoor",
-            "large_omnivores_herbivores",
-            "medium_mammals",
-            "non-insect_invertebrates",
-            "people",
-            "reptiles",
-            "small_mammals",
-            "trees",
-            "vehicles_1",
-            "vehicles_2",
+            'aquatic_mammals', 'fish', 'flowers', 'food_containers', 'fruit_vegetables',
+            'household_electrical', 'household_furniture', 'insects', 'large_carnivores',
+            'large_man-made_outdoor', 'large_natural_outdoor', 'large_omnivores_herbivores',
+            'medium_mammals', 'non-insect_invertebrates', 'people', 'reptiles',
+            'small_mammals', 'trees', 'vehicles_1', 'vehicles_2'
         ]
 
     def get_multihead_labels(self, fine_label: int) -> Dict[str, int]:
         return {
-            "fine_class": fine_label,  # Original fine class (0-99)
-            "coarse_class": self._get_coarse_cifar100(fine_label),  # Coarse category (0-19)
-            "domain": self._get_domain_cifar100(fine_label),  # Living vs non-living
-            "complexity": self._get_complexity_cifar100(fine_label),  # Visual complexity
+            'fine_class': fine_label,                              # Original fine class (0-99)
+            'coarse_class': self._get_coarse_cifar100(fine_label), # Coarse category (0-19)
+            'domain': self._get_domain_cifar100(fine_label),       # Living vs non-living
+            'complexity': self._get_complexity_cifar100(fine_label) # Visual complexity
         }
 
     def _get_coarse_cifar100(self, fine_class: int) -> int:
@@ -216,11 +192,11 @@ class MultiheadDataset(Dataset):
         self.dataset_type = dataset_type
 
         # Create strategy based on dataset type
-        if dataset_type == "mnist":
+        if dataset_type == 'mnist':
             self.strategy = MNISTStrategy()
-        elif dataset_type == "cifar10":
+        elif dataset_type == 'cifar10':
             self.strategy = CIFAR10Strategy()
-        elif dataset_type == "cifar100":
+        elif dataset_type == 'cifar100':
             self.strategy = CIFAR100Strategy()
         else:
             raise ValueError(f"Unsupported dataset type: {dataset_type}")
@@ -239,13 +215,13 @@ class MultiheadMNISTDataset(MultiheadDataset):
     """Backward compatibility wrapper for MNIST multihead dataset."""
 
     def __init__(self, base_dataset):
-        super().__init__(base_dataset, "mnist")
+        super().__init__(base_dataset, 'mnist')
 
 
 class MultiheadCIFARDataset(MultiheadDataset):
     """Backward compatibility wrapper for CIFAR multihead dataset."""
 
-    def __init__(self, base_dataset, dataset_type="cifar10"):
+    def __init__(self, base_dataset, dataset_type='cifar10'):
         super().__init__(base_dataset, dataset_type)
 
 
@@ -267,9 +243,7 @@ if __name__ == "__main__":
     cifar10_strategy = CIFAR10Strategy()
     for i, class_name in enumerate(cifar10_strategy.cifar10_classes):
         labels = cifar10_strategy.get_multihead_labels(i)
-        print(
-            f"  {i}   | {class_name:<10} |   {labels['domain']}    |    {labels['mobility']}     |  {labels['size']}"
-        )
+        print(f"  {i}   | {class_name:<10} |   {labels['domain']}    |    {labels['mobility']}     |  {labels['size']}")
 
     print("\nTesting CIFAR-100 coarse mapping (first 20 fine classes):")
     print("Fine | Coarse | Domain | Complexity")
@@ -278,6 +252,4 @@ if __name__ == "__main__":
     cifar100_strategy = CIFAR100Strategy()
     for fine_class in range(20):
         labels = cifar100_strategy.get_multihead_labels(fine_class)
-        print(
-            f" {fine_class:2d}  |   {labels['coarse_class']:2d}   |   {labels['domain']}    |     {labels['complexity']}"
-        )
+        print(f" {fine_class:2d}  |   {labels['coarse_class']:2d}   |   {labels['domain']}    |     {labels['complexity']}")

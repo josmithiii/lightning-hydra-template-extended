@@ -10,7 +10,7 @@
 
 defaults:
   - override /data: mnist
-  - override /model: mnist_convnext_210k # Base config
+  - override /model: mnist_convnext_210k  # Base config
   - override /callbacks: default
   - override /trainer: default
 
@@ -19,33 +19,33 @@ task_name: "convnext_v2_official_tiny_benchmark"
 # Canonical experiment tags for benchmarking
 tags: ["convnext", "benchmark", "official", "tiny", "acid-test"]
 
-seed: 42 # Fixed seed for reproducible benchmarking
+seed: 42  # Fixed seed for reproducible benchmarking
 
 trainer:
   min_epochs: 50
-  max_epochs: 100 # Scaled down from official 300 epochs for MNIST
+  max_epochs: 100  # Scaled down from official 300 epochs for MNIST
   gradient_clip_val: 1.0
-  precision: 16-mixed # Equivalent to official --use_amp True
+  precision: 16-mixed  # Equivalent to official --use_amp True
 
 model:
   # Official ConvNeXt V2-Tiny training hyperparameters (adapted for MNIST)
   optimizer:
     _target_: torch.optim.AdamW
     _partial_: true
-    lr: 0.0008 # Official base lr: 8e-4 (blr parameter)
-    weight_decay: 0.05 # Official weight_decay: 0.05
-    eps: 1e-8 # Official opt_eps
-    betas: [0.9, 0.999] # Standard AdamW betas
+    lr: 0.0008  # Official base lr: 8e-4 (blr parameter)
+    weight_decay: 0.05  # Official weight_decay: 0.05
+    eps: 1e-8  # Official opt_eps
+    betas: [0.9, 0.999]  # Standard AdamW betas
 
   scheduler:
     _target_: torch.optim.lr_scheduler.CosineAnnealingLR
     _partial_: true
-    T_max: 100 # Match max_epochs
-    eta_min: 1e-6 # Official min_lr: 1e-6
+    T_max: 100  # Match max_epochs
+    eta_min: 1e-6  # Official min_lr: 1e-6
 
   criterion:
     _target_: torch.nn.CrossEntropyLoss
-    label_smoothing: 0.1 # Official smoothing: 0.1
+    label_smoothing: 0.1  # Official smoothing: 0.1
 
   # Use official benchmark model with exact hyperparameters
   net:
@@ -55,7 +55,7 @@ model:
     output_size: 10
 
 data:
-  batch_size: 128 # Scaled for single GPU (official: 32 * 8 GPUs = 256 effective)
+  batch_size: 128  # Scaled for single GPU (official: 32 * 8 GPUs = 256 effective)
   num_workers: 4
 
 # Enable all official training techniques (adapted for Lightning)
@@ -70,7 +70,7 @@ callbacks:
 
   early_stopping:
     monitor: val/acc
-    patience: 20 # Increased patience for longer training
+    patience: 20  # Increased patience for longer training
     mode: max
     min_delta: 0.001
 
@@ -94,6 +94,7 @@ logger:
 
   aim:
     experiment: "convnext_v2_official_benchmark"
+
 # Performance expectations based on official results
 # Original: 83.0% ImageNet-1K top-1 accuracy
 # Expected MNIST performance: >95% accuracy (preliminary estimate)

@@ -18,11 +18,11 @@ criterion:
 
 net:
   _target_: src.models.components.simple_efficientnet.SimpleEfficientNet
-  input_channels: 3 # CIFAR-100 has 3 color channels
-  num_classes: 100 # CIFAR-100 has 100 classes
-  width_mult: 0.8 # Adjusted for CIFAR-100 complexity
-  depth_mult: 1.0 # Standard depth
-  dropout_rate: 0.3 # Higher dropout for more challenging dataset
+  input_channels: 3  # CIFAR-100 has 3 color channels
+  num_classes: 100   # CIFAR-100 has 100 classes
+  width_mult: 0.8    # Adjusted for CIFAR-100 complexity
+  depth_mult: 1.0    # Standard depth
+  dropout_rate: 0.3  # Higher dropout for more challenging dataset
 
 # compile model for faster training with pytorch 2.0
 compile: false

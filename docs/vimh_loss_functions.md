@@ -26,7 +26,6 @@ criterion = OrdinalRegressionLoss(
 ```
 
 **How it works**:
-
 - Converts logits to probabilities using softmax
 - Computes continuous prediction as weighted average: `pred = Σ(prob_i × class_center_i)`
 - Maps quantized distance to actual parameter space (perceptual units)
@@ -35,7 +34,6 @@ criterion = OrdinalRegressionLoss(
 - Optionally adds classification term for training stability
 
 **Benefits**:
-
 - Distance-aware: Closer predictions get lower penalties
 - Continuous predictions: Output is continuous, not discrete
 - Perceptual units: Loss values directly interpretable as parameter error
@@ -58,13 +56,11 @@ criterion = QuantizedRegressionLoss(
 ```
 
 **How it works**:
-
 - Treats model output as single continuous value
 - Applies regression loss directly to predictions
-- Clamps predictions to valid range \[0, num_classes-1\]
+- Clamps predictions to valid range [0, num_classes-1]
 
 **Benefits**:
-
 - Simple and direct
 - Pure regression approach
 - Lower computational overhead
@@ -83,13 +79,11 @@ criterion = WeightedCrossEntropyLoss(
 ```
 
 **How it works**:
-
 - Weights classification errors by distance from target
 - Distant predictions get exponentially higher penalties
 - Maintains discrete predictions (argmax)
 
 **Benefits**:
-
 - Minimal changes to existing code
 - Still uses classification metrics
 - Distance-aware penalties
@@ -97,7 +91,6 @@ criterion = WeightedCrossEntropyLoss(
 ## Configuration Examples
 
 ### Original CrossEntropyLoss (Current)
-
 ```yaml
 # configs/model/vimh_cnn_64k.yaml
 criteria:
@@ -108,7 +101,6 @@ criteria:
 ```
 
 ### New OrdinalRegressionLoss (Recommended)
-
 ```yaml
 # configs/model/vimh_cnn_64k_ordinal.yaml
 criteria:
@@ -181,13 +173,12 @@ def _compute_predictions(self, logits: torch.Tensor, criterion, head_name: str) 
 
 Based on test results with the 16K resonarium dataset:
 
-| Loss Function         | Test Accuracy | Predictions       | Distance Awareness | Loss Units |
-| --------------------- | ------------- | ----------------- | ------------------ | ---------- |
-| CrossEntropyLoss      | ~0.5%         | Discrete (argmax) | ❌ No              | Arbitrary  |
-| OrdinalRegressionLoss | ~0.5%         | Continuous        | ✅ Yes             | Perceptual |
+| Loss Function | Test Accuracy | Predictions | Distance Awareness | Loss Units |
+|---------------|---------------|-------------|-------------------|------------|
+| CrossEntropyLoss | ~0.5% | Discrete (argmax) | ❌ No | Arbitrary |
+| OrdinalRegressionLoss | ~0.5% | Continuous | ✅ Yes | Perceptual |
 
 **Note**: Both show similar accuracy because the task is genuinely challenging. The key difference is that ordinal regression:
-
 - Penalizes distant errors more than close ones
 - Produces continuous predictions that better represent the underlying parameters
 - Returns loss values in perceptual units (directly interpretable as parameter error)
@@ -238,7 +229,6 @@ criteria:
 ### Automatic Parameter Range Detection
 
 The system automatically loads parameter ranges from dataset metadata:
-
 - **VIMH datasets**: Ranges loaded from `vimh_dataset_info.json`
 - **Auto-update**: Loss functions updated with actual parameter ranges during training
 - **Fallback**: Uses placeholder value if metadata unavailable

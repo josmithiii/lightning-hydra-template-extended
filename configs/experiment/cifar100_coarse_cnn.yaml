@@ -20,7 +20,7 @@ seed: 12345
 
 trainer:
   min_epochs: 10
-  max_epochs: 60 # Coarse classification is easier, fewer epochs needed
+  max_epochs: 60  # Coarse classification is easier, fewer epochs needed
   gradient_clip_val: 1.0
 
 model:

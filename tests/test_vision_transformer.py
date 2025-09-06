@@ -2,11 +2,11 @@ import pytest
 import torch
 
 from src.models.components.vision_transformer import (
-    Classifier,
-    EmbedLayer,
-    Encoder,
-    SelfAttention,
     VisionTransformer,
+    EmbedLayer,
+    SelfAttention,
+    Encoder,
+    Classifier,
 )
 
 
@@ -27,7 +27,7 @@ def test_vit_forward_pass(batch_size: int, embed_dim: int) -> None:
         n_attention_heads=4,
         forward_mul=2,
         output_size=10,
-        dropout=0.1,
+        dropout=0.1
     )
 
     # Test with MNIST-like input
@@ -58,7 +58,7 @@ def test_vit_parameter_counts() -> None:
         n_attention_heads=4,
         forward_mul=2,
         output_size=10,
-        dropout=0.1,
+        dropout=0.1
     )
     params_small = sum(p.numel() for p in model_small.parameters())
     assert 35_000 < params_small < 45_000, f"Expected ~38K params, got {params_small:,}"
@@ -73,7 +73,7 @@ def test_vit_parameter_counts() -> None:
         n_attention_heads=4,
         forward_mul=2,
         output_size=10,
-        dropout=0.1,
+        dropout=0.1
     )
     params_medium = sum(p.numel() for p in model_medium.parameters())
     assert 200_000 < params_medium < 220_000, f"Expected ~210K params, got {params_medium:,}"
@@ -88,7 +88,7 @@ def test_vit_parameter_counts() -> None:
         n_attention_heads=8,
         forward_mul=2,
         output_size=10,
-        dropout=0.1,
+        dropout=0.1
     )
     params_large = sum(p.numel() for p in model_large.parameters())
     assert 800_000 < params_large < 850_000, f"Expected ~821K params, got {params_large:,}"
@@ -99,15 +99,15 @@ def test_vit_torch_vs_scratch() -> None:
 
     # Create identical configurations
     config = {
-        "n_channels": 1,
-        "image_size": 28,
-        "patch_size": 4,
-        "embed_dim": 64,
-        "n_layers": 4,
-        "n_attention_heads": 4,
-        "forward_mul": 2,
-        "output_size": 10,
-        "dropout": 0.0,  # Disable dropout for deterministic comparison
+        'n_channels': 1,
+        'image_size': 28,
+        'patch_size': 4,
+        'embed_dim': 64,
+        'n_layers': 4,
+        'n_attention_heads': 4,
+        'forward_mul': 2,
+        'output_size': 10,
+        'dropout': 0.0  # Disable dropout for deterministic comparison
     }
 
     model_scratch = VisionTransformer(use_torch_layers=False, **config)
@@ -159,9 +159,7 @@ def test_self_attention(embed_dim: int, n_attention_heads: int) -> None:
     :param n_attention_heads: Number of attention heads.
     """
     if embed_dim % n_attention_heads != 0:
-        pytest.skip(
-            f"embed_dim ({embed_dim}) must be divisible by n_attention_heads ({n_attention_heads})"
-        )
+        pytest.skip(f"embed_dim ({embed_dim}) must be divisible by n_attention_heads ({n_attention_heads})")
 
     batch_size = 2
     seq_len = 50  # Example sequence length
@@ -224,7 +222,7 @@ def test_vit_dropout(dropout: float) -> None:
         n_attention_heads=4,
         forward_mul=2,
         output_size=10,
-        dropout=dropout,
+        dropout=dropout
     )
 
     x = torch.randn(2, 1, 28, 28)
@@ -251,7 +249,7 @@ def test_vit_gradient_flow() -> None:
         n_attention_heads=4,
         forward_mul=2,
         output_size=10,
-        dropout=0.1,
+        dropout=0.1
     )
 
     x = torch.randn(2, 1, 28, 28, requires_grad=True)
@@ -280,7 +278,7 @@ def test_vit_integration_training() -> None:
         n_attention_heads=4,
         forward_mul=2,
         output_size=10,
-        dropout=0.1,
+        dropout=0.1
     )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)

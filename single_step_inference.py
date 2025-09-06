@@ -3,21 +3,20 @@
 Single-step inference script for loading trained models and running forward passes.
 """
 
-from pathlib import Path
-
-import hydra
-import numpy as np
-import rootutils
 import torch
+import numpy as np
+from pathlib import Path
+import hydra
 from omegaconf import DictConfig
+import rootutils
 
 # Setup project root
 rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
+from src.models.vimh_lit_module import VIMHLitModule
+from src.models.mnist_module import MNISTLitModule
 from src.data.cifar10_datamodule import CIFAR10DataModule
 from src.data.mnist_datamodule import MNISTDataModule
-from src.models.mnist_module import MNISTLitModule
-from src.models.vimh_lit_module import VIMHLitModule
 
 
 def load_model_from_checkpoint(checkpoint_path: str, model_class=None):
@@ -75,7 +74,7 @@ def process_predictions(output, model):
         # Multihead model - process each head
         predictions = {}
         for head_name, logits in output.items():
-            if hasattr(model, "_compute_predictions"):
+            if hasattr(model, '_compute_predictions'):
                 # Use model's prediction computation if available
                 head_criterion = model.criteria.get(head_name)
                 if head_criterion:
@@ -95,9 +94,9 @@ def process_predictions(output, model):
 
 def demo_mnist_inference():
     """Demo inference on MNIST-like data."""
-    print("\n" + "=" * 50)
+    print("\n" + "="*50)
     print("MNIST Inference Demo")
-    print("=" * 50)
+    print("="*50)
 
     # Create dummy MNIST-like input
     batch_size = 3
@@ -109,12 +108,12 @@ def demo_mnist_inference():
     from src.models.mnist_module import MNISTLitModule
 
     # Create model (normally you'd load from checkpoint)
-    net = SimpleCNN(heads_config={"digit": 10})
+    net = SimpleCNN(heads_config={'digit': 10})
     model = MNISTLitModule(
         net=net,
         optimizer=torch.optim.Adam,
         scheduler=torch.optim.lr_scheduler.StepLR,
-        criteria={"digit": torch.nn.CrossEntropyLoss()},
+        criteria={'digit': torch.nn.CrossEntropyLoss()}
     )
     model.eval()
 
@@ -136,9 +135,9 @@ def demo_mnist_inference():
 
 def demo_single_sample_inference():
     """Demo inference on a single sample."""
-    print("\n" + "=" * 50)
+    print("\n" + "="*50)
     print("Single Sample Inference Demo")
-    print("=" * 50)
+    print("="*50)
 
     # Single sample (add batch dimension)
     single_sample = torch.randn(1, 1, 28, 28)  # Batch size = 1
@@ -147,13 +146,16 @@ def demo_single_sample_inference():
     from src.models.vimh_lit_module import VIMHLitModule
 
     # Create multihead model
-    net = SimpleCNN(heads_config={"digit": 10, "thickness": 5})
+    net = SimpleCNN(heads_config={'digit': 10, 'thickness': 5})
     model = VIMHLitModule(
         net=net,
         optimizer=torch.optim.Adam,
         scheduler=torch.optim.lr_scheduler.StepLR,
-        criteria={"digit": torch.nn.CrossEntropyLoss(), "thickness": torch.nn.CrossEntropyLoss()},
-        loss_weights={"digit": 1.0, "thickness": 1.0},
+        criteria={
+            'digit': torch.nn.CrossEntropyLoss(),
+            'thickness': torch.nn.CrossEntropyLoss()
+        },
+        loss_weights={'digit': 1.0, 'thickness': 1.0}
     )
     model.eval()
 
@@ -170,9 +172,9 @@ def demo_single_sample_inference():
 
 def inference_from_checkpoint_example():
     """Example of loading from an actual checkpoint."""
-    print("\n" + "=" * 50)
+    print("\n" + "="*50)
     print("Checkpoint Loading Example")
-    print("=" * 50)
+    print("="*50)
 
     # This would be used with an actual checkpoint file
     checkpoint_path = "logs/train/runs/YYYY-MM-DD_HH-MM-SS/checkpoints/epoch_XXX.ckpt"
@@ -184,7 +186,7 @@ def inference_from_checkpoint_example():
     print(f"4. Run inference: output = single_forward_pass(model, your_input)")
 
     # Example usage code:
-    example_code = """
+    example_code = '''
 # Load trained model
 model = load_model_from_checkpoint("path/to/your/checkpoint.ckpt")
 
@@ -196,7 +198,7 @@ output = single_forward_pass(model, input_tensor)
 predictions = process_predictions(output, model)
 
 print(f"Predictions: {predictions}")
-"""
+'''
     print("\nExample code:")
     print(example_code)
 
@@ -210,7 +212,7 @@ if __name__ == "__main__":
     demo_single_sample_inference()
     inference_from_checkpoint_example()
 
-    print("\n" + "=" * 50)
+    print("\n" + "="*50)
     print("✅ Inference demos completed!")
     print("Use the load_model_from_checkpoint() and single_forward_pass() functions")
     print("with your actual trained checkpoints.")

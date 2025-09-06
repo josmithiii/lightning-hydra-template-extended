@@ -1,18 +1,11 @@
-from typing import Any, Dict, Optional, Tuple, Union
-
+from typing import Any, Dict, Tuple, Optional, Union
 import torch
 import torch.nn.functional as F
 from lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification.accuracy import Accuracy
-
 from ..data.multihead_dataset_base import MultiheadDatasetBase
-from .losses import (
-    NormalizedRegressionLoss,
-    OrdinalRegressionLoss,
-    QuantizedRegressionLoss,
-    WeightedCrossEntropyLoss,
-)
+from .losses import OrdinalRegressionLoss, QuantizedRegressionLoss, WeightedCrossEntropyLoss, NormalizedRegressionLoss
 
 
 class VIMHLitModule(LightningModule):
@@ -90,27 +83,21 @@ class VIMHLitModule(LightningModule):
 
         # Backward compatibility handling
         if criteria is None and criterion is not None:
-            criteria = {"head_0": criterion}
+            criteria = {'head_0': criterion}
         elif criteria is None:
             # Will be configured later in setup() if auto_configure_from_dataset is True
             if not auto_configure_from_dataset:
-                raise ValueError(
-                    "Must provide either 'criterion' or 'criteria' or set auto_configure_from_dataset=True"
-                )
+                raise ValueError("Must provide either 'criterion' or 'criteria' or set auto_configure_from_dataset=True")
             criteria = {}
 
         # If auto_configure_from_dataset is True but we have a network with heads_config,
         # initialize criteria based on network heads
-        if auto_configure_from_dataset and not criteria and hasattr(net, "heads_config"):
-            criteria = {
-                head_name: torch.nn.CrossEntropyLoss() for head_name in net.heads_config.keys()
-            }
+        if auto_configure_from_dataset and not criteria and hasattr(net, 'heads_config'):
+            criteria = {head_name: torch.nn.CrossEntropyLoss() for head_name in net.heads_config.keys()}
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(
-            logger=False, ignore=["net", "criterion", "criteria", "scheduler"]
-        )
+        self.save_hyperparameters(logger=False, ignore=["net", "criterion", "criteria", "scheduler"])
 
         self.net = net
         self.criteria = criteria
@@ -132,11 +119,11 @@ class VIMHLitModule(LightningModule):
     def _setup_metrics(self) -> None:
         """Setup metrics based on current network configuration."""
         # Get head configurations
-        if hasattr(self.net, "heads_config"):
+        if hasattr(self.net, 'heads_config'):
             head_configs = self.net.heads_config
         else:
             # Fallback for backward compatibility
-            head_configs = {"head_0": 10}
+            head_configs = {'head_0': 10}
 
         # Metrics for each head
         self.train_metrics = torch.nn.ModuleDict()
@@ -147,20 +134,13 @@ class VIMHLitModule(LightningModule):
             if self.output_mode == "regression":
                 # For regression, we'll use MAE as the primary metric instead of accuracy
                 from torchmetrics.regression import MeanAbsoluteError
-
                 self.train_metrics[f"{head_name}_mae"] = MeanAbsoluteError()
                 self.val_metrics[f"{head_name}_mae"] = MeanAbsoluteError()
                 self.test_metrics[f"{head_name}_mae"] = MeanAbsoluteError()
             else:
-                self.train_metrics[f"{head_name}_acc"] = Accuracy(
-                    task="multiclass", num_classes=num_classes
-                )
-                self.val_metrics[f"{head_name}_acc"] = Accuracy(
-                    task="multiclass", num_classes=num_classes
-                )
-                self.test_metrics[f"{head_name}_acc"] = Accuracy(
-                    task="multiclass", num_classes=num_classes
-                )
+                self.train_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
+                self.val_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
+                self.test_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
 
         # Loss tracking
         self.train_loss = MeanMetric()
@@ -170,11 +150,11 @@ class VIMHLitModule(LightningModule):
 
     def _setup_criteria(self) -> None:
         """Setup loss criteria based on current network configuration."""
-        if hasattr(self.net, "heads_config"):
+        if hasattr(self.net, 'heads_config'):
             head_configs = self.net.heads_config
         else:
             # Fallback for backward compatibility
-            head_configs = {"head_0": 10}
+            head_configs = {'head_0': 10}
 
         # Initialize criteria if not already set
         if not self.criteria:
@@ -197,13 +177,11 @@ class VIMHLitModule(LightningModule):
         heads_config = dataset.get_heads_config()
 
         # Update network heads configuration
-        if hasattr(self.net, "heads_config"):
+        if hasattr(self.net, 'heads_config'):
             self.net.heads_config = heads_config
         else:
             # If network doesn't have heads_config, log a warning
-            print(
-                f"Warning: Network {type(self.net).__name__} doesn't have heads_config attribute"
-            )
+            print(f"Warning: Network {type(self.net).__name__} doesn't have heads_config attribute")
 
         # Update criteria if using auto-configuration
         if self.auto_configure_from_dataset:
@@ -232,18 +210,18 @@ class VIMHLitModule(LightningModule):
         param_ranges = {}
         param_bounds = {}
         try:
-            if hasattr(self.trainer, "datamodule"):
-                if hasattr(self.trainer.datamodule, "param_ranges"):
+            if hasattr(self.trainer, 'datamodule'):
+                if hasattr(self.trainer.datamodule, 'param_ranges'):
                     param_ranges = self.trainer.datamodule.param_ranges
-                if hasattr(self.trainer.datamodule, "param_bounds"):
+                if hasattr(self.trainer.datamodule, 'param_bounds'):
                     param_bounds = self.trainer.datamodule.param_bounds
         except RuntimeError:
             # No trainer attached, try dataset directly
             pass
 
-        if not param_ranges and hasattr(dataset, "param_ranges"):
+        if not param_ranges and hasattr(dataset, 'param_ranges'):
             param_ranges = dataset.param_ranges
-            if hasattr(dataset, "param_bounds"):
+            if hasattr(dataset, 'param_bounds'):
                 param_bounds = dataset.param_bounds
 
         # Update criteria that need parameter ranges or bounds
@@ -256,22 +234,16 @@ class VIMHLitModule(LightningModule):
                     criterion.quantization_step = param_range / (criterion.num_classes - 1)
                     print(f"Updated {head_name} loss with parameter range: {param_range}")
                 else:
-                    print(
-                        f"Warning: No parameter range found for {head_name}, using default: {criterion.param_range}"
-                    )
+                    print(f"Warning: No parameter range found for {head_name}, using default: {criterion.param_range}")
             elif isinstance(criterion, NormalizedRegressionLoss):
                 if head_name in param_bounds:
                     param_bound = param_bounds[head_name]
                     # Update the criterion with the actual parameter bounds
                     criterion.param_min, criterion.param_max = param_bound
                     criterion.param_range = criterion.param_max - criterion.param_min
-                    print(
-                        f"Updated {head_name} regression loss with parameter bounds: {param_bound}"
-                    )
+                    print(f"Updated {head_name} regression loss with parameter bounds: {param_bound}")
                 else:
-                    print(
-                        f"Warning: No parameter bounds found for {head_name}, using default: ({criterion.param_min}, {criterion.param_max})"
-                    )
+                    print(f"Warning: No parameter bounds found for {head_name}, using default: ({criterion.param_min}, {criterion.param_max})")
 
     def _is_regression_loss(self, criterion) -> bool:
         """Check if a loss function is regression-based."""
@@ -282,9 +254,7 @@ class VIMHLitModule(LightningModule):
         )
         return isinstance(criterion, regression_losses)
 
-    def _compute_predictions(
-        self, logits: torch.Tensor, criterion, head_name: str
-    ) -> torch.Tensor:
+    def _compute_predictions(self, logits: torch.Tensor, criterion, head_name: str) -> torch.Tensor:
         """Compute predictions based on loss function type."""
         if self.output_mode == "regression":
             # For pure regression mode, logits are already sigmoid-activated [0,1] values
@@ -294,9 +264,7 @@ class VIMHLitModule(LightningModule):
             # Get parameter bounds for denormalization
             param_bounds = None
             try:
-                if hasattr(self.trainer, "datamodule") and hasattr(
-                    self.trainer.datamodule, "param_bounds"
-                ):
+                if hasattr(self.trainer, 'datamodule') and hasattr(self.trainer.datamodule, 'param_bounds'):
                     param_bounds = self.trainer.datamodule.param_bounds
             except RuntimeError:
                 # No trainer attached, use fallback
@@ -311,9 +279,7 @@ class VIMHLitModule(LightningModule):
             if isinstance(criterion, OrdinalRegressionLoss):
                 # For ordinal regression, use weighted average of class probabilities
                 probs = F.softmax(logits, dim=1)
-                class_centers = torch.arange(
-                    criterion.num_classes, device=logits.device, dtype=torch.float32
-                )
+                class_centers = torch.arange(criterion.num_classes, device=logits.device, dtype=torch.float32)
                 preds = torch.sum(probs * class_centers.unsqueeze(0), dim=1)
             elif isinstance(criterion, QuantizedRegressionLoss):
                 # For quantized regression, output should be single continuous value
@@ -373,9 +339,7 @@ class VIMHLitModule(LightningModule):
             total_loss = sum(self.loss_weights[name] * loss for name, loss in losses.items())
 
             preds = {
-                head_name: self._compute_predictions(
-                    logits_head, self.criteria[head_name], head_name
-                )
+                head_name: self._compute_predictions(logits_head, self.criteria[head_name], head_name)
                 for head_name, logits_head in logits.items()
             }
 
@@ -418,14 +382,10 @@ class VIMHLitModule(LightningModule):
         for head_name in preds_dict.keys():
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.train_metrics:
-                    self.train_metrics[f"{head_name}_mae"](
-                        preds_dict[head_name], targets_dict[head_name]
-                    )
+                    self.train_metrics[f"{head_name}_mae"](preds_dict[head_name], targets_dict[head_name])
             else:
                 if f"{head_name}_acc" in self.train_metrics:
-                    self.train_metrics[f"{head_name}_acc"](
-                        preds_dict[head_name], targets_dict[head_name]
-                    )
+                    self.train_metrics[f"{head_name}_acc"](preds_dict[head_name], targets_dict[head_name])
 
         # Log metrics
         self.log("train/loss", self.train_loss, on_step=False, on_epoch=True, prog_bar=True)
@@ -433,23 +393,13 @@ class VIMHLitModule(LightningModule):
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.train_metrics:
                     metric_name = f"train/{head_name}_mae" if self.is_multihead else "train/mae"
-                    self.log(
-                        metric_name,
-                        self.train_metrics[f"{head_name}_mae"],
-                        on_step=False,
-                        on_epoch=True,
-                        prog_bar=True,
-                    )
+                    self.log(metric_name, self.train_metrics[f"{head_name}_mae"],
+                            on_step=False, on_epoch=True, prog_bar=True)
             else:
                 if f"{head_name}_acc" in self.train_metrics:
                     metric_name = f"train/{head_name}_acc" if self.is_multihead else "train/acc"
-                    self.log(
-                        metric_name,
-                        self.train_metrics[f"{head_name}_acc"],
-                        on_step=False,
-                        on_epoch=True,
-                        prog_bar=True,
-                    )
+                    self.log(metric_name, self.train_metrics[f"{head_name}_acc"],
+                            on_step=False, on_epoch=True, prog_bar=True)
 
         return loss
 
@@ -474,14 +424,10 @@ class VIMHLitModule(LightningModule):
         for head_name in preds_dict.keys():
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.val_metrics:
-                    self.val_metrics[f"{head_name}_mae"](
-                        preds_dict[head_name], targets_dict[head_name]
-                    )
+                    self.val_metrics[f"{head_name}_mae"](preds_dict[head_name], targets_dict[head_name])
             else:
                 if f"{head_name}_acc" in self.val_metrics:
-                    self.val_metrics[f"{head_name}_acc"](
-                        preds_dict[head_name], targets_dict[head_name]
-                    )
+                    self.val_metrics[f"{head_name}_acc"](preds_dict[head_name], targets_dict[head_name])
 
         # Log metrics
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
@@ -489,23 +435,13 @@ class VIMHLitModule(LightningModule):
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.val_metrics:
                     metric_name = f"val/{head_name}_mae" if self.is_multihead else "val/mae"
-                    self.log(
-                        metric_name,
-                        self.val_metrics[f"{head_name}_mae"],
-                        on_step=False,
-                        on_epoch=True,
-                        prog_bar=True,
-                    )
+                    self.log(metric_name, self.val_metrics[f"{head_name}_mae"],
+                            on_step=False, on_epoch=True, prog_bar=True)
             else:
                 if f"{head_name}_acc" in self.val_metrics:
                     metric_name = f"val/{head_name}_acc" if self.is_multihead else "val/acc"
-                    self.log(
-                        metric_name,
-                        self.val_metrics[f"{head_name}_acc"],
-                        on_step=False,
-                        on_epoch=True,
-                        prog_bar=True,
-                    )
+                    self.log(metric_name, self.val_metrics[f"{head_name}_acc"],
+                            on_step=False, on_epoch=True, prog_bar=True)
 
     def on_validation_epoch_end(self) -> None:
         """Lightning hook that is called when a validation epoch ends."""
@@ -515,9 +451,7 @@ class VIMHLitModule(LightningModule):
             if f"{primary_head}_mae" in self.val_metrics:
                 mae = self.val_metrics[f"{primary_head}_mae"].compute()
                 # Note: for MAE, we want to track the minimum (best), so we negate it
-                self.val_acc_best(
-                    -mae
-                )  # Store negative MAE so MaxMetric tracks the best (lowest) MAE
+                self.val_acc_best(-mae)  # Store negative MAE so MaxMetric tracks the best (lowest) MAE
             self.log("val/mae_best", -self.val_acc_best.compute(), sync_dist=True, prog_bar=True)
         else:
             # For classification mode, track best accuracy
@@ -552,14 +486,10 @@ class VIMHLitModule(LightningModule):
         for head_name in preds_dict.keys():
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.test_metrics:
-                    self.test_metrics[f"{head_name}_mae"](
-                        preds_dict[head_name], targets_dict[head_name]
-                    )
+                    self.test_metrics[f"{head_name}_mae"](preds_dict[head_name], targets_dict[head_name])
             else:
                 if f"{head_name}_acc" in self.test_metrics:
-                    self.test_metrics[f"{head_name}_acc"](
-                        preds_dict[head_name], targets_dict[head_name]
-                    )
+                    self.test_metrics[f"{head_name}_acc"](preds_dict[head_name], targets_dict[head_name])
 
         # Log metrics
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
@@ -567,23 +497,13 @@ class VIMHLitModule(LightningModule):
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.test_metrics:
                     metric_name = f"test/{head_name}_mae" if self.is_multihead else "test/mae"
-                    self.log(
-                        metric_name,
-                        self.test_metrics[f"{head_name}_mae"],
-                        on_step=False,
-                        on_epoch=True,
-                        prog_bar=True,
-                    )
+                    self.log(metric_name, self.test_metrics[f"{head_name}_mae"],
+                            on_step=False, on_epoch=True, prog_bar=True)
             else:
                 if f"{head_name}_acc" in self.test_metrics:
                     metric_name = f"test/{head_name}_acc" if self.is_multihead else "test/acc"
-                    self.log(
-                        metric_name,
-                        self.test_metrics[f"{head_name}_acc"],
-                        on_step=False,
-                        on_epoch=True,
-                        prog_bar=True,
-                    )
+                    self.log(metric_name, self.test_metrics[f"{head_name}_acc"],
+                            on_step=False, on_epoch=True, prog_bar=True)
 
     def on_test_epoch_end(self) -> None:
         """Lightning hook that is called when a test epoch ends."""
@@ -599,11 +519,8 @@ class VIMHLitModule(LightningModule):
         :param stage: Either `"fit"`, `"validate"`, `"test"`, or `"predict"`.
         """
         # Auto-configure from dataset if enabled
-        if self.auto_configure_from_dataset and hasattr(self.trainer, "datamodule"):
-            if (
-                hasattr(self.trainer.datamodule, "data_train")
-                and self.trainer.datamodule.data_train is not None
-            ):
+        if self.auto_configure_from_dataset and hasattr(self.trainer, 'datamodule'):
+            if hasattr(self.trainer.datamodule, 'data_train') and self.trainer.datamodule.data_train is not None:
                 dataset = self.trainer.datamodule.data_train
                 if isinstance(dataset, MultiheadDatasetBase):
                     self._auto_configure_from_dataset(dataset)
@@ -644,7 +561,7 @@ class VIMHLitModule(LightningModule):
 
         :return: Dictionary mapping head names to number of classes
         """
-        if hasattr(self.net, "heads_config"):
+        if hasattr(self.net, 'heads_config'):
             return self.net.heads_config
         return {}
 
@@ -654,11 +571,11 @@ class VIMHLitModule(LightningModule):
         :return: Dictionary with dataset information
         """
         info = {
-            "heads_config": self.get_heads_config(),
-            "is_multihead": self.is_multihead,
-            "auto_configure_from_dataset": self.auto_configure_from_dataset,
-            "criteria_keys": list(self.criteria.keys()) if self.criteria else [],
-            "loss_weights": self.loss_weights,
+            'heads_config': self.get_heads_config(),
+            'is_multihead': self.is_multihead,
+            'auto_configure_from_dataset': self.auto_configure_from_dataset,
+            'criteria_keys': list(self.criteria.keys()) if self.criteria else [],
+            'loss_weights': self.loss_weights,
         }
         return info
 

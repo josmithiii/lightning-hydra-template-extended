@@ -4,4 +4,4 @@ batch_size: 128 # Needs to be divisible by the number of devices (e.g., if in a 
 train_val_test_split: [45_000, 5_000, 10_000]
 num_workers: 2
 pin_memory: False
-use_coarse_labels: True # Use 20 coarse superclasses instead of 100 fine classes
+use_coarse_labels: True  # Use 20 coarse superclasses instead of 100 fine classes

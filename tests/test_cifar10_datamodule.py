@@ -47,18 +47,7 @@ def test_cifar10_datamodule_num_classes() -> None:
 def test_cifar10_datamodule_class_names() -> None:
     """Test that CIFAR-10 datamodule returns correct class names."""
     dm = CIFAR10DataModule()
-    expected_classes = [
-        "airplane",
-        "automobile",
-        "bird",
-        "cat",
-        "deer",
-        "dog",
-        "frog",
-        "horse",
-        "ship",
-        "truck",
-    ]
+    expected_classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
     assert dm.class_names == expected_classes
 
 
@@ -72,7 +61,7 @@ def test_cifar10_datamodule_transforms() -> None:
 
     # Check that train transforms include augmentation
     transform_names = [type(t).__name__ for t in dm.train_transforms.transforms]
-    assert "RandomCrop" in transform_names
-    assert "RandomHorizontalFlip" in transform_names
-    assert "ToTensor" in transform_names
-    assert "Normalize" in transform_names
+    assert 'RandomCrop' in transform_names
+    assert 'RandomHorizontalFlip' in transform_names
+    assert 'ToTensor' in transform_names
+    assert 'Normalize' in transform_names

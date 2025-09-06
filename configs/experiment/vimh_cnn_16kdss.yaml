@@ -25,7 +25,7 @@ optimized_metric: "val/acc_best"
 # Data configuration
 data:
   batch_size: 128
-  num_workers: 0 # MPS doesn't support multiprocessing
+  num_workers: 0  # MPS doesn't support multiprocessing
   pin_memory: true
 
 # Model configuration

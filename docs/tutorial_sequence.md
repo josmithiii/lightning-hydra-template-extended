@@ -12,7 +12,7 @@ architectures on various datasets.
 source .venv/bin/activate.csh  # or your preferred activation method
 ```
 
-______________________________________________________________________
+---
 
 ## 🚀 Phase 1: Quick Start and Environment Validation
 
@@ -32,7 +32,6 @@ make tq
 ```
 
 **Expected `make tq` Results**:
-
 - Tests pass without errors
 - SimpleDenseNet trains for 1 epoch (~30 seconds)
 - Final accuracy around 56-60% on MNIST
@@ -44,7 +43,7 @@ make tq
 
 **What was Illustrated**: Environment setup, basic PyTorch Lightning workflow
 
-______________________________________________________________________
+---
 
 ### Example 2: Architecture Quick Tour
 
@@ -56,7 +55,6 @@ make tqa
 ```
 
 **Expected Results**:
-
 - SimpleDenseNet: ~56% accuracy
 - SimpleCNN: ~74% accuracy
 - ViT: ~65% accuracy
@@ -64,7 +62,7 @@ make tqa
 
 **What was Illustrated**: Relative architecture performance, parameter efficiency
 
-______________________________________________________________________
+---
 
 ### Example 3: Architecture Deep Dive Comparison
 
@@ -76,7 +74,6 @@ make ca
 ```
 
 **Expected Results**:
-
 - Better convergence patterns visible
 - CNN shows consistent improvement
 - ConvNeXt demonstrates efficiency
@@ -84,7 +81,7 @@ make ca
 
 **What was Illustrated**: Training dynamics, convergence patterns, logging system
 
-______________________________________________________________________
+---
 
 ## 🎯 Phase 2: MNIST Mastery
 
@@ -100,7 +97,7 @@ make ecm
 **Expected Results**: ~99.1% test accuracy
 **What was Illustrated**: Full training pipeline, checkpoint saving, metric tracking
 
-______________________________________________________________________
+---
 
 ### Example 5: State-of-the-Art MNIST with ViT
 
@@ -114,7 +111,7 @@ make ev995
 **Expected Results**: 99.5% validation accuracy
 **What was Illustrated**: ViT scaling, attention mechanisms, hyperparameter optimization
 
-______________________________________________________________________
+---
 
 ### Example 6: Multi-Head Learning on MNIST
 
@@ -126,14 +123,13 @@ make emhcm
 ```
 
 **Expected Results**:
-
 - Digit classification: ~99.1%
 - Thickness classification: ~99.2%
 - Smoothness classification: ~99.2%
 
 **What was Illustrated**: Multi-task learning, shared representations, multiple loss functions
 
-______________________________________________________________________
+---
 
 ## 🖼️ Phase 3: CIFAR Computer Vision Benchmarks
 
@@ -147,14 +143,13 @@ make cbqa
 ```
 
 **Expected Results**:
-
 - 5-epoch results for sanity checking
 - CNN: ~45%, ConvNeXt: ~42%
 - Validates data loading and basic training
 
 **What was Illustrated**: CIFAR-10 complexity vs MNIST, architecture scaling
 
-______________________________________________________________________
+---
 
 ### Example 8: CIFAR-10 CNN Benchmark
 
@@ -168,7 +163,7 @@ make cb10c
 **Expected Results**: 85-92% test accuracy
 **What was Illustrated**: Data augmentation, regularization, longer training schedules
 
-______________________________________________________________________
+---
 
 ### Example 9: CIFAR-10 ConvNeXt Excellence
 
@@ -182,7 +177,7 @@ make cb10cn
 **Expected Results**: 90-95% test accuracy
 **What was Illustrated**: Modern CNN architectures, Global Response Normalization, efficiency
 
-______________________________________________________________________
+---
 
 ### Example 10: CIFAR-10 Architecture Comparison
 
@@ -194,7 +189,6 @@ make cbs10
 ```
 
 **Expected Results**:
-
 - CNN: 85-92%
 - ConvNeXt: 90-95% (best)
 - ViT: 88-93%
@@ -202,7 +196,7 @@ make cbs10
 
 **What was Illustrated**: Architecture strengths, parameter vs accuracy tradeoffs
 
-______________________________________________________________________
+---
 
 ## 🎓 Phase 4: Advanced CIFAR-100 Challenges
 
@@ -218,7 +212,7 @@ make cb100c
 **Expected Results**: 55-70% test accuracy (much harder than CIFAR-10!)
 **What was Illustrated**: Fine-grained classification challenges, class imbalance
 
-______________________________________________________________________
+---
 
 ### Example 12: CIFAR-100 ConvNeXt Mastery
 
@@ -232,7 +226,7 @@ make cb100cn
 **Expected Results**: 70-80% test accuracy
 **What was Illustrated**: Architecture advantages on complex datasets
 
-______________________________________________________________________
+---
 
 ### Example 13: CIFAR-100 Coarse-to-Fine Hierarchy
 
@@ -246,7 +240,7 @@ make cb100cc
 **Expected Results**: 75-85% accuracy on coarse classes
 **What was Illustrated**: Hierarchical classification, label structure exploitation
 
-______________________________________________________________________
+---
 
 ## 🎵 Phase 5: Audio and VIMH Advanced Topics
 
@@ -262,7 +256,7 @@ make evimh
 **Expected Results**: Regression performance on note number and velocity
 **What was Illustrated**: Regression heads, continuous parameter prediction, audio ML
 
-______________________________________________________________________
+---
 
 ### Example 15: VIMH Ordinal Regression
 
@@ -276,7 +270,7 @@ make evimho
 **Expected Results**: Better performance on ordered parameters
 **What was Illustrated**: Ordinal regression, distance-aware losses, parameter relationships
 
-______________________________________________________________________
+---
 
 ### Example 16: VIMH Pure Regression
 
@@ -290,7 +284,7 @@ make evimhr
 **Expected Results**: Smooth parameter predictions
 **What was Illustrated**: Regression vs classification, continuous output spaces
 
-______________________________________________________________________
+---
 
 ## 📊 Phase 6: Comprehensive Analysis
 
@@ -311,7 +305,7 @@ make tdss
 
 **What was Illustrated**: Model complexity visualization, parameter distribution, computational graphs
 
-______________________________________________________________________
+---
 
 ### Example 18: Systematic Benchmarking
 
@@ -325,7 +319,7 @@ make cbsa
 **Expected Results**: Comprehensive performance matrix across all architectures and datasets
 **What was Illustrated**: Systematic evaluation, performance patterns, architecture selection
 
-______________________________________________________________________
+---
 
 ### Example 19: Multi-Head CIFAR-10 Exploration
 
@@ -339,7 +333,7 @@ make emhcc10
 **Expected Results**: Simultaneous object classification + auxiliary tasks
 **What was Illustrated**: Multi-task computer vision, auxiliary task design
 
-______________________________________________________________________
+---
 
 ## 🔬 Phase 7: Research and Development
 
@@ -360,7 +354,7 @@ python src/train.py experiment=cifar10_benchmark_cnn trainer.max_epochs=100 mode
 
 **What was Illustrated**: Hydra configuration system, hyperparameter overrides, experiment design
 
-______________________________________________________________________
+---
 
 ### Example 21: Performance Optimization
 
@@ -379,7 +373,7 @@ python src/train.py model.optimizer.lr=0.01 model.optimizer.weight_decay=1e-4
 
 **What was Illustrated**: Hardware acceleration, batch size effects, optimizer tuning
 
-______________________________________________________________________
+---
 
 ### Example 22: Advanced VIMH Dataset Creation
 
@@ -395,12 +389,11 @@ python examples/vimh_training.py --demo --save-plots
 
 **What was Illustrated**: Dataset format design, multi-parameter learning, self-describing data
 
-______________________________________________________________________
+---
 
 ## 📚 Appendix: Troubleshooting Common Issues
 
 ### Environment Issues
-
 ```bash
 # If you see "No module named 'rootutils'"
 source .venv/bin/activate.csh
@@ -410,7 +403,6 @@ make c && make cl
 ```
 
 ### Training Issues
-
 ```bash
 # For MPS/Mac users (most common setup)
 python src/train.py trainer=mps data.num_workers=0
@@ -420,7 +412,6 @@ python src/train.py data.batch_size=32
 ```
 
 ### Debugging
-
 ```bash
 # Run tests to verify everything works
 make t
@@ -432,7 +423,7 @@ make tq
 ls logs/train/runs/
 ```
 
-______________________________________________________________________
+---
 
 ## 🎯 Examples Summary
 
@@ -441,7 +432,7 @@ ______________________________________________________________________
 **Advanced (Examples 14-19)**: VIMH audio ML, systematic benchmarking
 **Expert (Examples 20-22)**: Custom experiments, optimization, dataset creation
 
-______________________________________________________________________
+---
 
 ## 📖 Additional Resources
 

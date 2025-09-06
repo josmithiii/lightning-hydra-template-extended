@@ -1,15 +1,14 @@
-import json
-import pickle
-import shutil
-import tempfile
-from pathlib import Path
-
-import numpy as np
 import pytest
 import torch
+import numpy as np
+import pickle
+import json
+import tempfile
+import shutil
+from pathlib import Path
 
-from src.data.vimh_datamodule import VIMHDataModule
 from src.data.vimh_dataset import VIMHDataset, create_vimh_datasets
+from src.data.vimh_datamodule import VIMHDataModule
 
 
 @pytest.fixture
@@ -37,12 +36,12 @@ def mock_vimh_data():
         labels.append(label_data)
 
     return {
-        "data": images,
-        "vimh_labels": labels,
-        "height": 32,
-        "width": 32,
-        "channels": 3,
-        "image_size": 3072,
+        'data': images,
+        'vimh_labels': labels,
+        'height': 32,
+        'width': 32,
+        'channels': 3,
+        'image_size': 3072
     }
 
 
@@ -50,74 +49,74 @@ def mock_vimh_data():
 def mock_vimh_metadata():
     """Create mock VIMH metadata configuration."""
     return {
-        "format": "VIMH",
-        "version": "3.0",
-        "dataset_name": "test_vimh_dataset",
-        "n_samples": 10,
-        "train_samples": 8,
-        "test_samples": 2,
-        "image_size": "32x32x3",
-        "height": 32,
-        "width": 32,
-        "channels": 3,
-        "varying_parameters": 2,
-        "parameter_names": ["note_number", "note_velocity"],
-        "label_encoding": {
-            "format": "[height] [width] [channels] [N] [param1_id] [param1_val] [param2_id] [param2_val] ...",
-            "metadata_bytes": 6,
-            "N_range": [0, 255],
-            "param_id_range": [0, 255],
-            "param_val_range": [0, 255],
+        'format': 'VIMH',
+        'version': '3.0',
+        'dataset_name': 'test_vimh_dataset',
+        'n_samples': 10,
+        'train_samples': 8,
+        'test_samples': 2,
+        'image_size': '32x32x3',
+        'height': 32,
+        'width': 32,
+        'channels': 3,
+        'varying_parameters': 2,
+        'parameter_names': ['note_number', 'note_velocity'],
+        'label_encoding': {
+            'format': '[height] [width] [channels] [N] [param1_id] [param1_val] [param2_id] [param2_val] ...',
+            'metadata_bytes': 6,
+            'N_range': [0, 255],
+            'param_id_range': [0, 255],
+            'param_val_range': [0, 255]
         },
-        "parameter_mappings": {
-            "note_number": {
-                "min": 50.0,
-                "max": 52.0,
-                "scale": "linear",
-                "description": "Test note number parameter",
+        'parameter_mappings': {
+            'note_number': {
+                'min': 50.0,
+                'max': 52.0,
+                'scale': 'linear',
+                'description': 'Test note number parameter'
             },
-            "note_velocity": {
-                "min": 80.0,
-                "max": 82.0,
-                "scale": "linear",
-                "description": "Test note velocity parameter",
-            },
-        },
+            'note_velocity': {
+                'min': 80.0,
+                'max': 82.0,
+                'scale': 'linear',
+                'description': 'Test note velocity parameter'
+            }
+        }
     }
 
 
 def create_test_vimh_files(temp_dir: Path, mock_data: dict, mock_metadata: dict):
     """Create test VIMH dataset files in temporary directory."""
     # Create data files
-    train_file = temp_dir / "train_batch"
-    test_file = temp_dir / "test_batch"
-    metadata_file = temp_dir / "vimh_dataset_info.json"
+    train_file = temp_dir / 'train_batch'
+    test_file = temp_dir / 'test_batch'
+    metadata_file = temp_dir / 'vimh_dataset_info.json'
 
     # Split data into train/test
     train_data = {
-        "data": mock_data["data"][:8],
-        "vimh_labels": mock_data["vimh_labels"][:8],
-        "height": mock_data["height"],
-        "width": mock_data["width"],
-        "channels": mock_data["channels"],
+        'data': mock_data['data'][:8],
+        'vimh_labels': mock_data['vimh_labels'][:8],
+        'height': mock_data['height'],
+        'width': mock_data['width'],
+        'channels': mock_data['channels']
     }
     test_data = {
-        "data": mock_data["data"][8:],
-        "vimh_labels": mock_data["vimh_labels"][8:],
-        "height": mock_data["height"],
-        "width": mock_data["width"],
-        "channels": mock_data["channels"],
+        'data': mock_data['data'][8:],
+        'vimh_labels': mock_data['vimh_labels'][8:],
+        'height': mock_data['height'],
+        'width': mock_data['width'],
+        'channels': mock_data['channels']
     }
 
     # Save pickle files
-    with open(train_file, "wb") as f:
+    with open(train_file, 'wb') as f:
         pickle.dump(train_data, f)
 
-    with open(test_file, "wb") as f:
+    with open(test_file, 'wb') as f:
         pickle.dump(test_data, f)
 
     # Save metadata
-    with open(metadata_file, "w") as f:
+    with open(metadata_file, 'w') as f:
         json.dump(mock_metadata, f, indent=2)
 
     return train_file, test_file, metadata_file
@@ -137,10 +136,10 @@ class TestVIMHDataset:
         assert dataset.get_image_shape() == (3, 32, 32)
 
         heads_config = dataset.get_heads_config()
-        assert "note_number" in heads_config
-        assert "note_velocity" in heads_config
-        assert heads_config["note_number"] == 256  # 8-bit quantization
-        assert heads_config["note_velocity"] == 256
+        assert 'note_number' in heads_config
+        assert 'note_velocity' in heads_config
+        assert heads_config['note_number'] == 256  # 8-bit quantization
+        assert heads_config['note_velocity'] == 256
 
     def test_init_test_dataset(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test initialization of test dataset."""
@@ -162,8 +161,8 @@ class TestVIMHDataset:
         assert isinstance(image, torch.Tensor)
         assert image.shape == (3, 32, 32)
         assert isinstance(labels, dict)
-        assert "note_number" in labels
-        assert "note_velocity" in labels
+        assert 'note_number' in labels
+        assert 'note_velocity' in labels
 
     def test_getitem_with_transforms(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test getting samples with transforms applied."""
@@ -174,7 +173,10 @@ class TestVIMHDataset:
         target_transform = lambda x: {k: v * 2 for k, v in x.items()}
 
         dataset = VIMHDataset(
-            str(temp_dir), train=True, transform=image_transform, target_transform=target_transform
+            str(temp_dir),
+            train=True,
+            transform=image_transform,
+            target_transform=target_transform
         )
 
         image, labels = dataset[0]
@@ -189,15 +191,15 @@ class TestVIMHDataset:
 
         dataset = VIMHDataset(str(temp_dir), train=True)
 
-        param_info = dataset.get_parameter_info("note_number")
-        assert "description" in param_info
-        assert param_info["description"] == "Test note number parameter"
-        assert param_info["min"] == 50.0
-        assert param_info["max"] == 52.0
+        param_info = dataset.get_parameter_info('note_number')
+        assert 'description' in param_info
+        assert param_info['description'] == 'Test note number parameter'
+        assert param_info['min'] == 50.0
+        assert param_info['max'] == 52.0
 
         # Test non-existent parameter
-        unknown_info = dataset.get_parameter_info("unknown_param")
-        assert "Parameter not found" in unknown_info["description"]
+        unknown_info = dataset.get_parameter_info('unknown_param')
+        assert 'Parameter not found' in unknown_info['description']
 
     def test_get_sample_metadata(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test getting sample metadata with parameter dequantization."""
@@ -207,18 +209,18 @@ class TestVIMHDataset:
 
         metadata = dataset._get_sample_metadata(0)
 
-        assert "sample_index" in metadata
-        assert "labels" in metadata
-        assert "image_shape" in metadata
-        assert "note_number_info" in metadata
-        assert "note_velocity_info" in metadata
+        assert 'sample_index' in metadata
+        assert 'labels' in metadata
+        assert 'image_shape' in metadata
+        assert 'note_number_info' in metadata
+        assert 'note_velocity_info' in metadata
 
         # Check dequantization
-        note_info = metadata["note_number_info"]
-        assert "quantized_value" in note_info
-        assert "actual_value" in note_info
-        assert note_info["actual_value"] >= 50.0
-        assert note_info["actual_value"] <= 52.0
+        note_info = metadata['note_number_info']
+        assert 'quantized_value' in note_info
+        assert 'actual_value' in note_info
+        assert note_info['actual_value'] >= 50.0
+        assert note_info['actual_value'] <= 52.0
 
     def test_get_class_distribution(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test getting class distribution."""
@@ -228,10 +230,10 @@ class TestVIMHDataset:
 
         distribution = dataset.get_class_distribution()
 
-        assert "note_number" in distribution
-        assert "note_velocity" in distribution
-        assert isinstance(distribution["note_number"], dict)
-        assert len(distribution["note_number"]) > 0  # Should have some class counts
+        assert 'note_number' in distribution
+        assert 'note_velocity' in distribution
+        assert isinstance(distribution['note_number'], dict)
+        assert len(distribution['note_number']) > 0  # Should have some class counts
 
     def test_get_dataset_statistics(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test getting comprehensive dataset statistics."""
@@ -241,25 +243,25 @@ class TestVIMHDataset:
 
         stats = dataset.get_dataset_statistics()
 
-        assert "num_samples" in stats
-        assert "image_shape" in stats
-        assert "heads_config" in stats
-        assert "train_mode" in stats
-        assert "class_distribution" in stats
-        assert "parameter_statistics" in stats
+        assert 'num_samples' in stats
+        assert 'image_shape' in stats
+        assert 'heads_config' in stats
+        assert 'train_mode' in stats
+        assert 'class_distribution' in stats
+        assert 'parameter_statistics' in stats
 
         # Check parameter statistics
-        param_stats = stats["parameter_statistics"]
-        assert "note_number" in param_stats
-        assert "min_quantized" in param_stats["note_number"]
-        assert "max_quantized" in param_stats["note_number"]
-        assert "min_actual" in param_stats["note_number"]
-        assert "max_actual" in param_stats["note_number"]
+        param_stats = stats['parameter_statistics']
+        assert 'note_number' in param_stats
+        assert 'min_quantized' in param_stats['note_number']
+        assert 'max_quantized' in param_stats['note_number']
+        assert 'min_actual' in param_stats['note_number']
+        assert 'max_actual' in param_stats['note_number']
 
     def test_missing_metadata_file(self, temp_dir, mock_vimh_data):
         """Test handling of missing metadata file."""
-        train_file = temp_dir / "train_batch"
-        with open(train_file, "wb") as f:
+        train_file = temp_dir / 'train_batch'
+        with open(train_file, 'wb') as f:
             pickle.dump(mock_vimh_data, f)
 
         # Should work with default metadata
@@ -295,33 +297,31 @@ class TestVIMHDataset:
             labels.append(label_data)
 
         mock_data = {
-            "data": images,
-            "vimh_labels": labels,
-            "height": 28,
-            "width": 28,
-            "channels": 1,
-            "image_size": 784,
+            'data': images,
+            'vimh_labels': labels,
+            'height': 28,
+            'width': 28,
+            'channels': 1,
+            'image_size': 784
         }
 
         # Update metadata for 28x28x1 images
         mock_metadata = mock_vimh_metadata.copy()
-        mock_metadata.update(
-            {
-                "height": 28,
-                "width": 28,
-                "channels": 1,
-                "varying_parameters": 1,
-                "parameter_names": ["digit_class"],
-            }
-        )
+        mock_metadata.update({
+            'height': 28,
+            'width': 28,
+            'channels': 1,
+            'varying_parameters': 1,
+            'parameter_names': ['digit_class']
+        })
 
-        train_file = temp_dir / "train_batch"
-        metadata_file = temp_dir / "vimh_dataset_info.json"
+        train_file = temp_dir / 'train_batch'
+        metadata_file = temp_dir / 'vimh_dataset_info.json'
 
-        with open(train_file, "wb") as f:
+        with open(train_file, 'wb') as f:
             pickle.dump(mock_data, f)
 
-        with open(metadata_file, "w") as f:
+        with open(metadata_file, 'w') as f:
             json.dump(mock_metadata, f, indent=2)
 
         dataset = VIMHDataset(str(temp_dir), train=True)
@@ -332,7 +332,7 @@ class TestVIMHDataset:
         # Test sample
         image, labels = dataset[0]
         assert image.shape == (1, 28, 28)
-        assert "digit_class" in labels
+        assert 'digit_class' in labels
 
 
 class TestVIMHDataModule:
@@ -342,7 +342,11 @@ class TestVIMHDataModule:
         """Test initialization of VIMH data module."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         assert dm.hparams.data_dir == str(temp_dir)
         assert dm.hparams.batch_size == 4
@@ -352,7 +356,11 @@ class TestVIMHDataModule:
         """Test setup of VIMH data module."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         dm.setup()
 
@@ -366,7 +374,11 @@ class TestVIMHDataModule:
         """Test creation of data loaders."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         dm.setup()
 
@@ -382,69 +394,85 @@ class TestVIMHDataModule:
         batch_images, batch_labels = next(iter(train_loader))
         assert isinstance(batch_images, torch.Tensor)
         assert isinstance(batch_labels, dict)
-        assert "note_number" in batch_labels
-        assert "note_velocity" in batch_labels
+        assert 'note_number' in batch_labels
+        assert 'note_velocity' in batch_labels
 
     def test_multihead_collate_fn(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test multihead collate function."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=2, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=2,
+            num_workers=0
+        )
 
         dm.setup()
 
         # Create mock batch data
         batch = [
-            (torch.randn(3, 32, 32), {"note_number": 10, "note_velocity": 20}),
-            (torch.randn(3, 32, 32), {"note_number": 15, "note_velocity": 25}),
+            (torch.randn(3, 32, 32), {'note_number': 10, 'note_velocity': 20}),
+            (torch.randn(3, 32, 32), {'note_number': 15, 'note_velocity': 25})
         ]
 
         batched_images, batched_labels = dm._multihead_collate_fn(batch)
 
         assert batched_images.shape == (2, 3, 32, 32)
-        assert batched_labels["note_number"].shape == (2,)
-        assert batched_labels["note_velocity"].shape == (2,)
-        assert batched_labels["note_number"].tolist() == [10, 15]
-        assert batched_labels["note_velocity"].tolist() == [20, 25]
+        assert batched_labels['note_number'].shape == (2,)
+        assert batched_labels['note_velocity'].shape == (2,)
+        assert batched_labels['note_number'].tolist() == [10, 15]
+        assert batched_labels['note_velocity'].tolist() == [20, 25]
 
     def test_get_dataset_info(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test getting dataset information."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         dm.setup()
 
         info = dm.get_dataset_info()
 
-        assert "heads_config" in info
-        assert "image_shape" in info
-        assert "num_train_samples" in info
-        assert "num_val_samples" in info
-        assert "num_test_samples" in info
-        assert info["num_train_samples"] == 8
-        assert info["num_test_samples"] == 2
+        assert 'heads_config' in info
+        assert 'image_shape' in info
+        assert 'num_train_samples' in info
+        assert 'num_val_samples' in info
+        assert 'num_test_samples' in info
+        assert info['num_train_samples'] == 8
+        assert info['num_test_samples'] == 2
 
     def test_num_classes_property(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test num_classes property."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         dm.setup()
 
         num_classes = dm.num_classes
         assert isinstance(num_classes, dict)
-        assert "note_number" in num_classes
-        assert "note_velocity" in num_classes
-        assert num_classes["note_number"] == 256
-        assert num_classes["note_velocity"] == 256
+        assert 'note_number' in num_classes
+        assert 'note_velocity' in num_classes
+        assert num_classes['note_number'] == 256
+        assert num_classes['note_velocity'] == 256
 
     def test_adjust_transforms_for_image_size(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test transform adjustment based on image size."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         # Test 32x32 image adjustment
         dm._adjust_transforms_for_image_size(32, 32)
@@ -460,7 +488,11 @@ class TestVIMHDataModule:
         """Test efficient dimension detection methods."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         # Test JSON metadata loading
         json_dims = dm._load_image_dims_from_json(str(temp_dir))
@@ -476,8 +508,8 @@ class TestVIMHDataModule:
 
     def test_dimension_validation_consistency(self, temp_dir):
         """Test dimension validation with consistent sources."""
-        import json
         import pickle
+        import json
 
         # Create consistent data with vimh- prefix in directory name
         vimh_dir = temp_dir / "vimh-28x28x1_test_dataset"
@@ -485,30 +517,34 @@ class TestVIMHDataModule:
 
         # Create consistent metadata
         metadata = {
-            "format": "VIMH",
-            "height": 28,
-            "width": 28,
-            "channels": 1,
-            "parameter_names": ["digit"],
-            "parameter_mappings": {"digit": {"min": 0, "max": 9}},
+            'format': 'VIMH',
+            'height': 28,
+            'width': 28,
+            'channels': 1,
+            'parameter_names': ['digit'],
+            'parameter_mappings': {'digit': {'min': 0, 'max': 9}}
         }
 
         # Create consistent pickle data
         mock_data = {
-            "data": [list(range(784))],  # 28*28*1 = 784
-            "vimh_labels": [[1, 0, 128]],
-            "height": 28,
-            "width": 28,
-            "channels": 1,
+            'data': [list(range(784))],  # 28*28*1 = 784
+            'vimh_labels': [[1, 0, 128]],
+            'height': 28,
+            'width': 28,
+            'channels': 1
         }
 
         # Save files
-        with open(vimh_dir / "vimh_dataset_info.json", "w") as f:
+        with open(vimh_dir / 'vimh_dataset_info.json', 'w') as f:
             json.dump(metadata, f)
-        with open(vimh_dir / "train_batch", "wb") as f:
+        with open(vimh_dir / 'train_batch', 'wb') as f:
             pickle.dump(mock_data, f)
 
-        dm = VIMHDataModule(data_dir=str(vimh_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(vimh_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         # Test directory name parsing
         dir_dims = dm._parse_image_dims_from_path(str(vimh_dir))
@@ -520,8 +556,8 @@ class TestVIMHDataModule:
 
     def test_dimension_validation_mismatch(self, temp_dir):
         """Test dimension validation with inconsistent sources."""
-        import json
         import pickle
+        import json
 
         # Create inconsistent data
         vimh_dir = temp_dir / "vimh-32x32x3_test_dataset"  # Directory says 32x32x3
@@ -529,30 +565,34 @@ class TestVIMHDataModule:
 
         # But JSON says 28x28x1
         metadata = {
-            "format": "VIMH",
-            "height": 28,
-            "width": 28,
-            "channels": 1,
-            "parameter_names": ["digit"],
-            "parameter_mappings": {"digit": {"min": 0, "max": 9}},
+            'format': 'VIMH',
+            'height': 28,
+            'width': 28,
+            'channels': 1,
+            'parameter_names': ['digit'],
+            'parameter_mappings': {'digit': {'min': 0, 'max': 9}}
         }
 
         # And pickle data says 28x28x1 too
         mock_data = {
-            "data": [list(range(784))],  # 28*28*1 = 784
-            "vimh_labels": [[1, 0, 128]],
-            "height": 28,
-            "width": 28,
-            "channels": 1,
+            'data': [list(range(784))],  # 28*28*1 = 784
+            'vimh_labels': [[1, 0, 128]],
+            'height': 28,
+            'width': 28,
+            'channels': 1
         }
 
         # Save files
-        with open(vimh_dir / "vimh_dataset_info.json", "w") as f:
+        with open(vimh_dir / 'vimh_dataset_info.json', 'w') as f:
             json.dump(metadata, f)
-        with open(vimh_dir / "train_batch", "wb") as f:
+        with open(vimh_dir / 'train_batch', 'wb') as f:
             pickle.dump(mock_data, f)
 
-        dm = VIMHDataModule(data_dir=str(vimh_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(vimh_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         # Test should raise ValueError due to dimension mismatch
         with pytest.raises(ValueError, match="Dimension mismatch"):
@@ -562,15 +602,19 @@ class TestVIMHDataModule:
         """Test efficient heads configuration loading from JSON."""
         create_test_vimh_files(temp_dir, mock_vimh_data, mock_vimh_metadata)
 
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
 
         # Test efficient heads config loading
         heads_config = dm._load_dataset_metadata(str(temp_dir))
         assert isinstance(heads_config, dict)
-        assert "note_number" in heads_config
-        assert "note_velocity" in heads_config
-        assert heads_config["note_number"] == 256
-        assert heads_config["note_velocity"] == 256
+        assert 'note_number' in heads_config
+        assert 'note_velocity' in heads_config
+        assert heads_config['note_number'] == 256
+        assert heads_config['note_velocity'] == 256
 
 
 class TestVIMHIntegration:
@@ -585,7 +629,11 @@ class TestVIMHIntegration:
         assert len(dataset) > 0
 
         # Test data module creation
-        dm = VIMHDataModule(data_dir=str(temp_dir), batch_size=4, num_workers=0)
+        dm = VIMHDataModule(
+            data_dir=str(temp_dir),
+            batch_size=4,
+            num_workers=0
+        )
         dm.setup()
 
         # Test dataloader creation
@@ -597,13 +645,11 @@ class TestVIMHIntegration:
         assert batch_images.shape[0] <= 4  # Batch size
 
         # Test parameter info retrieval
-        param_info = dataset.get_parameter_info("note_number")
-        assert "min" in param_info
-        assert "max" in param_info
+        param_info = dataset.get_parameter_info('note_number')
+        assert 'min' in param_info
+        assert 'max' in param_info
 
-    def test_compatibility_with_pytorch_dataloader(
-        self, temp_dir, mock_vimh_data, mock_vimh_metadata
-    ):
+    def test_compatibility_with_pytorch_dataloader(self, temp_dir, mock_vimh_data, mock_vimh_metadata):
         """Test compatibility with PyTorch DataLoader."""
         from torch.utils.data import DataLoader
 

@@ -1,8 +1,7 @@
-from typing import Dict, Optional
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Optional, Dict
 
 
 class DropPath(nn.Module):
@@ -26,9 +25,7 @@ class DropPath(nn.Module):
 class LayerNorm(nn.Module):
     """LayerNorm that supports two data formats: channels_last (default) or channels_first."""
 
-    def __init__(
-        self, normalized_shape: int, eps: float = 1e-6, data_format: str = "channels_last"
-    ):
+    def __init__(self, normalized_shape: int, eps: float = 1e-6, data_format: str = "channels_last"):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(normalized_shape))
         self.bias = nn.Parameter(torch.zeros(normalized_shape))
@@ -36,7 +33,7 @@ class LayerNorm(nn.Module):
         self.data_format = data_format
         if self.data_format not in ["channels_last", "channels_first"]:
             raise NotImplementedError
-        self.normalized_shape = (normalized_shape,)
+        self.normalized_shape = (normalized_shape, )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.data_format == "channels_last":
@@ -58,7 +55,7 @@ class GRN(nn.Module):
         self.beta = nn.Parameter(torch.zeros(1, 1, 1, dim))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        Gx = torch.norm(x, p=2, dim=(1, 2), keepdim=True)
+        Gx = torch.norm(x, p=2, dim=(1,2), keepdim=True)
         Nx = Gx / (Gx.mean(dim=-1, keepdim=True) + 1e-6)
         return self.gamma * (x * Nx) + self.beta + x
 
@@ -133,9 +130,9 @@ class ConvNeXtV2(nn.Module):
         # Backward compatibility: convert old single-head config to multihead
         if heads_config is None:
             if output_size is not None:
-                heads_config = {"digit": output_size}
+                heads_config = {'digit': output_size}
             else:
-                heads_config = {"digit": 10}  # Default MNIST
+                heads_config = {'digit': 10}  # Default MNIST
 
         self.heads_config = heads_config
         self.is_multihead = len(heads_config) > 1
@@ -146,17 +143,17 @@ class ConvNeXtV2(nn.Module):
         if input_size == 28:  # MNIST
             stem = nn.Sequential(
                 nn.Conv2d(in_chans, dims[0], kernel_size=2, stride=2),
-                LayerNorm(dims[0], eps=1e-6, data_format="channels_first"),
+                LayerNorm(dims[0], eps=1e-6, data_format="channels_first")
             )
         elif input_size == 32:  # CIFAR-10/100 - use smaller stride for better feature preservation
             stem = nn.Sequential(
                 nn.Conv2d(in_chans, dims[0], kernel_size=2, stride=2),
-                LayerNorm(dims[0], eps=1e-6, data_format="channels_first"),
+                LayerNorm(dims[0], eps=1e-6, data_format="channels_first")
             )
         else:  # ImageNet and other larger inputs
             stem = nn.Sequential(
                 nn.Conv2d(in_chans, dims[0], kernel_size=4, stride=4),
-                LayerNorm(dims[0], eps=1e-6, data_format="channels_first"),
+                LayerNorm(dims[0], eps=1e-6, data_format="channels_first")
             )
         self.downsample_layers.append(stem)
 
@@ -164,7 +161,7 @@ class ConvNeXtV2(nn.Module):
         for i in range(3):
             downsample_layer = nn.Sequential(
                 LayerNorm(dims[i], eps=1e-6, data_format="channels_first"),
-                nn.Conv2d(dims[i], dims[i + 1], kernel_size=2, stride=2),
+                nn.Conv2d(dims[i], dims[i+1], kernel_size=2, stride=2),
             )
             self.downsample_layers.append(downsample_layer)
 
@@ -174,10 +171,7 @@ class ConvNeXtV2(nn.Module):
         cur = 0
         for i in range(4):
             stage = nn.Sequential(
-                *[
-                    Block(dim=dims[i], drop_path=dp_rates[cur + j], kernel_size=kernel_size)
-                    for j in range(depths[i])
-                ]
+                *[Block(dim=dims[i], drop_path=dp_rates[cur + j], kernel_size=kernel_size) for j in range(depths[i])]
             )
             self.stages.append(stage)
             cur += depths[i]
@@ -186,12 +180,10 @@ class ConvNeXtV2(nn.Module):
 
         # Multiple heads or single head for backward compatibility
         if self.is_multihead:
-            self.heads = nn.ModuleDict(
-                {
-                    head_name: nn.Linear(dims[-1], num_classes)
-                    for head_name, num_classes in heads_config.items()
-                }
-            )
+            self.heads = nn.ModuleDict({
+                head_name: nn.Linear(dims[-1], num_classes)
+                for head_name, num_classes in heads_config.items()
+            })
         else:
             # Single head (backward compatibility)
             head_name, num_classes = next(iter(heads_config.items()))
@@ -236,9 +228,7 @@ class ConvNeXtV2(nn.Module):
 
 
 # Factory functions for different sizes optimized for MNIST
-def convnext_v2_mnist_tiny(
-    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
-):
+def convnext_v2_mnist_tiny(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
     """ConvNeXt-V2 Tiny for MNIST (~8K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
@@ -251,9 +241,7 @@ def convnext_v2_mnist_tiny(
     )
 
 
-def convnext_v2_mnist_small(
-    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
-):
+def convnext_v2_mnist_small(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
     """ConvNeXt-V2 Small for MNIST (~68K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
@@ -266,9 +254,7 @@ def convnext_v2_mnist_small(
     )
 
 
-def convnext_v2_mnist_base(
-    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
-):
+def convnext_v2_mnist_base(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
     """ConvNeXt-V2 Base for MNIST (~210K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
@@ -281,9 +267,7 @@ def convnext_v2_mnist_base(
     )
 
 
-def convnext_v2_mnist_large(
-    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
-):
+def convnext_v2_mnist_large(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
     """ConvNeXt-V2 Large for MNIST (~821K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
@@ -296,9 +280,7 @@ def convnext_v2_mnist_large(
     )
 
 
-def convnext_v2_official_tiny_benchmark(
-    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
-):
+def convnext_v2_official_tiny_benchmark(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
     """ConvNeXt-V2 Official Tiny Benchmark - exact match to Facebook's canonical config"""
     return ConvNeXtV2(
         input_size=input_size,
@@ -410,9 +392,7 @@ def convnext_v2_huge(input_size: int = 224, in_chans: int = 3, output_size: int 
 
 
 # CIFAR-10 optimized variants with smaller kernels and reduced stride
-def convnext_v2_cifar10_64k(
-    input_size: int = 32, in_chans: int = 3, output_size: int = 10, **kwargs
-):
+def convnext_v2_cifar10_64k(input_size: int = 32, in_chans: int = 3, output_size: int = 10, **kwargs):
     """ConvNeXt-V2 optimized for CIFAR-10 (~64K parameters)
 
     Key optimizations for 32x32 images:
@@ -433,9 +413,7 @@ def convnext_v2_cifar10_64k(
     )
 
 
-def convnext_v2_cifar10_128k(
-    input_size: int = 32, in_chans: int = 3, output_size: int = 10, **kwargs
-):
+def convnext_v2_cifar10_128k(input_size: int = 32, in_chans: int = 3, output_size: int = 10, **kwargs):
     """ConvNeXt-V2 optimized for CIFAR-10 (~128K parameters)
 
     Key optimizations for 32x32 images:
@@ -456,9 +434,7 @@ def convnext_v2_cifar10_128k(
     )
 
 
-def convnext_v2_cifar100_1m(
-    input_size: int = 32, in_chans: int = 3, output_size: int = 100, **kwargs
-):
+def convnext_v2_cifar100_1m(input_size: int = 32, in_chans: int = 3, output_size: int = 100, **kwargs):
     """ConvNeXt-V2 optimized for CIFAR-100 (~1M parameters)
 
     Key optimizations for 32x32 images and 100-class classification:
@@ -479,9 +455,7 @@ def convnext_v2_cifar100_1m(
     )
 
 
-def convnext_v2_cifar100_10m(
-    input_size: int = 32, in_chans: int = 3, output_size: int = 100, **kwargs
-):
+def convnext_v2_cifar100_10m(input_size: int = 32, in_chans: int = 3, output_size: int = 100, **kwargs):
     """ConvNeXt-V2 optimized for CIFAR-100 (~10M parameters)
 
     Scaled architecture for improved CIFAR-100 performance:

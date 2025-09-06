@@ -18,11 +18,11 @@ criterion:
 
 net:
   _target_: src.models.components.simple_dense_net.SimpleDenseNet
-  input_size: 3072 # CIFAR-100 has 32x32x3 = 3072 features when flattened
+  input_size: 3072  # CIFAR-100 has 32x32x3 = 3072 features when flattened
   lin1_size: 200
   lin2_size: 400
   lin3_size: 620
-  output_size: 100 # CIFAR-100 has 100 fine-grained classes
+  output_size: 100  # CIFAR-100 has 100 fine-grained classes
 
 # compile model for faster training with pytorch 2.0
 compile: false

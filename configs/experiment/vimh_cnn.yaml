@@ -4,7 +4,7 @@
 # python src/train.py experiment=vimh_cnn
 
 defaults:
-  - override /data: vimh # ../data/vimh.yaml
+  - override /data: vimh              # ../data/vimh.yaml
   - override /model: vimh_cnn_64k
   - override /trainer: default
 
@@ -22,7 +22,7 @@ optimized_metric: "val/acc_best"
 
 trainer:
   min_epochs: 10
-  max_epochs: 100 # VIMH datasets are challenging, needs more epochs
+  max_epochs: 100  # VIMH datasets are challenging, needs more epochs
   gradient_clip_val: 1.0
 
 model:
@@ -36,8 +36,8 @@ model:
 
 data:
   batch_size: 128
-  num_workers: 0 # MPS doesn't support multiprocessing
-  pin_memory: false # MPS doesn't support pinned memory
+  num_workers: 0   # MPS doesn't support multiprocessing
+  pin_memory: false  # MPS doesn't support pinned memory
 
 # Override callback monitoring metrics for multihead setup
 callbacks:

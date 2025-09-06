@@ -3,7 +3,6 @@
 Expert-focused documentation for power users. Get up to speed quickly on what's here and how to use it.
 
 ## ⚡ Quick Start (5 min)
-
 ```bash
 source .venv/bin/activate        # Setup environment
 make h                           # See all make targets
@@ -13,7 +12,6 @@ make ca                          # Compare architectures (10 min)
 ```
 
 ## 🎯 Core Extensions
-
 - **5 Architectures**: CNN, ConvNeXt, ViT, EfficientNet, MLP (8K-7M params)
 - **CIFAR Benchmarks**: Literature-competitive baselines (85-95% CIFAR-10)
 - **VIMH Multihead**: Variable Image MultiHead format with auto-config
@@ -22,33 +20,28 @@ make ca                          # Compare architectures (10 min)
 ## 📚 Documentation Map
 
 ### Essential (Read First)
-
 - **[architectures.md](architectures.md)** - 5 architectures, params, usage patterns
 - **[vimh.md](vimh.md)** - VIMH dataset format, multihead classification
 - **[onboarding.md](onboarding.md)** - 15-minute onboarding guide
 
 ### Benchmarking & Research
-
 - **[benchmarks.md](benchmarks.md)** - CIFAR system, expected performance, automation
 - **[configuration.md](configuration.md)** - Hydra patterns, experiments, best practices
 
 ### Advanced Usage
-
 - **[multihead.md](multihead.md)** - Multi-task learning details and implementation
 - **[development.md](development.md)** - Extension patterns, integration guide
 
 ## 🔧 Expert Navigation
-
-| Goal                    | Command                            | Doc              | Time   |
-| ----------------------- | ---------------------------------- | ---------------- | ------ |
-| Architecture comparison | `make ca`                          | architectures.md | 10 min |
-| CIFAR benchmarks        | `make cbs10`                       | benchmarks.md    | 2h     |
-| VIMH training           | `make evimh`                       | vimh.md          | 15 min |
-| Custom experiment       | `python src/train.py experiment=X` | configuration.md | varies |
-| Add architecture        | Edit configs/model/                | development.md   | 30 min |
+| Goal | Command | Doc | Time |
+|------|---------|-----|------|
+| Architecture comparison | `make ca` | architectures.md | 10 min |
+| CIFAR benchmarks | `make cbs10` | benchmarks.md | 2h |
+| VIMH training | `make evimh` | vimh.md | 15 min |
+| Custom experiment | `python src/train.py experiment=X` | configuration.md | varies |
+| Add architecture | Edit configs/model/ | development.md | 30 min |
 
 ## 📖 Reference
-
 - **[quickref.md](quickref.md)** - Expert cheat sheet (start here)
 - Hydra overrides → see section in [quickref.md](quickref.md)
 - Config Group Map → in [quickref.md](quickref.md#config-group-map) and README
@@ -57,7 +50,6 @@ make ca                          # Compare architectures (10 min)
 - **Makefile** - 50+ targets with h, tq, cb, e prefixes
 
 ## ⚠️ Common Pitfalls
-
 - Use `trainer=mps` on macOS; set `num_workers: 0` for VIMH on MPS.
 - First run may download datasets; allow time and network.
 - Checkpoints must be local (remote URL loading is disabled).

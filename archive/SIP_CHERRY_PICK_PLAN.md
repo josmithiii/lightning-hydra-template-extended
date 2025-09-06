@@ -7,7 +7,6 @@ This document identifies general-purpose image classification features from the 
 ## ✅ Completed Cherry-Pick Features
 
 ### Core Infrastructure ✅
-
 - **✅ MultiScaleSpectralLoss**: PNP-proven multi-resolution spectral analysis loss function
 - **✅ DistanceLoss**: Base class for distance-based losses with configurable norms
 - **✅ create_loss_function**: Factory pattern for config-driven loss instantiation
@@ -18,9 +17,7 @@ This document identifies general-purpose image classification features from the 
 - **✅ Metadata improvements**: Removed deprecated 'scale' field from dataset metadata
 
 ### Perfect Synergy with Existing AVIX Features ✅
-
 The SIP cherry-pick perfectly complements the existing AVIX enhancements:
-
 - **AVIX provided**: SimpleMLP, gradient tracking, custom progress bars, dataset wrappers, auxiliary CNN features
 - **SIP added**: Advanced loss functions, loss factory, inference utilities, general-purpose soft targets
 - **Result**: Complete advanced ML research template with both training infrastructure and sophisticated loss functions
@@ -30,7 +27,6 @@ The SIP cherry-pick perfectly complements the existing AVIX enhancements:
 ### High Priority - Core Infrastructure
 
 #### 1. **Enhanced Loss Functions (`src/models/losses.py`)**
-
 - **MultiScaleSpectralLoss**: PNP-proven multi-resolution spectral analysis
   - Useful for any frequency-domain data (spectrograms, time-frequency representations)
   - Research-backed implementation from published ICASSP/TASLP papers
@@ -40,12 +36,10 @@ The SIP cherry-pick perfectly complements the existing AVIX enhancements:
 - **create_loss_function**: Factory pattern for config-driven loss instantiation
 
 #### 2. **Testing Infrastructure**
-
 - **test_multihead_loss_configs.py**: Framework for testing multiple loss configurations
 - **test_vimh_format.py**: General VIMH dataset format validation (useful for multihead datasets)
 
 #### 3. **Development Tools**
-
 - **single_step_inference.py**: Utility for quick model inference testing
 - **Enhanced Makefile targets**:
   - `dc/dclean`: Data cleaning utilities
@@ -54,13 +48,11 @@ The SIP cherry-pick perfectly complements the existing AVIX enhancements:
 ### Medium Priority - Convenience Features
 
 #### 4. **Data Handling Improvements**
-
 - **custom_cifar100_datamodule.py**: Enhanced CIFAR-100 with custom preprocessing
 - **Metadata improvements**: Better parameter range handling in dataset metadata
 - **Enhanced VIMH utilities**: Improved VIMH dataset processing (keep general parts only)
 
 #### 5. **Configuration Enhancements**
-
 - **soft_target_loss.py**: Soft target loss implementations for improved training
 - **Enhanced experiment configs**: Better experiment organization patterns
 - **Improved defaults**: Better default configurations for common use cases
@@ -68,7 +60,6 @@ The SIP cherry-pick perfectly complements the existing AVIX enhancements:
 ### Lower Priority - Optional Improvements
 
 #### 6. **Documentation Enhancements**
-
 - **Configuration documentation**: Improved docs on loss configuration patterns
 - **Best practices**: Guidelines for multi-head and multi-loss training
 
@@ -87,25 +78,21 @@ The following SIP features are **audio-specific** and should NOT be cherry-picke
 ## Implementation Strategy
 
 ### Phase 1: Core Loss Functions
-
 1. Cherry-pick `MultiScaleSpectralLoss` and `DistanceLoss` from `src/models/losses.py`
 2. Add `create_loss_function` factory pattern (without auraloss dependencies)
 3. Update relevant tests
 
 ### Phase 2: Infrastructure
-
 1. Add general-purpose testing patterns from `test_multihead_loss_configs.py`
 2. Integrate `single_step_inference.py` utility
 3. Update Makefile with general-purpose convenience targets
 
 ### Phase 3: Data and Configuration
-
 1. Cherry-pick `custom_cifar100_datamodule.py` improvements
 2. Add metadata range handling improvements
 3. Update configuration documentation
 
 ### Phase 4: Optional Enhancements
-
 1. Add `soft_target_loss.py` if needed
 2. Improve default configurations based on SIP learnings
 3. Update development workflow documentation
@@ -113,12 +100,10 @@ The following SIP features are **audio-specific** and should NOT be cherry-picke
 ## Dependencies to Consider
 
 ### Safe to Add
-
 - No new dependencies needed for core loss functions
 - Standard PyTorch/Lightning dependencies sufficient
 
 ### Avoid Adding
-
 - `auraloss` - audio-specific
 - `torchaudio` - audio-specific
 - Any audio synthesis libraries

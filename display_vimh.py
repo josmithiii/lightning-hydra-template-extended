@@ -61,6 +61,8 @@ class VIMHViewer:
         # Force redraw of Figure 1 after all figures exist (for proper tab spacing)
         self.fig.canvas.draw()
 
+
+
     def get_sample_info(self, idx: int) -> Tuple[np.ndarray, Dict[str, Any]]:
         """Get spectrogram data and parameters for sample idx."""
         # Get the sample from the dataset (returns torch tensor in CHW format)
@@ -123,9 +125,7 @@ class VIMHViewer:
         # Create layout: parameters (left), spectrogram (center), colorbar (right)
         # Increased left column width to prevent text overlap
         # NOTE: Due to matplotlib layout bug with tabs, initial display may cut off title - resize window to fix
-        gs = self.fig.add_gridspec(
-            2, 3, width_ratios=[1.4, 2, 0.05], height_ratios=[4, 1], top=0.88, bottom=0.15
-        )
+        gs = self.fig.add_gridspec(2, 3, width_ratios=[1.4, 2, 0.05], height_ratios=[4, 1], top=0.88, bottom=0.15)
 
         # Parameters text area
         self.ax_params = self.fig.add_subplot(gs[0, 0])
@@ -277,11 +277,7 @@ class VIMHViewer:
         spec_name = spectrogram_type.upper() if spectrogram_type else "Spectral"
 
         # Get channel label name
-        channel_label = (
-            self.channel_labels[self.channel]
-            if self.channel < len(self.channel_labels)
-            else f"Ch{self.channel}"
-        )
+        channel_label = self.channel_labels[self.channel] if self.channel < len(self.channel_labels) else f"Ch{self.channel}"
 
         title = f"Sample {self.current_idx + 1}/{self.total_samples}, Channel {self.channel} ({channel_label})\nVIMH Parameter Labels: [{labels_str}]"
         self.fig_3d.suptitle(
@@ -330,6 +326,9 @@ class VIMHViewer:
             if hasattr(self, "fig_3d") and plt.fignum_exists(self.fig_3d.number):
                 self.fig_3d.canvas.manager.show()
                 self.fig_3d.canvas.draw()
+
+
+
 
     def update_display(self):
         """Update the display with current sample."""
@@ -380,11 +379,7 @@ class VIMHViewer:
         labels = info["vimh_labels"]
         if labels:
             # For new dictionary format, count non-zero parameters
-            N = (
-                len([v for v in labels.values() if v != 0.0])
-                if isinstance(labels, dict)
-                else len(labels)
-            )
+            N = len([v for v in labels.values() if v != 0.0]) if isinstance(labels, dict) else len(labels)
             vimh_version = self.dataset_info.get("version", "1.0")
             param_text.append(f"VIMH FORMAT v{vimh_version}:")
             param_text.append(f"N={N} varying parameters")
@@ -428,19 +423,13 @@ class VIMHViewer:
 
         # Display spectrogram with dynamic title based on type and channel label
         spectrogram_type = self.dataset_info.get("spectrogram_config", {}).get("type", "mel")
-        spec_type_name = (
-            f"{spectrogram_type.upper()} Spectrogram" if spectrogram_type else "Spectrogram"
-        )
+        spec_type_name = f"{spectrogram_type.upper()} Spectrogram" if spectrogram_type else "Spectrogram"
 
         # Add channel label to title
         if len(spectrogram.shape) == 3:
             channels = spectrogram.shape[2]
             channel_idx = min(self.channel, channels - 1)
-            channel_label = (
-                self.channel_labels[channel_idx]
-                if channel_idx < len(self.channel_labels)
-                else f"Ch{channel_idx}"
-            )
+            channel_label = self.channel_labels[channel_idx] if channel_idx < len(self.channel_labels) else f"Ch{channel_idx}"
             spec_title = f"{spec_type_name} - {channel_label}"
         else:
             spec_title = spec_type_name
@@ -490,11 +479,7 @@ class VIMHViewer:
         cbar.set_label("Magnitude", rotation=270, labelpad=20)
 
         # Update navigation info with channel label
-        current_channel_label = (
-            self.channel_labels[self.channel]
-            if self.channel < len(self.channel_labels)
-            else f"Ch{self.channel}"
-        )
+        current_channel_label = self.channel_labels[self.channel] if self.channel < len(self.channel_labels) else f"Ch{self.channel}"
         nav_text = f"Left/Right: samples, Up/Down: channels, Q: quit, Cmd+1/2: figures\nSample {self.current_idx + 1}/{self.total_samples}, Channel {self.channel + 1}/{self.num_channels} ({current_channel_label})"
         self.fig.text(0.5, 0.02, nav_text, ha="center", fontsize=10)
 

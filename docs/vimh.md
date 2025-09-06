@@ -26,7 +26,6 @@
 ## Format Specification
 
 ### Binary Layout Per Sample
-
 ```
 Metadata: 6 bytes (height, width, channels) - three 16-bit unsigned integers, little-endian
 Label Data: 1 + 2N bytes
@@ -40,7 +39,6 @@ Total size: 6 + 1 + 2N + height*width*channels bytes per sample
 ```
 
 ### Example: 2-Parameter Dataset (32x32x3 like CIFAR-100)
-
 ```
 Metadata: [32, 32, 3] (height=32, width=32, channels=3) - 6 bytes
 Labels: [2, 0, 191, 1, 127] (N=2 parameters) - 5 bytes
@@ -49,7 +47,6 @@ Total: 6 + 5 + 3072 = 3083 bytes per sample
 ```
 
 If note_number=51.5 (range 50-52) and note_velocity=81.0 (range 80-82):
-
 ```
 Complete sample: [32, 32, 3, 2, 0, 191, 1, 127, <3072 image bytes>]
   Metadata: height=32, width=32, channels=3 (6 bytes)
@@ -60,7 +57,6 @@ Complete sample: [32, 32, 3, 2, 0, 191, 1, 127, <3072 image bytes>]
 ```
 
 ### Example: VIMH Metadata for MNIST Images (28x28x1)
-
 ```
 Metadata: [28, 28, 1] (height=28, width=28, channels=1) - 6 bytes
 Labels: [1, 0, 128] (N=1 parameter) - 3 bytes
@@ -88,7 +84,6 @@ data-vimh/vimh-32x32x3_8000Hz_1p0s_256dss_resonarium_2p/
 ```
 
 ### Dataset Info JSON Example
-
 ```json
 {
   "format": "VIMH",
@@ -121,19 +116,16 @@ data-vimh/vimh-32x32x3_8000Hz_1p0s_256dss_resonarium_2p/
 ## Use Cases
 
 ### Audio Synthesis
-
 - **Spectrograms**: 32x32x3 mel spectrograms from synthesizers
 - **Parameters**: Varying synthesis parameters (frequency, amplitude, filters)
 - **Training**: Multihead CNNs to predict synthesis parameters from audio
 
 ### Computer Vision
-
 - **MNIST Extension**: 28x28x1 images with varying parameters (digit style, thickness)
 - **Custom Vision**: Any image size with associated continuous parameters
 - **Multi-task Learning**: Train models with multiple regression outputs
 
 ### Scientific Data
-
 - **Simulations**: Images from physics/chemistry simulations with varying conditions
 - **Measurements**: Experimental data with multiple measured parameters
 - **Analysis**: Train models to predict experimental conditions from images
@@ -141,12 +133,10 @@ data-vimh/vimh-32x32x3_8000Hz_1p0s_256dss_resonarium_2p/
 ## Compatibility
 
 ### Parameter Types
-
 - **Varying parameters**: Different min/max values, encoded in labels
 - **Fixed parameters**: min=max, not encoded in labels (stored in metadata)
 
 ### Limitations
-
 - Maximum 255 varying parameters per sample
 - Parameter values quantized to 0-255 range (8-bit resolution)
 - Image dimensions limited to 65,535×65,535 (16-bit metadata fields)
@@ -155,24 +145,21 @@ data-vimh/vimh-32x32x3_8000Hz_1p0s_256dss_resonarium_2p/
 
 ## Makefile Targets
 
-| Target         | Description                        |
-| -------------- | ---------------------------------- |
-| `vimh-stk`     | Convert STK dataset to VIMH        |
-| `vimh-res`     | Convert Resonarium dataset to VIMH |
-| `vimh-all`     | Convert all datasets to VIMH       |
-| `display-vimh` | Display VIMH dataset viewer        |
+| Target | Description |
+|--------|-------------|
+| `vimh-stk` | Convert STK dataset to VIMH |
+| `vimh-res` | Convert Resonarium dataset to VIMH |
+| `vimh-all` | Convert all datasets to VIMH |
+| `display-vimh` | Display VIMH dataset viewer |
 
 ## Technical Implementation
 
 ### Label Encoding
-
 Each sample's parameters are encoded as a sequence of (parameter_id, parameter_value) pairs:
-
 - **parameter_id**: Index into the varying parameters list (0-255)
 - **parameter_value**: Quantized parameter value (0-255)
 
 ### Parameter Quantization
-
 ```python
 # Normalize to [0,1], then quantize to [0,255]
 normalized_value = (actual_value - param_min) / (param_max - param_min)
@@ -180,7 +167,6 @@ quantized_value = int(normalized_value * 255)
 ```
 
 ### Parameter Dequantization
-
 ```python
 # Dequantize from [0,255] back to actual parameter range
 normalized_value = quantized_value / 255.0
@@ -195,7 +181,6 @@ actual_value = param_min + normalized_value * (param_max - param_min)
 ## File Reading/Writing
 
 ### Python Usage
-
 ```python
 from src.data.vimh_dataset import VIMHDataset, VIMHDataModule
 
@@ -215,7 +200,6 @@ train_loader = datamodule.train_dataloader()
 ```
 
 ### Dataset Auto-Configuration
-
 VIMH datasets automatically configure neural network models based on their metadata:
 
 ```python
@@ -229,7 +213,6 @@ python src/train.py experiment=vimh_cnn
 ```
 
 ### Performance Considerations
-
 - **Binary format**: Fastest loading, smallest file size
 - **Pickle format**: Python-friendly but larger files
 - **Memory usage**: ~793 bytes per MNIST sample, ~3083 bytes per CIFAR-100 sample
@@ -238,7 +221,6 @@ python src/train.py experiment=vimh_cnn
 ## Related Formats
 
 VIMH was originally inspired by CIFAR-100 but extends it significantly:
-
 - **CIFAR-100**: Fixed 32x32x3 images, 2 labels (coarse/fine classes)
 - **VIMH**: Variable image dimensions, 0-255 continuous parameters with self-describing metadata
 - **HDF5**: Alternative format, but VIMH is more compact and self-describing

@@ -16,7 +16,6 @@ benchmarks/
 ## 🎯 Current Benchmarks
 
 ### CIFAR Benchmark Suite
-
 - **Report**: [`CIFAR_BENCHMARK_REPORT.md`](./CIFAR_BENCHMARK_REPORT.md)
 - **Automation**: [`scripts/benchmark_cifar.py`](./scripts/benchmark_cifar.py)
 - **Coverage**: CIFAR-10, CIFAR-100, CIFAR-100 Coarse across 4 architectures
@@ -25,7 +24,6 @@ benchmarks/
 ## 🚀 Quick Start
 
 ### Run CIFAR Benchmarks
-
 ```bash
 # Automated benchmark suite
 make cbs
@@ -39,7 +37,6 @@ make cbs10               # All CIFAR-10 architectures
 ```
 
 ### View Results
-
 ```bash
 # Check benchmark report
 cat benchmarks/CIFAR_BENCHMARK_REPORT.md
@@ -67,6 +64,6 @@ When adding new benchmark suites:
 - [Main README](../README.md) - Original Lightning-Hydra template
 - [Experiment Configs](../configs/experiment/) - Benchmark experiment definitions
 
-______________________________________________________________________
+---
 
 *This benchmarks directory enables systematic performance evaluation and comparison across datasets, architectures, and configurations in the Lightning-Hydra template.*

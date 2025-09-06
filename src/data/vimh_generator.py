@@ -9,8 +9,7 @@ import json
 import pickle
 import struct
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-
+from typing import Dict, List, Tuple, Any, Optional
 import numpy as np
 import torch
 from torchvision.datasets import CIFAR100
@@ -22,7 +21,7 @@ def generate_cifar100_like_vimh(
     num_test_samples: int = 10000,
     image_size: Tuple[int, int, int] = (32, 32, 3),
     num_heads: int = 3,
-    complexity: str = "cifar100",
+    complexity: str = "cifar100"
 ) -> None:
     """Generate a VIMH dataset with CIFAR-100-like characteristics.
 
@@ -44,12 +43,16 @@ def generate_cifar100_like_vimh(
     # Define head configurations based on complexity
     if complexity == "cifar100":
         heads_config = {
-            "fine_label": 100,  # Fine-grained classes (like CIFAR-100)
-            "coarse_label": 20,  # Coarse classes (like CIFAR-100 superclasses)
-            "texture": 8,  # Additional texture classification
+            "fine_label": 100,      # Fine-grained classes (like CIFAR-100)
+            "coarse_label": 20,     # Coarse classes (like CIFAR-100 superclasses)
+            "texture": 8            # Additional texture classification
         }
     elif complexity == "cifar10":
-        heads_config = {"class": 10, "color": 5, "shape": 4}
+        heads_config = {
+            "class": 10,
+            "color": 5,
+            "shape": 4
+        }
     else:  # custom
         heads_config = {f"head_{i}": min(256, 10 * (i + 1)) for i in range(num_heads)}
 
@@ -60,7 +63,7 @@ def generate_cifar100_like_vimh(
             "min": 0,
             "max": num_classes - 1,
             "type": "classification",
-            "description": f"Classification head with {num_classes} classes",
+            "description": f"Classification head with {num_classes} classes"
         }
 
     # Create metadata
@@ -77,8 +80,8 @@ def generate_cifar100_like_vimh(
         "generation_info": {
             "complexity": complexity,
             "generator": "vimh_generator.generate_cifar100_like_vimh",
-            "synthetic": True,
-        },
+            "synthetic": True
+        }
     }
 
     # Save metadata
@@ -92,7 +95,7 @@ def generate_cifar100_like_vimh(
         image_size,
         heads_config,
         complexity,
-        train=True,
+        train=True
     )
 
     _generate_dataset_split(
@@ -101,7 +104,7 @@ def generate_cifar100_like_vimh(
         image_size,
         heads_config,
         complexity,
-        train=False,
+        train=False
     )
 
     print(f"Generated VIMH dataset at {output_path}")
@@ -117,7 +120,7 @@ def _generate_dataset_split(
     image_size: Tuple[int, int, int],
     heads_config: Dict[str, int],
     complexity: str,
-    train: bool,
+    train: bool
 ) -> None:
     """Generate a single dataset split (train or test).
 
@@ -136,7 +139,11 @@ def _generate_dataset_split(
         if complexity in ["cifar100", "cifar10"]:
             dataset_class = CIFAR100 if complexity == "cifar100" else None
             if dataset_class:
-                cifar_data = dataset_class(root="./data", train=train, download=True)
+                cifar_data = dataset_class(
+                    root='./data',
+                    train=train,
+                    download=True
+                )
     except Exception:
         pass  # Fall back to synthetic generation
 
@@ -187,7 +194,7 @@ def _generate_dataset_split(
         "height": height,
         "width": width,
         "channels": channels,
-        "num_samples": num_samples,
+        "num_samples": num_samples
     }
 
     with open(output_file, "wb") as f:
@@ -238,7 +245,7 @@ def _generate_correlated_labels(
     heads_config: Dict[str, int],
     sample_idx: int,
     cifar_data: Optional[Any] = None,
-    train: bool = True,
+    train: bool = True
 ) -> Dict[str, int]:
     """Generate correlated labels for multiple heads.
 
@@ -270,11 +277,7 @@ def _generate_correlated_labels(
             # Secondary heads - create realistic correlations
             if "coarse" in head_name.lower() and primary_class is not None:
                 # Coarse labels are related to fine labels (like CIFAR-100)
-                coarse_label = (
-                    primary_class // (100 // num_classes)
-                    if num_classes <= 20
-                    else primary_class % num_classes
-                )
+                coarse_label = primary_class // (100 // num_classes) if num_classes <= 20 else primary_class % num_classes
                 labels[head_name] = coarse_label
 
             elif "texture" in head_name.lower() and primary_class is not None:
@@ -289,11 +292,7 @@ def _generate_correlated_labels(
 
             else:
                 # Other heads - weak correlation with some noise
-                base_label = (
-                    (primary_class * 2 + head_idx) % num_classes
-                    if primary_class is not None
-                    else 0
-                )
+                base_label = (primary_class * 2 + head_idx) % num_classes if primary_class is not None else 0
                 noise = np.random.randint(-2, 3)  # Small random variation
                 labels[head_name] = max(0, min(num_classes - 1, base_label + noise))
 
@@ -301,7 +300,10 @@ def _generate_correlated_labels(
 
 
 def generate_vimh_dataset(
-    output_dir: str, num_samples: Optional[int] = None, complexity: str = "cifar100", **kwargs
+    output_dir: str,
+    num_samples: Optional[int] = None,
+    complexity: str = "cifar100",
+    **kwargs
 ) -> None:
     """Main interface for generating VIMH datasets.
 
@@ -324,7 +326,7 @@ def generate_vimh_dataset(
         num_train_samples=num_train,
         num_test_samples=num_test,
         complexity=complexity,
-        **kwargs,
+        **kwargs
     )
 
 
@@ -335,7 +337,11 @@ if __name__ == "__main__":
     with tempfile.TemporaryDirectory() as temp_dir:
         print(f"Testing VIMH generation in {temp_dir}")
 
-        generate_vimh_dataset(output_dir=temp_dir, num_samples=100, complexity="cifar100")
+        generate_vimh_dataset(
+            output_dir=temp_dir,
+            num_samples=100,
+            complexity="cifar100"
+        )
 
         # Verify generation
         metadata_file = Path(temp_dir) / "vimh_dataset_info.json"
@@ -344,9 +350,7 @@ if __name__ == "__main__":
                 metadata = json.load(f)
             print("✓ Generated dataset metadata:")
             print(f"  - Format: {metadata['format']}")
-            print(
-                f"  - Image size: {metadata['height']}x{metadata['width']}x{metadata['channels']}"
-            )
+            print(f"  - Image size: {metadata['height']}x{metadata['width']}x{metadata['channels']}")
             print(f"  - Heads: {list(metadata['parameter_names'])}")
 
         train_file = Path(temp_dir) / "train_batch"

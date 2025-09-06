@@ -7,7 +7,6 @@ This guide covers the development philosophy, file organization, extension patte
 ## 🎯 Development Philosophy
 
 ### Non-Destructive Extensions
-
 The project follows a **non-destructive extension** approach:
 
 - **Add, don't modify**: Create new files instead of changing existing ones
@@ -17,14 +16,12 @@ The project follows a **non-destructive extension** approach:
 - **Incremental adoption**: Users can adopt new features gradually
 
 ### Configuration-Driven Development
-
 - **No code changes for common experiments**: Use Hydra configuration instead
 - **Version-controlled configurations**: All experiments are reproducible
 - **Consistent patterns**: Follow established configuration conventions
 - **Modular design**: Components are independent and configurable
 
 ### Research-Focused Design
-
 - **Rapid iteration**: Minimize boilerplate for quick experimentation
 - **Systematic comparison**: Enable fair architecture and hyperparameter comparison
 - **Reproducible results**: Fixed seeds and deterministic configurations
@@ -33,7 +30,6 @@ The project follows a **non-destructive extension** approach:
 ## 📁 File Organization
 
 ### Extension File Structure
-
 ```
 ├── configs/
 │   ├── model/
@@ -81,20 +77,17 @@ The project follows a **non-destructive extension** approach:
 ### Naming Conventions
 
 **Configuration Files**:
-
 - `{dataset}_{architecture}_{size}.yaml` - Model configs
 - `{feature}_{dataset}.yaml` - Data configs
 - `{dataset}_{purpose}_{architecture}.yaml` - Experiment configs
 
 **Source Files**:
-
 - `{architecture}.py` - Architecture implementations
 - `{feature}_dataset.py` - Dataset extensions
 - `{dataset}_datamodule.py` - Data modules
 - `test_{feature}.py` - Test files
 
 **Make Targets**:
-
 - `{action}-{architecture}-{size}` - Full names
 - `{a}{ac}{s}` - Abbreviations (action-architecture-size)
 
@@ -103,7 +96,6 @@ The project follows a **non-destructive extension** approach:
 ### 1. Adding New Architectures
 
 **Step 1: Implement Architecture**
-
 ```python
 # src/models/components/my_architecture.py
 import torch
@@ -120,7 +112,6 @@ class MyArchitecture(nn.Module):
 ```
 
 **Step 2: Create Configuration**
-
 ```yaml
 # configs/model/mnist_myarch_SIZE.yaml
 _target_: src.models.mnist_module.MNISTLitModule
@@ -150,7 +141,6 @@ compile: false
 ```
 
 **Step 3: Add Tests**
-
 ```python
 # tests/test_my_architecture.py
 import torch
@@ -164,7 +154,6 @@ def test_my_architecture():
 ```
 
 **Step 4: Add Make Targets**
-
 ```makefile
 # In Makefile
 train-myarch:
@@ -181,7 +170,6 @@ tqma: train-quick-myarch
 ### 2. Adding New Datasets
 
 **Step 1: Create Data Module**
-
 ```python
 # src/data/mydataset_datamodule.py
 from lightning import LightningDataModule
@@ -212,7 +200,6 @@ class MyDatasetDataModule(LightningDataModule):
 ```
 
 **Step 2: Create Data Configuration**
-
 ```yaml
 # configs/data/mydataset.yaml
 _target_: src.data.mydataset_datamodule.MyDatasetDataModule
@@ -223,7 +210,6 @@ pin_memory: False
 ```
 
 **Step 3: Create Model Variants**
-
 ```yaml
 # configs/model/mydataset_cnn_SIZE.yaml
 # Based on existing CNN config with dataset-specific adaptations
@@ -236,7 +222,6 @@ net:
 ### 3. Adding Experiment Configurations
 
 **Systematic Experiment Design**:
-
 ```yaml
 # configs/experiment/mydataset_benchmark_cnn.yaml
 # @package _global_
@@ -266,19 +251,16 @@ data:
 ### Test Categories
 
 **1. Unit Tests**
-
 - Individual component functionality
 - Architecture forward passes
 - Data loading correctness
 
 **2. Integration Tests**
-
 - End-to-end training loops
 - Configuration instantiation
 - Multihead functionality
 
 **3. Smoke Tests**
-
 - Quick validation runs
 - Architecture compatibility
 - Benchmark functionality
@@ -286,7 +268,6 @@ data:
 ### Test Implementation
 
 **Architecture Tests**:
-
 ```python
 def test_architecture_shapes():
     """Test that architecture produces correct output shapes."""
@@ -306,7 +287,6 @@ def test_architecture_gradients():
 ```
 
 **Configuration Tests**:
-
 ```python
 def test_config_instantiation():
     """Test that configurations can be instantiated."""
@@ -321,7 +301,6 @@ def test_config_instantiation():
 ## 🔄 Integration with Original Template
 
 ### Preserved Functionality
-
 All original template features remain fully functional:
 
 - **Original models**: SimpleDenseNet works unchanged
@@ -331,7 +310,6 @@ All original template features remain fully functional:
 - **Original documentation**: Base README.md preserved
 
 ### Enhanced Functionality
-
 Extensions enhance without breaking:
 
 - **Enhanced models**: New architectures added alongside originals
@@ -341,7 +319,6 @@ Extensions enhance without breaking:
 - **Enhanced documentation**: Modular docs complement original
 
 ### Upgrade Path
-
 Users can adopt extensions incrementally:
 
 1. **Start familiar**: Use original SimpleDenseNet on MNIST
@@ -353,21 +330,18 @@ Users can adopt extensions incrementally:
 ## 🎨 Code Style and Conventions
 
 ### Python Code Style
-
 - **Type hints**: Use throughout for better IDE support
 - **Docstrings**: Document classes and complex methods
 - **Imports**: Follow PEP 8 import ordering
 - **Naming**: Use descriptive names, avoid abbreviations in code
 
 ### Configuration Style
-
 - **Consistent structure**: Follow established config patterns
 - **Clear naming**: Use descriptive configuration names
 - **Parameter grouping**: Organize related parameters together
 - **Documentation**: Add comments for non-obvious choices
 
 ### Documentation Style
-
 - **Modular organization**: Each README focuses on specific topic
 - **Clear examples**: Provide concrete usage examples
 - **Cross-references**: Link related sections across files
@@ -376,14 +350,12 @@ Users can adopt extensions incrementally:
 ## 🚀 Performance Considerations
 
 ### Architecture Optimization
-
 - **Parameter efficiency**: Provide multiple size variants
 - **Memory optimization**: Use efficient operations where possible
 - **Hardware adaptation**: Support MPS, GPU, and CPU execution
 - **Batch size adaptation**: Provide guidance for different hardware
 
 ### Configuration Optimization
-
 - **Lazy loading**: Use Hydra's lazy instantiation
 - **Parameter validation**: Catch configuration errors early
 - **Default values**: Provide sensible defaults for all parameters
@@ -394,21 +366,18 @@ Users can adopt extensions incrementally:
 ### For Contributors
 
 **Before Adding Features**:
-
 1. Check if it fits the non-destructive philosophy
 2. Ensure backward compatibility is maintained
 3. Follow established naming conventions
 4. Add appropriate tests and documentation
 
 **For New Architectures**:
-
 1. Implement with configurable parameters
 2. Provide multiple size variants
 3. Add comprehensive tests
 4. Document expected performance
 
 **For New Datasets**:
-
 1. Follow PyTorch Lightning DataModule patterns
 2. Provide data augmentation options
 3. Include proper test/validation splits
@@ -417,14 +386,12 @@ Users can adopt extensions incrementally:
 ### For Users
 
 **Customization Strategy**:
-
 1. Start with existing configurations
 2. Use command-line overrides for experimentation
 3. Create experiment configs for reproducible research
 4. Contribute successful patterns back to the project
 
 **Best Practices**:
-
 1. Use descriptive tags for experiment tracking
 2. Fix seeds for reproducible results
 3. Document significant configuration changes

@@ -1,14 +1,12 @@
 ﻿# Repository Guidelines
 
 ## Project Structure & Module Organization
-
 - Source: `src/` (training in `src/train.py`, evaluation in `src/eval.py`, data modules under `src/data/`, models under `src/models/`, utilities under `src/utils/`).
 - Configs: `configs/` (Hydra YAML for `data/`, `model/`, `trainer/`, `experiment/`).
 - Tests: `tests/` (pytest suite with fast and `slow` markers).
 - Assets & outputs: datasets under `data/`, logs under `logs/`, figures under `viz/`, docs in `docs/`.
 
 ## Build, Test, and Development Commands
-
 - Quick train smoke test: `make tq` (1 epoch on MNIST with small batches).
 - Run experiments: `python src/train.py experiment=<name>` (e.g., `experiment=cnn_mnist`).
 - Select configs: `python src/train.py model=mnist_vit_38k data=mnist trainer=gpu`.
@@ -18,42 +16,24 @@
 - TensorBoard: `make tensorboard` then open `http://localhost:6006`.
 
 ## Coding Style & Naming Conventions
-
 - Python: PEP 8, 4-space indents, type hints for public APIs.
-- Formatting: black (line length 99), isort (black profile); docformatter is preview-only via `make format-preview`.
-- Linting: flake8 (with selected ignores) and bandit (B101,B403 skipped in hook); keep warnings low.
+- Formatting: black (line length 99), isort (black profile), docformatter; run via `make format`.
+- Linting: flake8 (with selected ignores) and bandit; keep warnings low.
 - Config names: lower_snake (e.g., `mnist_vit_38k`, `cifar10_cnn_64k`).
 - Modules/functions `snake_case`, classes `CamelCase`, constants `UPPER_CASE`.
 
-### Docstring Style (concise, consistent)
-- Summary on first line (one sentence, imperative mood).
-- Use Google-style sections: Args, Returns, Raises (when meaningful).
-- Keep lines ~99 chars; wrap naturally; avoid redundant prose.
-- Example:
-  """Load data.
-
-  Args:
-    data_dir: Root path for dataset.
-
-  Returns:
-    DataLoader: Training loader.
-  """
-
 ## Testing Guidelines
-
 - Framework: pytest with markers and parametrization.
 - Location: `tests/test_*.py`; name tests `test_*` and mark long ones `@pytest.mark.slow`.
 - Run locally before PR: `pytest -q` (fast path), then full `pytest` if changing training behavior).
 - Coverage: keep meaningful assertions; avoid network and large downloads in unit tests.
 
 ## Commit & Pull Request Guidelines
-
 - Commits: imperative mood, concise subject; optional scope (e.g., `train: fix preflight check`).
 - PRs: include description of changes, Hydra command(s) used, sample logs (`logs/train/runs/`), and linked issues.
 - Checklist: tests pass, `make format` clean, configs reproducible (pin overrides in the PR body).
 
 ## Security & Configuration Tips
-
 - Checkpoints: loading remote URLs is blocked; use local files only.
 - Config: prefer Hydra overrides (e.g., `trainer.max_epochs=3`) instead of editing YAML.
 - Env: see `.env.example`, `requirements.txt`, and `environment.yaml`; `rootutils` sets `PROJECT_ROOT` for stable paths.

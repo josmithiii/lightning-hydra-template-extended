@@ -11,8 +11,7 @@ defaults:
 task_name: "vimh_cnn_16kdss_regression"
 
 # Tags for experiment tracking
-tags:
-  ["vimh", "cnn", "resonarium", "16kdss", "regression", "sigmoid", "continuous"]
+tags: ["vimh", "cnn", "resonarium", "16kdss", "regression", "sigmoid", "continuous"]
 
 # Experiment name
 name: "vimh_cnn_16kdss_regression_resonarium"
@@ -26,7 +25,7 @@ optimized_metric: "val/mae_best"
 # Data configuration
 data:
   batch_size: 128
-  num_workers: 0 # MPS doesn't support multiprocessing
+  num_workers: 0  # MPS doesn't support multiprocessing
   pin_memory: true
 
 # Model configuration
@@ -80,7 +79,7 @@ callbacks:
     verbose: false
     save_last: true
     save_top_k: 3
-    mode: "min" # For MAE, lower is better
+    mode: "min"  # For MAE, lower is better
     auto_insert_metric_name: false
     every_n_epochs: 1
     save_weights_only: false
@@ -91,7 +90,7 @@ callbacks:
     min_delta: 0.001
     patience: 15
     verbose: true
-    mode: "min" # For MAE, lower is better
+    mode: "min"  # For MAE, lower is better
     strict: true
     check_finite: true
 

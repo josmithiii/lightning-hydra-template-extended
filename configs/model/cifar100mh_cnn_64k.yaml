@@ -28,15 +28,15 @@ loss_weights:
 
 net:
   _target_: src.models.components.simple_cnn.SimpleCNN
-  input_channels: 3 # CIFAR-100-MH has 3 color channels
+  input_channels: 3  # CIFAR-100-MH has 3 color channels
   conv1_channels: 64
   conv2_channels: 128
   fc_hidden: 512
   heads_config:
-    param_0: 100 # Default - will be overridden by dataset
-    param_1: 100 # Default - will be overridden by dataset
+    param_0: 100  # Default - will be overridden by dataset
+    param_1: 100  # Default - will be overridden by dataset
   dropout: 0.5
-  input_size: 32 # CIFAR-100-MH image size (32x32)
+  input_size: 32  # CIFAR-100-MH image size (32x32)
 
 compile: false
 
