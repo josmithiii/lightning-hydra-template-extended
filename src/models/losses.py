@@ -1,18 +1,20 @@
 """Custom loss functions for multihead models."""
 
+from typing import Any, Dict, List, Optional, Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Tuple, Dict, Any, List
-
 
 # ==============================================================================
 # PNP-Adapted Loss Functions
 # Adapted from /l/pnp/src/pnp_synth/neural/loss.py for proven multi-scale spectral analysis
 # ==============================================================================
 
+
 class DistanceLoss(nn.Module):
     """Base class for distance-based losses, adapted from PNP codebase."""
+
     def __init__(self, p: float = 2.0):
         super().__init__()
         self.p = p
@@ -38,6 +40,7 @@ class DistanceLoss(nn.Module):
 
 class MagnitudeSTFT(nn.Module):
     """STFT magnitude computation module, adapted from PNP."""
+
     def __init__(self, n_fft: int, hop_length: int):
         super().__init__()
         self.n_fft = n_fft
@@ -58,8 +61,7 @@ class MagnitudeSTFT(nn.Module):
 
 
 class MultiScaleSpectralLoss(DistanceLoss):
-    """
-    Multi-resolution STFT loss from PNP codebase, adapted for general-purpose spectral analysis.
+    """Multi-resolution STFT loss from PNP codebase, adapted for general-purpose spectral analysis.
 
     This proven implementation provides superior spectral analysis compared to basic MSE/L1
     by using multiple STFT resolutions simultaneously. It has been validated in published
@@ -88,15 +90,14 @@ class MultiScaleSpectralLoss(DistanceLoss):
         super().__init__(p=p)
 
         # Ensure we can create all scales
-        assert max_n_fft // (2 ** (num_scales - 1)) > 1, \
-            f"max_n_fft={max_n_fft} too small for num_scales={num_scales}"
+        assert (
+            max_n_fft // (2 ** (num_scales - 1)) > 1
+        ), f"max_n_fft={max_n_fft} too small for num_scales={num_scales}"
 
         # Create STFT window sizes at multiple scales
         self.max_n_fft = max_n_fft
         self.n_ffts = [max_n_fft // (2**i) for i in range(num_scales)]
-        self.hop_lengths = (
-            [n // 4 for n in self.n_ffts] if hop_lengths is None else hop_lengths
-        )
+        self.hop_lengths = [n // 4 for n in self.n_ffts] if hop_lengths is None else hop_lengths
 
         # Weights for different components (kept for future extensibility)
         self.mag_w = mag_w
@@ -107,14 +108,12 @@ class MultiScaleSpectralLoss(DistanceLoss):
     def create_ops(self):
         """Create STFT operators for each scale."""
         self.ops = [
-            MagnitudeSTFT(n_fft, self.hop_lengths[i])
-            for i, n_fft in enumerate(self.n_ffts)
+            MagnitudeSTFT(n_fft, self.hop_lengths[i]) for i, n_fft in enumerate(self.n_ffts)
         ]
 
 
 class OrdinalRegressionLoss(nn.Module):
-    """
-    Ordinal regression loss for quantized continuous parameters in perceptual units.
+    """Ordinal regression loss for quantized continuous parameters in perceptual units.
 
     This loss function treats the problem as regression with discrete ordinal values,
     where the numerical distance between predicted and actual values matters.
@@ -140,10 +139,10 @@ class OrdinalRegressionLoss(nn.Module):
         self,
         num_classes: int,
         param_range: float,
-        regression_loss: str = 'l1',
+        regression_loss: str = "l1",
         alpha: float = 0.1,
         huber_delta: float = 1.0,
-        normalize_loss: bool = False  # Deprecated, kept for compatibility
+        normalize_loss: bool = False,  # Deprecated, kept for compatibility
     ):
         super().__init__()
         self.num_classes = num_classes
@@ -156,14 +155,13 @@ class OrdinalRegressionLoss(nn.Module):
         self.quantization_step = param_range / (num_classes - 1)
 
         # Create ordinal class centers (0, 1, 2, ..., num_classes-1)
-        self.register_buffer('class_centers', torch.arange(num_classes, dtype=torch.float32))
+        self.register_buffer("class_centers", torch.arange(num_classes, dtype=torch.float32))
 
         # Classification loss for regularization
         self.cross_entropy = nn.CrossEntropyLoss()
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of ordinal regression loss.
+        """Forward pass of ordinal regression loss.
 
         Args:
             logits: Raw logits from model [batch_size, num_classes]
@@ -186,12 +184,14 @@ class OrdinalRegressionLoss(nn.Module):
         target_continuous = targets.float()
 
         # Calculate distance in quantization steps
-        if self.regression_loss == 'l1':
+        if self.regression_loss == "l1":
             distance_steps = F.l1_loss(pred_continuous, target_continuous)
-        elif self.regression_loss == 'l2':
+        elif self.regression_loss == "l2":
             distance_steps = F.mse_loss(pred_continuous, target_continuous)
-        elif self.regression_loss == 'huber':
-            distance_steps = F.huber_loss(pred_continuous, target_continuous, delta=self.huber_delta)
+        elif self.regression_loss == "huber":
+            distance_steps = F.huber_loss(
+                pred_continuous, target_continuous, delta=self.huber_delta
+            )
         else:
             raise ValueError(f"Unknown regression loss: {self.regression_loss}")
 
@@ -209,8 +209,7 @@ class OrdinalRegressionLoss(nn.Module):
 
 
 class QuantizedRegressionLoss(nn.Module):
-    """
-    Simplified quantized regression loss for continuous parameters in perceptual units.
+    """Simplified quantized regression loss for continuous parameters in perceptual units.
 
     This loss function directly applies regression loss to the output logits,
     treating the model output as a continuous prediction in the range [0, num_classes-1].
@@ -227,9 +226,9 @@ class QuantizedRegressionLoss(nn.Module):
         self,
         num_classes: int,
         param_range: float,
-        loss_type: str = 'l1',
+        loss_type: str = "l1",
         huber_delta: float = 1.0,
-        normalize_loss: bool = False  # Deprecated, kept for compatibility
+        normalize_loss: bool = False,  # Deprecated, kept for compatibility
     ):
         super().__init__()
         self.num_classes = num_classes
@@ -241,8 +240,7 @@ class QuantizedRegressionLoss(nn.Module):
         self.quantization_step = param_range / (num_classes - 1)
 
     def forward(self, output: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of quantized regression loss.
+        """Forward pass of quantized regression loss.
 
         Args:
             output: Model output (single continuous value per sample) [batch_size, 1]
@@ -262,11 +260,11 @@ class QuantizedRegressionLoss(nn.Module):
         output = torch.clamp(output, 0, self.num_classes - 1)
 
         # Calculate distance in quantization steps
-        if self.loss_type == 'l1':
+        if self.loss_type == "l1":
             distance_steps = F.l1_loss(output, target_continuous)
-        elif self.loss_type == 'l2':
+        elif self.loss_type == "l2":
             distance_steps = F.mse_loss(output, target_continuous)
-        elif self.loss_type == 'huber':
+        elif self.loss_type == "huber":
             distance_steps = F.huber_loss(output, target_continuous, delta=self.huber_delta)
         else:
             raise ValueError(f"Unknown loss type: {self.loss_type}")
@@ -278,8 +276,7 @@ class QuantizedRegressionLoss(nn.Module):
 
 
 class NormalizedRegressionLoss(nn.Module):
-    """
-    Regression loss for normalized [0,1] parameter values.
+    """Regression loss for normalized [0,1] parameter values.
 
     This loss function is designed for pure regression heads that output sigmoid-activated
     values in the [0,1] range. It normalizes the targets to [0,1] space, computes the
@@ -312,8 +309,7 @@ class NormalizedRegressionLoss(nn.Module):
             raise ValueError(f"Parameter range must be positive, got {self.param_range}")
 
     def forward(self, normalized_pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        """
-        Compute regression loss between normalized predictions and targets.
+        """Compute regression loss between normalized predictions and targets.
 
         Args:
             normalized_pred: Sigmoid-activated predictions in [0,1] range [batch_size, 1]
@@ -347,8 +343,7 @@ class NormalizedRegressionLoss(nn.Module):
 
 
 class WeightedCrossEntropyLoss(nn.Module):
-    """
-    Weighted CrossEntropyLoss that penalizes distant predictions more than close ones.
+    """Weighted CrossEntropyLoss that penalizes distant predictions more than close ones.
 
     This keeps the classification framework but adds distance-based penalties.
     The weight for each class is based on its distance from the true class.
@@ -359,20 +354,14 @@ class WeightedCrossEntropyLoss(nn.Module):
         base_weight: Base weight for correct class
     """
 
-    def __init__(
-        self,
-        num_classes: int,
-        distance_power: float = 2.0,
-        base_weight: float = 1.0
-    ):
+    def __init__(self, num_classes: int, distance_power: float = 2.0, base_weight: float = 1.0):
         super().__init__()
         self.num_classes = num_classes
         self.distance_power = distance_power
         self.base_weight = base_weight
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of weighted cross entropy loss.
+        """Forward pass of weighted cross entropy loss.
 
         Args:
             logits: Raw logits from model [batch_size, num_classes]
@@ -386,7 +375,9 @@ class WeightedCrossEntropyLoss(nn.Module):
         # Create distance matrix: distance[i,j] = |i - j|
         class_indices = torch.arange(self.num_classes, device=logits.device)
         target_expanded = targets.unsqueeze(1)  # [batch_size, 1]
-        distances = torch.abs(class_indices.unsqueeze(0) - target_expanded)  # [batch_size, num_classes]
+        distances = torch.abs(
+            class_indices.unsqueeze(0) - target_expanded
+        )  # [batch_size, num_classes]
 
         # Convert distances to weights: closer predictions get lower weights (less penalty)
         weights = self.base_weight + distances.float() ** self.distance_power
@@ -401,7 +392,7 @@ class WeightedCrossEntropyLoss(nn.Module):
 
         # Calculate loss as weighted sum of probabilities for incorrect classes
         # plus standard cross entropy for correct class
-        cross_entropy_loss = F.cross_entropy(logits, targets, reduction='none')
+        cross_entropy_loss = F.cross_entropy(logits, targets, reduction="none")
 
         # Add distance-based penalty for incorrect predictions
         incorrect_mask = (class_indices.unsqueeze(0) != target_expanded).float()
@@ -413,8 +404,7 @@ class WeightedCrossEntropyLoss(nn.Module):
 
 
 def create_loss_function(loss_config: Dict[str, Any]) -> nn.Module:
-    """
-    Factory function to create loss functions based on configuration.
+    """Factory function to create loss functions based on configuration.
 
     Args:
         loss_config: Configuration dictionary with '_target_' key and parameters
@@ -422,35 +412,36 @@ def create_loss_function(loss_config: Dict[str, Any]) -> nn.Module:
     Returns:
         Configured loss function
     """
-    if '_target_' not in loss_config:
+    if "_target_" not in loss_config:
         raise ValueError("Loss configuration must contain '_target_' key")
 
-    target = loss_config['_target_']
-    params = {k: v for k, v in loss_config.items() if k != '_target_'}
+    target = loss_config["_target_"]
+    params = {k: v for k, v in loss_config.items() if k != "_target_"}
 
     # Handle standard PyTorch losses
-    if target == 'torch.nn.CrossEntropyLoss':
+    if target == "torch.nn.CrossEntropyLoss":
         return nn.CrossEntropyLoss(**params)
-    elif target == 'torch.nn.MSELoss':
+    elif target == "torch.nn.MSELoss":
         return nn.MSELoss(**params)
-    elif target == 'torch.nn.L1Loss':
+    elif target == "torch.nn.L1Loss":
         return nn.L1Loss(**params)
-    elif target == 'torch.nn.HuberLoss':
+    elif target == "torch.nn.HuberLoss":
         return nn.HuberLoss(**params)
 
     # Handle custom losses
-    elif target == 'src.models.losses.OrdinalRegressionLoss':
+    elif target == "src.models.losses.OrdinalRegressionLoss":
         return OrdinalRegressionLoss(**params)
-    elif target == 'src.models.losses.QuantizedRegressionLoss':
+    elif target == "src.models.losses.QuantizedRegressionLoss":
         return QuantizedRegressionLoss(**params)
-    elif target == 'src.models.losses.WeightedCrossEntropyLoss':
+    elif target == "src.models.losses.WeightedCrossEntropyLoss":
         return WeightedCrossEntropyLoss(**params)
-    elif target == 'src.models.losses.NormalizedRegressionLoss':
+    elif target == "src.models.losses.NormalizedRegressionLoss":
         return NormalizedRegressionLoss(**params)
-    elif target == 'src.models.losses.MultiScaleSpectralLoss':
+    elif target == "src.models.losses.MultiScaleSpectralLoss":
         return MultiScaleSpectralLoss(**params)
-    elif target == 'src.models.soft_target_loss.SoftTargetLoss':
+    elif target == "src.models.soft_target_loss.SoftTargetLoss":
         from src.models.soft_target_loss import SoftTargetLoss
+
         return SoftTargetLoss(**params)
 
     else:
