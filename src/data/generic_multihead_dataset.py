@@ -1,18 +1,20 @@
 import json
 import struct
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional, List, Union
-import torch
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
+import torch
+
 from .multihead_dataset_base import MultiheadDatasetBase
 
 
 class GenericMultiheadDataset(MultiheadDatasetBase):
     """Generic multihead dataset for arbitrary formats.
 
-    This class provides a flexible implementation for loading multihead datasets
-    with various binary formats. It supports auto-detection of format specifications
-    and can handle custom metadata structures.
+    This class provides a flexible implementation for loading multihead datasets with various
+    binary formats. It supports auto-detection of format specifications and can handle custom
+    metadata structures.
     """
 
     def __init__(
@@ -21,7 +23,7 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         format_config: Optional[Dict[str, Any]] = None,
         auto_detect: bool = True,
         transform: Optional[callable] = None,
-        target_transform: Optional[callable] = None
+        target_transform: Optional[callable] = None,
     ):
         """Initialize generic multihead dataset.
 
@@ -58,10 +60,10 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
 
         # Look for metadata files
         metadata_candidates = [
-            'cifar100mh_dataset_info.json',
-            'dataset_info.json',
-            'metadata.json',
-            'format.json'
+            "cifar100mh_dataset_info.json",
+            "dataset_info.json",
+            "metadata.json",
+            "format.json",
         ]
 
         if data_path.is_dir():
@@ -70,25 +72,25 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
                 metadata_file = data_path / candidate
                 if metadata_file.exists():
                     try:
-                        with open(metadata_file, 'r') as f:
+                        with open(metadata_file) as f:
                             config = json.load(f)
                         print(f"Auto-detected format from {metadata_file}")
 
                         # Ensure required fields are present
-                        if 'label_encoding' not in config:
-                            config['label_encoding'] = {
-                                'format': '[N] [param_id] [param_val] ...',
-                                'N_range': [0, 255],
-                                'param_id_range': [0, 255],
-                                'param_val_range': [0, 255]
+                        if "label_encoding" not in config:
+                            config["label_encoding"] = {
+                                "format": "[N] [param_id] [param_val] ...",
+                                "N_range": [0, 255],
+                                "param_id_range": [0, 255],
+                                "param_val_range": [0, 255],
                             }
 
                         return config
-                    except (json.JSONDecodeError, IOError):
+                    except (json.JSONDecodeError, OSError):
                         continue
 
             # Check for standard dataset files
-            if (data_path / 'train_batch').exists() or (data_path / 'test_batch').exists():
+            if (data_path / "train_batch").exists() or (data_path / "test_batch").exists():
                 # Assume CIFAR-100-MH format
                 return self._get_cifar100mh_format()
 
@@ -109,13 +111,14 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         try:
             # Try pickle format first
             import pickle
-            with open(file_path, 'rb') as f:
+
+            with open(file_path, "rb") as f:
                 data = pickle.load(f)
 
-            if isinstance(data, dict) and 'data' in data and 'labels' in data:
+            if isinstance(data, dict) and "data" in data and "labels" in data:
                 # Analyze image and label data
-                images = data['data']
-                labels = data['labels']
+                images = data["data"]
+                labels = data["labels"]
 
                 if not images or not labels:
                     return self._get_default_format()
@@ -143,14 +146,14 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
 
                     if len(first_label) >= expected_length:
                         return {
-                            'format': 'auto-detected',
-                            'label_encoding': {
-                                'format': '[N] [param_id] [param_val] ...',
-                                'detected_dimensions': [height, width, channels],
-                                'detected_heads': num_heads
+                            "format": "auto-detected",
+                            "label_encoding": {
+                                "format": "[N] [param_id] [param_val] ...",
+                                "detected_dimensions": [height, width, channels],
+                                "detected_heads": num_heads,
                             },
-                            'parameter_names': [f'param_{i}' for i in range(num_heads)],
-                            'image_size': f'{height}x{width}x{channels}'
+                            "parameter_names": [f"param_{i}" for i in range(num_heads)],
+                            "image_size": f"{height}x{width}x{channels}",
                         }
 
         except Exception:
@@ -165,16 +168,16 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         :return: Default format configuration
         """
         return {
-            'format': 'generic-multihead',
-            'version': '1.0',
-            'label_encoding': {
-                'format': '[height] [width] [channels] [N] [param1_id] [param1_val] ...',
-                'N_range': [0, 255],
-                'param_id_range': [0, 255],
-                'param_val_range': [0, 255]
+            "format": "generic-multihead",
+            "version": "1.0",
+            "label_encoding": {
+                "format": "[height] [width] [channels] [N] [param1_id] [param1_val] ...",
+                "N_range": [0, 255],
+                "param_id_range": [0, 255],
+                "param_val_range": [0, 255],
             },
-            'parameter_names': ['param_0', 'param_1'],
-            'default_image_size': '32x32x3'
+            "parameter_names": ["param_0", "param_1"],
+            "default_image_size": "32x32x3",
         }
 
     def _get_cifar100mh_format(self) -> Dict[str, Any]:
@@ -183,16 +186,16 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         :return: CIFAR-100-MH format configuration
         """
         return {
-            'format': 'CIFAR-100-MH',
-            'version': '1.0',
-            'label_encoding': {
-                'format': '[height] [width] [channels] [N] [param1_id] [param1_val] ...',
-                'N_range': [0, 255],
-                'param_id_range': [0, 255],
-                'param_val_range': [0, 255]
+            "format": "CIFAR-100-MH",
+            "version": "1.0",
+            "label_encoding": {
+                "format": "[height] [width] [channels] [N] [param1_id] [param1_val] ...",
+                "N_range": [0, 255],
+                "param_id_range": [0, 255],
+                "param_val_range": [0, 255],
             },
-            'parameter_names': ['param_0', 'param_1'],
-            'image_size': '32x32x3'
+            "parameter_names": ["param_0", "param_1"],
+            "image_size": "32x32x3",
         }
 
     def _validate_config(self, config: Dict[str, Any]) -> bool:
@@ -202,14 +205,14 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         :return: True if valid
         :raises: ValueError if invalid
         """
-        required_fields = ['format', 'label_encoding']
+        required_fields = ["format", "label_encoding"]
         for field in required_fields:
             if field not in config:
                 raise ValueError(f"Missing required field in format config: {field}")
 
         # Validate label encoding format
-        label_encoding = config['label_encoding']
-        if 'format' not in label_encoding:
+        label_encoding = config["label_encoding"]
+        if "format" not in label_encoding:
             raise ValueError("Missing 'format' in label_encoding")
 
         return True
@@ -226,10 +229,10 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         _, labels = self.samples[idx]
 
         metadata = {
-            'sample_index': idx,
-            'labels': labels.copy(),
-            'image_shape': self.image_shape,
-            'format': self.metadata_format.get('format', 'unknown')
+            "sample_index": idx,
+            "labels": labels.copy(),
+            "image_shape": self.image_shape,
+            "format": self.metadata_format.get("format", "unknown"),
         }
 
         return metadata
@@ -251,29 +254,33 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
 
         return image, labels
 
-    def add_custom_parameter_mapping(self, param_id: int, param_name: str, description: str = "") -> None:
+    def add_custom_parameter_mapping(
+        self, param_id: int, param_name: str, description: str = ""
+    ) -> None:
         """Add custom parameter mapping.
 
         :param param_id: Parameter ID
         :param param_name: Parameter name
         :param description: Parameter description
         """
-        if 'parameter_mappings' not in self.metadata_format:
-            self.metadata_format['parameter_mappings'] = {}
+        if "parameter_mappings" not in self.metadata_format:
+            self.metadata_format["parameter_mappings"] = {}
 
-        self.metadata_format['parameter_mappings'][param_name] = {
-            'id': param_id,
-            'description': description
+        self.metadata_format["parameter_mappings"][param_name] = {
+            "id": param_id,
+            "description": description,
         }
 
         # Update parameter names list
-        if 'parameter_names' not in self.metadata_format:
-            self.metadata_format['parameter_names'] = []
+        if "parameter_names" not in self.metadata_format:
+            self.metadata_format["parameter_names"] = []
 
-        while len(self.metadata_format['parameter_names']) <= param_id:
-            self.metadata_format['parameter_names'].append(f'param_{len(self.metadata_format["parameter_names"])}')
+        while len(self.metadata_format["parameter_names"]) <= param_id:
+            self.metadata_format["parameter_names"].append(
+                f'param_{len(self.metadata_format["parameter_names"])}'
+            )
 
-        self.metadata_format['parameter_names'][param_id] = param_name
+        self.metadata_format["parameter_names"][param_id] = param_name
 
     def save_format_config(self, output_path: str) -> None:
         """Save current format configuration to file.
@@ -281,9 +288,9 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         :param output_path: Path to save configuration
         """
         config_to_save = self.metadata_format.copy()
-        config_to_save['dataset_info'] = self.get_dataset_info()
+        config_to_save["dataset_info"] = self.get_dataset_info()
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(config_to_save, f, indent=2)
 
     def get_format_summary(self) -> Dict[str, Any]:
@@ -292,14 +299,14 @@ class GenericMultiheadDataset(MultiheadDatasetBase):
         :return: Format summary dictionary
         """
         return {
-            'format_name': self.metadata_format.get('format', 'unknown'),
-            'version': self.metadata_format.get('version', 'unknown'),
-            'label_encoding': self.metadata_format.get('label_encoding', {}),
-            'parameter_names': self.metadata_format.get('parameter_names', []),
-            'auto_detected': self.auto_detect,
-            'num_samples': len(self.samples),
-            'image_shape': self.image_shape,
-            'heads_config': self.heads_config
+            "format_name": self.metadata_format.get("format", "unknown"),
+            "version": self.metadata_format.get("version", "unknown"),
+            "label_encoding": self.metadata_format.get("label_encoding", {}),
+            "parameter_names": self.metadata_format.get("parameter_names", []),
+            "auto_detected": self.auto_detect,
+            "num_samples": len(self.samples),
+            "image_shape": self.image_shape,
+            "heads_config": self.heads_config,
         }
 
 
@@ -308,9 +315,7 @@ class MultiheadDatasetFactory:
 
     @staticmethod
     def create_dataset(
-        data_path: str,
-        dataset_type: str = 'auto',
-        **kwargs
+        data_path: str, dataset_type: str = "auto", **kwargs
     ) -> MultiheadDatasetBase:
         """Create a multihead dataset of the specified type.
 
@@ -319,24 +324,25 @@ class MultiheadDatasetFactory:
         :param kwargs: Additional arguments for dataset constructor
         :return: Dataset instance
         """
-        if dataset_type == 'auto':
+        if dataset_type == "auto":
             # Auto-detect dataset type
             data_path_obj = Path(data_path)
 
             # Check for CIFAR-100-MH indicators
             if data_path_obj.is_dir():
-                metadata_file = data_path_obj / 'cifar100mh_dataset_info.json'
+                metadata_file = data_path_obj / "cifar100mh_dataset_info.json"
                 if metadata_file.exists():
-                    dataset_type = 'cifar100mh'
+                    dataset_type = "cifar100mh"
                 else:
-                    dataset_type = 'generic'
+                    dataset_type = "generic"
             else:
-                dataset_type = 'generic'
+                dataset_type = "generic"
 
-        if dataset_type == 'cifar100mh':
+        if dataset_type == "cifar100mh":
             from .cifar100mh_dataset import CIFAR100MHDataset
+
             return CIFAR100MHDataset(data_path, **kwargs)
-        elif dataset_type == 'generic':
+        elif dataset_type == "generic":
             return GenericMultiheadDataset(data_path, **kwargs)
         else:
             raise ValueError(f"Unknown dataset type: {dataset_type}")
@@ -347,7 +353,7 @@ class MultiheadDatasetFactory:
 
         :return: List of supported format names
         """
-        return ['cifar100mh', 'generic']
+        return ["cifar100mh", "generic"]
 
     @staticmethod
     def get_format_info(format_name: str) -> Dict[str, Any]:
@@ -357,23 +363,23 @@ class MultiheadDatasetFactory:
         :return: Format information dictionary
         """
         formats = {
-            'cifar100mh': {
-                'name': 'CIFAR-100-MH',
-                'description': 'CIFAR-100 Multihead format with embedded metadata',
-                'label_structure': '[height] [width] [channels] [N] [param_id] [param_val] ...',
-                'file_format': 'pickle',
-                'metadata_file': 'cifar100mh_dataset_info.json'
+            "cifar100mh": {
+                "name": "CIFAR-100-MH",
+                "description": "CIFAR-100 Multihead format with embedded metadata",
+                "label_structure": "[height] [width] [channels] [N] [param_id] [param_val] ...",
+                "file_format": "pickle",
+                "metadata_file": "cifar100mh_dataset_info.json",
             },
-            'generic': {
-                'name': 'Generic Multihead',
-                'description': 'Generic multihead format with auto-detection',
-                'label_structure': 'Auto-detected or configurable',
-                'file_format': 'pickle or binary',
-                'metadata_file': 'auto-detected or configurable'
-            }
+            "generic": {
+                "name": "Generic Multihead",
+                "description": "Generic multihead format with auto-detection",
+                "label_structure": "Auto-detected or configurable",
+                "file_format": "pickle or binary",
+                "metadata_file": "auto-detected or configurable",
+            },
         }
 
-        return formats.get(format_name, {'error': f'Unknown format: {format_name}'})
+        return formats.get(format_name, {"error": f"Unknown format: {format_name}"})
 
 
 if __name__ == "__main__":

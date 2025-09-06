@@ -124,7 +124,7 @@ class CIFAR100DataModule(LightningDataModule):
         self.transforms = transforms.Compose(
             [
                 transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
 
@@ -135,7 +135,7 @@ class CIFAR100DataModule(LightningDataModule):
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomRotation(15),  # Additional augmentation for CIFAR-100
                 transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
 
@@ -160,20 +160,106 @@ class CIFAR100DataModule(LightningDataModule):
         :return: List of CIFAR-100 fine class names.
         """
         return [
-            'apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle',
-            'bicycle', 'bottle', 'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel',
-            'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock',
-            'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur',
-            'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster',
-            'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion',
-            'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse',
-            'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear',
-            'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy', 'porcupine',
-            'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose', 'sea',
-            'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider',
-            'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank',
-            'telephone', 'television', 'tiger', 'tractor', 'train', 'trout', 'tulip',
-            'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm'
+            "apple",
+            "aquarium_fish",
+            "baby",
+            "bear",
+            "beaver",
+            "bed",
+            "bee",
+            "beetle",
+            "bicycle",
+            "bottle",
+            "bowl",
+            "boy",
+            "bridge",
+            "bus",
+            "butterfly",
+            "camel",
+            "can",
+            "castle",
+            "caterpillar",
+            "cattle",
+            "chair",
+            "chimpanzee",
+            "clock",
+            "cloud",
+            "cockroach",
+            "couch",
+            "crab",
+            "crocodile",
+            "cup",
+            "dinosaur",
+            "dolphin",
+            "elephant",
+            "flatfish",
+            "forest",
+            "fox",
+            "girl",
+            "hamster",
+            "house",
+            "kangaroo",
+            "keyboard",
+            "lamp",
+            "lawn_mower",
+            "leopard",
+            "lion",
+            "lizard",
+            "lobster",
+            "man",
+            "maple_tree",
+            "motorcycle",
+            "mountain",
+            "mouse",
+            "mushroom",
+            "oak_tree",
+            "orange",
+            "orchid",
+            "otter",
+            "palm_tree",
+            "pear",
+            "pickup_truck",
+            "pine_tree",
+            "plain",
+            "plate",
+            "poppy",
+            "porcupine",
+            "possum",
+            "rabbit",
+            "raccoon",
+            "ray",
+            "road",
+            "rocket",
+            "rose",
+            "sea",
+            "seal",
+            "shark",
+            "shrew",
+            "skunk",
+            "skyscraper",
+            "snail",
+            "snake",
+            "spider",
+            "squirrel",
+            "streetcar",
+            "sunflower",
+            "sweet_pepper",
+            "table",
+            "tank",
+            "telephone",
+            "television",
+            "tiger",
+            "tractor",
+            "train",
+            "trout",
+            "tulip",
+            "turtle",
+            "wardrobe",
+            "whale",
+            "willow_tree",
+            "wolf",
+            "woman",
+            "worm",
         ]
 
     @property
@@ -183,11 +269,26 @@ class CIFAR100DataModule(LightningDataModule):
         :return: List of CIFAR-100 coarse class names.
         """
         return [
-            'aquatic_mammals', 'fish', 'flowers', 'food_containers', 'fruit_and_vegetables',
-            'household_electrical_devices', 'household_furniture', 'insects', 'large_carnivores',
-            'large_man-made_outdoor_things', 'large_natural_outdoor_scenes', 'large_omnivores_and_herbivores',
-            'medium-sized_mammals', 'non-insect_invertebrates', 'people', 'reptiles',
-            'small_mammals', 'trees', 'vehicles_1', 'vehicles_2'
+            "aquatic_mammals",
+            "fish",
+            "flowers",
+            "food_containers",
+            "fruit_and_vegetables",
+            "household_electrical_devices",
+            "household_furniture",
+            "insects",
+            "large_carnivores",
+            "large_man-made_outdoor_things",
+            "large_natural_outdoor_scenes",
+            "large_omnivores_and_herbivores",
+            "medium-sized_mammals",
+            "non-insect_invertebrates",
+            "people",
+            "reptiles",
+            "small_mammals",
+            "trees",
+            "vehicles_1",
+            "vehicles_2",
         ]
 
     @property
@@ -230,19 +331,15 @@ class CIFAR100DataModule(LightningDataModule):
         # load and split datasets only if not loaded already
         if not self.data_train and not self.data_val and not self.data_test:
             # Choose dataset class based on label type
-            dataset_class = CIFAR100WithCoarseLabels if self.hparams.use_coarse_labels else CIFAR100
+            dataset_class = (
+                CIFAR100WithCoarseLabels if self.hparams.use_coarse_labels else CIFAR100
+            )
 
             # Use augmented transforms for training data
             trainset = dataset_class(
-                self.hparams.data_dir,
-                train=True,
-                transform=self.train_transforms
+                self.hparams.data_dir, train=True, transform=self.train_transforms
             )
-            testset = dataset_class(
-                self.hparams.data_dir,
-                train=False,
-                transform=self.transforms
-            )
+            testset = dataset_class(self.hparams.data_dir, train=False, transform=self.transforms)
 
             dataset = ConcatDataset(datasets=[trainset, testset])
             self.data_train, self.data_val, self.data_test = random_split(

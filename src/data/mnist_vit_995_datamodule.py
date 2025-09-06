@@ -37,18 +37,22 @@ class MNISTViTDataModule(LightningDataModule):
         self.save_hyperparameters(logger=False)
 
         # ViT-specific data transformations matching original implementation
-        self.train_transforms = transforms.Compose([
-            transforms.Resize([28, 28]),
-            transforms.RandomCrop(28, padding=2),  # Data augmentation
-            transforms.ToTensor(),
-            transforms.Normalize([0.5], [0.5])     # ViT normalization
-        ])
+        self.train_transforms = transforms.Compose(
+            [
+                transforms.Resize([28, 28]),
+                transforms.RandomCrop(28, padding=2),  # Data augmentation
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),  # ViT normalization
+            ]
+        )
 
-        self.val_test_transforms = transforms.Compose([
-            transforms.Resize([28, 28]),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5], [0.5])     # ViT normalization
-        ])
+        self.val_test_transforms = transforms.Compose(
+            [
+                transforms.Resize([28, 28]),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),  # ViT normalization
+            ]
+        )
 
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
@@ -67,7 +71,10 @@ class MNISTViTDataModule(LightningDataModule):
         MNIST(self.hparams.data_dir, train=False, download=True)
 
     def setup(self, stage: Optional[str] = None) -> None:
-        """Load data. Set variables: `self.data_train`, `self.data_val`, `self.data_test`."""
+        """Load data.
+
+        Set variables: `self.data_train`, `self.data_val`, `self.data_test`.
+        """
         # Divide batch size by the number of devices.
         if self.trainer is not None:
             if self.hparams.batch_size % self.trainer.world_size != 0:

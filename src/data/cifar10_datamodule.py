@@ -91,7 +91,7 @@ class CIFAR10DataModule(LightningDataModule):
         self.transforms = transforms.Compose(
             [
                 transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
 
@@ -101,7 +101,7 @@ class CIFAR10DataModule(LightningDataModule):
                 transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
 
@@ -118,12 +118,7 @@ class CIFAR10DataModule(LightningDataModule):
         :return: The number of CIFAR-10 classes (10) or dict for multihead mode.
         """
         if self.hparams.multihead:
-            return {
-                'class': 10,
-                'domain': 2,
-                'mobility': 3,
-                'size': 3
-            }
+            return {"class": 10, "domain": 2, "mobility": 3, "size": 3}
         else:
             return 10  # Backward compatibility
 
@@ -133,7 +128,18 @@ class CIFAR10DataModule(LightningDataModule):
 
         :return: List of CIFAR-10 class names.
         """
-        return ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+        return [
+            "airplane",
+            "automobile",
+            "bird",
+            "cat",
+            "deer",
+            "dog",
+            "frog",
+            "horse",
+            "ship",
+            "truck",
+        ]
 
     def prepare_data(self) -> None:
         """Download data if needed. Lightning ensures that `self.prepare_data()` is called only
@@ -173,8 +179,9 @@ class CIFAR10DataModule(LightningDataModule):
             # Conditionally wrap with multihead dataset
             if self.hparams.multihead:
                 from src.data.multihead_dataset import MultiheadDataset
-                trainset = MultiheadDataset(trainset, 'cifar10')
-                testset = MultiheadDataset(testset, 'cifar10')
+
+                trainset = MultiheadDataset(trainset, "cifar10")
+                testset = MultiheadDataset(testset, "cifar10")
 
             dataset = ConcatDataset(datasets=[trainset, testset])
             self.data_train, self.data_val, self.data_test = random_split(
@@ -196,7 +203,7 @@ class CIFAR10DataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
             shuffle=True,
             persistent_workers=self.persistent_workers,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
         )
 
     def val_dataloader(self) -> DataLoader[Any]:
@@ -212,7 +219,7 @@ class CIFAR10DataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
             shuffle=False,
             persistent_workers=self.persistent_workers,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
         )
 
     def test_dataloader(self) -> DataLoader[Any]:
@@ -228,7 +235,7 @@ class CIFAR10DataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
             shuffle=False,
             persistent_workers=self.persistent_workers,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
         )
 
     @staticmethod

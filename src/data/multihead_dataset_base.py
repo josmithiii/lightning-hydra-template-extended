@@ -1,19 +1,19 @@
-import struct
 import pickle
+import struct
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional, List, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
 import torch
 from torch.utils.data import Dataset
-import numpy as np
 
 
 class MultiheadDatasetBase(Dataset, ABC):
     """Base class for multihead datasets with arbitrary format support.
 
-    This class provides the foundation for loading datasets with multiple classification
-    heads and embedded metadata. It supports various binary formats with self-describing
-    metadata structures.
+    This class provides the foundation for loading datasets with multiple classification heads and
+    embedded metadata. It supports various binary formats with self-describing metadata structures.
     """
 
     def __init__(self, data_path: str, metadata_format: Optional[Dict[str, Any]] = None):
@@ -43,38 +43,39 @@ class MultiheadDatasetBase(Dataset, ABC):
 
     def _load_from_file(self) -> None:
         """Load dataset from a single file."""
-        if self.data_path.suffix == '.pkl' or 'batch' in self.data_path.name:
+        if self.data_path.suffix == ".pkl" or "batch" in self.data_path.name:
             # Handle pickle format (like CIFAR batches)
-            with open(self.data_path, 'rb') as f:
+            with open(self.data_path, "rb") as f:
                 data = pickle.load(f)
             self._parse_pickle_data(data)
         else:
             # Handle binary format
-            with open(self.data_path, 'rb') as f:
+            with open(self.data_path, "rb") as f:
                 self._parse_binary_data(f.read())
 
     def _load_from_directory(self) -> None:
         """Load dataset from a directory with multiple files."""
         # Look for metadata files (try multiple formats)
         metadata_files = [
-            self.data_path / 'cifar100mh_dataset_info.json',
-            self.data_path / 'vimh_dataset_info.json',
-            self.data_path / 'dataset_info.json'
+            self.data_path / "cifar100mh_dataset_info.json",
+            self.data_path / "vimh_dataset_info.json",
+            self.data_path / "dataset_info.json",
         ]
 
         # Load metadata if available
         for metadata_file in metadata_files:
             if metadata_file.exists():
                 import json
-                with open(metadata_file, 'r') as f:
+
+                with open(metadata_file) as f:
                     self.metadata_format = json.load(f)
                 break
 
         # Look for data files with fallback support
         # Try pickle format first (preferred), then binary format
         train_files = [
-            self.data_path / 'train_batch',  # pickle format
-            self.data_path / 'train'         # binary format
+            self.data_path / "train_batch",  # pickle format
+            self.data_path / "train",  # binary format
         ]
 
         data_file = None
@@ -84,18 +85,20 @@ class MultiheadDatasetBase(Dataset, ABC):
                 break
 
         if data_file is None:
-            raise FileNotFoundError(f"No training data found in {self.data_path}. "
-                                  f"Looked for: {[f.name for f in train_files]}")
+            raise FileNotFoundError(
+                f"No training data found in {self.data_path}. "
+                f"Looked for: {[f.name for f in train_files]}"
+            )
 
         # Load training data based on format
-        if 'batch' in data_file.name or data_file.suffix == '.pkl':
+        if "batch" in data_file.name or data_file.suffix == ".pkl":
             # Handle pickle format
-            with open(data_file, 'rb') as f:
+            with open(data_file, "rb") as f:
                 data = pickle.load(f)
             self._parse_pickle_data(data)
         else:
             # Handle binary format
-            with open(data_file, 'rb') as f:
+            with open(data_file, "rb") as f:
                 self._parse_binary_data(f.read())
 
     def _parse_pickle_data(self, data: Dict[str, Any]) -> None:
@@ -103,28 +106,30 @@ class MultiheadDatasetBase(Dataset, ABC):
 
         :param data: Dictionary containing 'data' and label keys
         """
-        if 'data' not in data:
+        if "data" not in data:
             raise ValueError("Pickle data must contain 'data' key")
 
         # Look for label keys in common formats
         label_key = None
-        for possible_key in ['labels', 'vimh_labels', 'cifar100mh_labels', 'multihead_labels']:
+        for possible_key in ["labels", "vimh_labels", "cifar100mh_labels", "multihead_labels"]:
             if possible_key in data:
                 label_key = possible_key
                 break
 
         if label_key is None:
-            raise ValueError("Pickle data must contain labels key ('labels', 'vimh_labels', 'cifar100mh_labels', or 'multihead_labels')")
+            raise ValueError(
+                "Pickle data must contain labels key ('labels', 'vimh_labels', 'cifar100mh_labels', or 'multihead_labels')"
+            )
 
-        images = data['data']  # Shape: (n_samples, height*width*channels)
+        images = data["data"]  # Shape: (n_samples, height*width*channels)
         labels = data[label_key]  # Shape: (n_samples, label_bytes)
 
         # For VIMH format, extract image dimensions from pickle data
-        if self.metadata_format.get('format') == 'VIMH':
-            if 'height' in data and 'width' in data and 'channels' in data:
-                self.metadata_format['height'] = data['height']
-                self.metadata_format['width'] = data['width']
-                self.metadata_format['channels'] = data['channels']
+        if self.metadata_format.get("format") == "VIMH":
+            if "height" in data and "width" in data and "channels" in data:
+                self.metadata_format["height"] = data["height"]
+                self.metadata_format["width"] = data["width"]
+                self.metadata_format["channels"] = data["channels"]
 
         # Parse each sample
         for i in range(len(images)):
@@ -154,12 +159,16 @@ class MultiheadDatasetBase(Dataset, ABC):
                 # Now calculate heads config for all parameters
                 for param_name in all_param_names:
                     # Find max value for this parameter across all samples that have it
-                    values = [sample[1][param_name] for sample in self.samples if param_name in sample[1]]
+                    values = [
+                        sample[1][param_name] for sample in self.samples if param_name in sample[1]
+                    ]
                     if values:
                         max_val = max(values)
                         self.heads_config[param_name] = max_val + 1  # +1 for number of classes
 
-    def _parse_label_metadata(self, label_data: Union[List[int], np.ndarray]) -> Tuple[Dict[str, int], Dict[str, int]]:
+    def _parse_label_metadata(
+        self, label_data: Union[List[int], np.ndarray]
+    ) -> Tuple[Dict[str, int], Dict[str, int]]:
         """Parse metadata and labels from label data bytes.
 
         Format depends on the dataset format:
@@ -176,7 +185,7 @@ class MultiheadDatasetBase(Dataset, ABC):
             raise ValueError(f"Label data too short: {len(label_data)}, expected at least 1 byte")
 
         # Check if this is VIMH format
-        is_vimh = self.metadata_format.get('format') == 'VIMH'
+        is_vimh = self.metadata_format.get("format") == "VIMH"
 
         if is_vimh:
             # VIMH format: [N] [param1_id] [param1_val] [param2_id] [param2_val] ...
@@ -185,36 +194,33 @@ class MultiheadDatasetBase(Dataset, ABC):
             labels_start = 1
 
             # Get dimensions from metadata - they should be already set from pickle data
-            height = self.metadata_format.get('height', 32)
-            width = self.metadata_format.get('width', 32)
-            channels = self.metadata_format.get('channels', 3)
+            height = self.metadata_format.get("height", 32)
+            width = self.metadata_format.get("width", 32)
+            channels = self.metadata_format.get("channels", 3)
         else:
             # CIFAR-100-MH format: [N] [param1_id] [param1_val] ...
             num_heads = label_data[0]
             labels_start = 1
 
             # Get image dimensions from metadata if available, otherwise infer from data shape
-            if 'image_size' in self.metadata_format:
-                size_str = self.metadata_format['image_size']
-                if 'x' in size_str:
-                    parts = size_str.split('x')
+            if "image_size" in self.metadata_format:
+                size_str = self.metadata_format["image_size"]
+                if "x" in size_str:
+                    parts = size_str.split("x")
                     height, width, channels = int(parts[0]), int(parts[1]), int(parts[2])
                 else:
                     height, width, channels = 32, 32, 3  # Default
             else:
                 height, width, channels = 32, 32, 3  # Default for CIFAR format
 
-        metadata = {
-            'height': height,
-            'width': width,
-            'channels': channels,
-            'num_heads': num_heads
-        }
+        metadata = {"height": height, "width": width, "channels": channels, "num_heads": num_heads}
 
         # Parse parameter labels
         expected_length = labels_start + (num_heads * 2)  # labels_start + N pairs of (id, val)
         if len(label_data) < expected_length:
-            raise ValueError(f"Label data length {len(label_data)} insufficient for {num_heads} heads, expected {expected_length}")
+            raise ValueError(
+                f"Label data length {len(label_data)} insufficient for {num_heads} heads, expected {expected_length}"
+            )
 
         labels_dict = {}
         for i in range(num_heads):
@@ -233,12 +239,16 @@ class MultiheadDatasetBase(Dataset, ABC):
         :param param_id: Parameter ID
         :return: Parameter name
         """
-        if 'parameter_names' in self.metadata_format and param_id < len(self.metadata_format['parameter_names']):
-            return self.metadata_format['parameter_names'][param_id]
+        if "parameter_names" in self.metadata_format and param_id < len(
+            self.metadata_format["parameter_names"]
+        ):
+            return self.metadata_format["parameter_names"][param_id]
         else:
-            return f'param_{param_id}'
+            return f"param_{param_id}"
 
-    def _reconstruct_image(self, image_data: Union[List[int], np.ndarray], metadata: Dict[str, int]) -> torch.Tensor:
+    def _reconstruct_image(
+        self, image_data: Union[List[int], np.ndarray], metadata: Dict[str, int]
+    ) -> torch.Tensor:
         """Reconstruct image tensor from flattened data.
 
         :param image_data: Flattened image data
@@ -248,15 +258,17 @@ class MultiheadDatasetBase(Dataset, ABC):
         if isinstance(image_data, list):
             image_data = np.array(image_data)
 
-        height = metadata['height']
-        width = metadata['width']
-        channels = metadata['channels']
+        height = metadata["height"]
+        width = metadata["width"]
+        channels = metadata["channels"]
 
         expected_size = height * width * channels
         actual_size = image_data.size
 
         if actual_size != expected_size:
-            raise ValueError(f"Sample has inconsistent image shape: expected {height}x{width}x{channels} ({expected_size} pixels), got {actual_size} pixels")
+            raise ValueError(
+                f"Sample has inconsistent image shape: expected {height}x{width}x{channels} ({expected_size} pixels), got {actual_size} pixels"
+            )
 
         # Reshape to (height, width, channels) then convert to (channels, height, width)
         image = image_data.reshape(height, width, channels)
@@ -279,19 +291,19 @@ class MultiheadDatasetBase(Dataset, ABC):
             # Parse metadata: height, width, channels (6 bytes, 2 bytes each)
             if offset + 6 > len(data):
                 break
-            height, width, channels = struct.unpack("<HHH", data[offset:offset+6])
+            height, width, channels = struct.unpack("<HHH", data[offset : offset + 6])
             offset += 6
 
             # Parse scale factors: spec_min, spec_max (8 bytes, 4 bytes each)
             if offset + 8 > len(data):
                 break
-            spec_min, spec_max = struct.unpack("<ff", data[offset:offset+8])
+            spec_min, spec_max = struct.unpack("<ff", data[offset : offset + 8])
             offset += 8
 
             # Parse label data: num_params (1 byte)
             if offset + 1 > len(data):
                 break
-            num_params = struct.unpack("B", data[offset:offset+1])[0]
+            num_params = struct.unpack("B", data[offset : offset + 1])[0]
             offset += 1
 
             # Parse parameter pairs: (param_id, param_value) * num_params
@@ -300,27 +312,30 @@ class MultiheadDatasetBase(Dataset, ABC):
 
             label_dict = {}
             for _ in range(num_params):
-                param_id, param_value = struct.unpack("BB", data[offset:offset+2])
+                param_id, param_value = struct.unpack("BB", data[offset : offset + 2])
                 offset += 2
 
                 # Convert quantized value back to normalized [0,1] range
                 normalized_value = param_value / 255.0  # QUANTIZATION_LEVELS = 255
 
                 # Get parameter name from metadata if available
-                if (self.metadata_format and 'parameter_names' in self.metadata_format
-                    and param_id < len(self.metadata_format['parameter_names'])):
-                    param_name = self.metadata_format['parameter_names'][param_id]
+                if (
+                    self.metadata_format
+                    and "parameter_names" in self.metadata_format
+                    and param_id < len(self.metadata_format["parameter_names"])
+                ):
+                    param_name = self.metadata_format["parameter_names"][param_id]
                     label_dict[param_name] = normalized_value
                 else:
                     # Fallback to generic parameter name
-                    label_dict[f'param_{param_id}'] = normalized_value
+                    label_dict[f"param_{param_id}"] = normalized_value
 
             # Parse image data
             image_size = height * width * channels
             if offset + image_size > len(data):
                 break
 
-            image_data = data[offset:offset+image_size]
+            image_data = data[offset : offset + image_size]
             offset += image_size
 
             # Reconstruct image tensor
@@ -337,11 +352,11 @@ class MultiheadDatasetBase(Dataset, ABC):
 
             # Store sample with scale factors in metadata
             metadata_dict = {
-                'height': height,
-                'width': width,
-                'channels': channels,
-                'spec_min': spec_min,
-                'spec_max': spec_max
+                "height": height,
+                "width": width,
+                "channels": channels,
+                "spec_min": spec_min,
+                "spec_max": spec_max,
             }
 
             self.samples.append((image_tensor, label_dict, metadata_dict))
@@ -352,11 +367,11 @@ class MultiheadDatasetBase(Dataset, ABC):
 
             # Build heads config from parameter names and ranges
             self.heads_config = {}
-            if self.metadata_format and 'parameter_names' in self.metadata_format:
-                for param_name in self.metadata_format['parameter_names']:
+            if self.metadata_format and "parameter_names" in self.metadata_format:
+                for param_name in self.metadata_format["parameter_names"]:
                     # For binary format, we store normalized values [0,1]
                     # The actual parameter ranges are in the metadata_format
-                    self.heads_config[param_name] = {'classes': 256}  # 0-255 quantization levels
+                    self.heads_config[param_name] = {"classes": 256}  # 0-255 quantization levels
 
     def _validate_format(self) -> bool:
         """Validate the loaded dataset format.
@@ -382,11 +397,15 @@ class MultiheadDatasetBase(Dataset, ABC):
                 raise ValueError(f"Sample {i} has unexpected format with {len(sample)} elements")
 
             if image.shape != first_image_shape:
-                raise ValueError(f"Sample {i} has inconsistent image shape: {image.shape} vs {first_image_shape}")
+                raise ValueError(
+                    f"Sample {i} has inconsistent image shape: {image.shape} vs {first_image_shape}"
+                )
 
             # Check that number of heads is consistent
             if len(labels) != first_num_heads:
-                raise ValueError(f"Sample {i} has inconsistent label keys: {len(labels)} heads vs {first_num_heads} heads")
+                raise ValueError(
+                    f"Sample {i} has inconsistent label keys: {len(labels)} heads vs {first_num_heads} heads"
+                )
 
         return True
 
@@ -410,11 +429,11 @@ class MultiheadDatasetBase(Dataset, ABC):
         :return: Dictionary with dataset metadata
         """
         return {
-            'num_samples': len(self.samples),
-            'image_shape': self.image_shape,
-            'heads_config': self.heads_config,
-            'metadata_format': self.metadata_format,
-            'data_path': str(self.data_path)
+            "num_samples": len(self.samples),
+            "image_shape": self.image_shape,
+            "heads_config": self.heads_config,
+            "metadata_format": self.metadata_format,
+            "data_path": str(self.data_path),
         }
 
     def __len__(self) -> int:
