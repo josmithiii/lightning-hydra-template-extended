@@ -99,11 +99,7 @@ class MNISTDataModule(LightningDataModule):
         :return: The number of MNIST classes (10) or dict for multihead mode.
         """
         if self.hparams.multihead:
-            return {
-                'digit': 10,
-                'thickness': 5,
-                'smoothness': 3
-            }
+            return {"digit": 10, "thickness": 5, "smoothness": 3}
         else:
             return 10  # Backward compatibility
 
@@ -144,8 +140,9 @@ class MNISTDataModule(LightningDataModule):
             # Conditionally wrap with multihead dataset
             if self.hparams.multihead:
                 from src.data.multihead_dataset import MultiheadDataset
-                trainset = MultiheadDataset(trainset, 'mnist')
-                testset = MultiheadDataset(testset, 'mnist')
+
+                trainset = MultiheadDataset(trainset, "mnist")
+                testset = MultiheadDataset(testset, "mnist")
 
             dataset = ConcatDataset(datasets=[trainset, testset])
             self.data_train, self.data_val, self.data_test = random_split(
@@ -167,7 +164,7 @@ class MNISTDataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
             shuffle=True,
             persistent_workers=self.persistent_workers,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
         )
 
     def val_dataloader(self) -> DataLoader[Any]:
@@ -183,7 +180,7 @@ class MNISTDataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
             shuffle=False,
             persistent_workers=self.persistent_workers,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
         )
 
     def test_dataloader(self) -> DataLoader[Any]:
@@ -199,7 +196,7 @@ class MNISTDataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
             shuffle=False,
             persistent_workers=self.persistent_workers,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
         )
 
     @staticmethod

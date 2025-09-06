@@ -8,6 +8,7 @@ Multi-task learning with shared backbone and task-specific heads. One model, mul
 - **Usage**: `make emhcm` or `python src/train.py experiment=multihead_cnn_mnist`
 
 ## ⚡ Quick Start
+
 ```bash
 # MNIST multihead CNN (~99.1% digit, ~85% thickness, ~75% smoothness)
 make emhcm
@@ -25,17 +26,18 @@ make evimh
 
 The MNIST multihead system predicts three related tasks from handwritten digits:
 
-| Task | Classes | Description | Examples |
-|------|---------|-------------|----------|
-| **Digit** | 10 | Primary digit classification | 0, 1, 2, ..., 9 |
-| **Thickness** | 5 | Stroke thickness estimation | very thin → very thick |
-| **Smoothness** | 3 | Character smoothness | angular → medium → smooth |
+| Task           | Classes | Description                  | Examples                  |
+| -------------- | ------- | ---------------------------- | ------------------------- |
+| **Digit**      | 10      | Primary digit classification | 0, 1, 2, ..., 9           |
+| **Thickness**  | 5       | Stroke thickness estimation  | very thin → very thick    |
+| **Smoothness** | 3       | Character smoothness         | angular → medium → smooth |
 
 ### Synthetic Label Generation
 
 Since MNIST only provides digit labels, the system generates thickness and smoothness labels using intelligent heuristics:
 
 #### Thickness Mapping
+
 ```python
 # Based on digit complexity and stroke patterns
 thickness_map = {
@@ -53,6 +55,7 @@ thickness_map = {
 ```
 
 #### Smoothness Mapping
+
 ```python
 # Based on geometric properties
 smoothness_map = {
@@ -74,12 +77,14 @@ smoothness_map = {
 The multihead CNN extends the standard SimpleCNN:
 
 **Shared Backbone**:
+
 - Conv2d(1→32, 3×3) + BatchNorm + ReLU + MaxPool
 - Conv2d(32→64, 3×3) + BatchNorm + ReLU + MaxPool
 - AdaptiveAvgPool2d(7×7)
 - Linear(3136→128) + ReLU + Dropout(0.25)
 
 **Multiple Heads**:
+
 - **Digit head**: Linear(128→10) for digit classification
 - **Thickness head**: Linear(128→5) for thickness estimation
 - **Smoothness head**: Linear(128→3) for smoothness assessment
@@ -87,6 +92,7 @@ The multihead CNN extends the standard SimpleCNN:
 ## ⚙️ Configuration
 
 ### Model Configuration
+
 ```yaml
 # configs/model/mnist_mh_cnn_422k.yaml
 _target_: src.models.mnist_module.MNISTLitModule
@@ -121,6 +127,7 @@ net:
 ```
 
 ### Data Configuration
+
 ```yaml
 # configs/data/multihead_mnist.yaml
 _target_: src.data.mnist_datamodule.MNISTDataModule
@@ -136,6 +143,7 @@ multihead: true
 ```
 
 ### Complete Experiment
+
 ```yaml
 # configs/experiment/multihead_cnn_mnist.yaml
 defaults:
@@ -175,6 +183,7 @@ optimized_metric: "val/digit_acc"
 ## 🚀 Usage
 
 ### Basic Training
+
 ```bash
 # Run multihead experiment
 python src/train.py experiment=multihead_cnn_mnist
@@ -185,6 +194,7 @@ python src/train.py experiment=multihead_cnn_mnist +trainer.fast_dev_run=true
 ```
 
 ### Custom Loss Weighting
+
 ```bash
 # Emphasize digit task
 python src/train.py experiment=multihead_cnn_mnist \
@@ -206,6 +216,7 @@ python src/train.py experiment=multihead_cnn_mnist \
 ```
 
 ### CIFAR-10 Multihead
+
 ```bash
 # Multihead CNN on CIFAR-10
 python src/train.py experiment=multihead_cnn_cifar10
@@ -217,10 +228,12 @@ make emhcc10
 ### Logged Metrics
 
 **Single-head models**:
+
 - `train/acc`, `val/acc`, `test/acc`
 - `train/loss`, `val/loss`, `test/loss`
 
 **Multihead models**:
+
 - `train/digit_acc`, `val/digit_acc`, `test/digit_acc`
 - `train/thickness_acc`, `val/thickness_acc`, `test/thickness_acc`
 - `train/smoothness_acc`, `val/smoothness_acc`, `test/smoothness_acc`
@@ -229,11 +242,13 @@ make emhcc10
 ### Performance Interpretation
 
 **Expected Performance (10 epochs)**:
+
 - **Digit accuracy**: 95-99% (primary task, well-defined)
 - **Thickness accuracy**: 60-80% (synthetic labels, harder task)
 - **Smoothness accuracy**: 70-85% (fewer classes, easier than thickness)
 
 **Quick Test Performance (1 epoch)**:
+
 - **Digit accuracy**: ~7.8%
 - **Thickness accuracy**: ~39%
 - **Smoothness accuracy**: ~52%
@@ -243,6 +258,7 @@ make emhcc10
 ## 🔬 Research Applications
 
 ### Multi-task Learning Studies
+
 ```bash
 # Compare single-task vs multi-task learning
 python src/train.py model=mnist_cnn trainer.max_epochs=20 tags="[single_task,digit]"
@@ -250,6 +266,7 @@ python src/train.py experiment=multihead_cnn_mnist trainer.max_epochs=20 tags="[
 ```
 
 ### Loss Weighting Experiments
+
 ```bash
 # Study impact of loss weighting
 for weight in 0.1 0.5 1.0 2.0; do
@@ -260,6 +277,7 @@ done
 ```
 
 ### Architecture Comparison
+
 ```bash
 # Compare architectures on multihead task
 python src/train.py experiment=multihead_cnn_mnist tags="[arch_study,cnn]"
@@ -269,6 +287,7 @@ python src/train.py experiment=multihead_cnn_mnist tags="[arch_study,cnn]"
 ## 🛠️ Implementation Details
 
 ### Dataset Wrapper
+
 The `MultiheadDataset` class wraps the original dataset to add synthetic labels:
 
 ```python
@@ -294,6 +313,7 @@ class MultiheadDataset(Dataset):
 ```
 
 ### Loss Computation
+
 ```python
 # In MNISTLitModule for multihead models
 def _calculate_loss(self, outputs, targets):
@@ -314,6 +334,7 @@ def _calculate_loss(self, outputs, targets):
 ## 🔍 Advanced Usage
 
 ### Custom Synthetic Labels
+
 You can modify the label generation logic for research:
 
 ```python
@@ -325,9 +346,11 @@ thickness_map = {
 ```
 
 ### Adding New Tasks
+
 To add a fourth task (e.g., "orientation"):
 
 1. **Update heads_config**:
+
 ```yaml
 heads_config:
   digit: 10
@@ -337,11 +360,13 @@ heads_config:
 ```
 
 2. **Add label mapping**:
+
 ```python
 orientation_map = {0: 0, 1: 1, 2: 2, ...}  # Your logic here
 ```
 
 3. **Update loss configuration**:
+
 ```yaml
 criteria:
   orientation:
@@ -357,31 +382,35 @@ learning rate (0.002) than the 0.001 value in the single-head
 experiment `make exp-cnn-mnist`.  This was tried because it's
 performing multi-task learning with three simultaneous classification
 tasks:
-  - digit: 10 classes (standard MNIST)
-  - thickness: 5 classes
-  - smoothness: 3 classes
+
+- digit: 10 classes (standard MNIST)
+- thickness: 5 classes
+- smoothness: 3 classes
 
 Higher learning rates are common in multi-task setups because:
-  1. Gradient competition between multiple loss functions can reduce effective update magnitudes
-  2. Shared feature learning requires more aggressive updates to find representations useful for all tasks
-  3. Loss weighting (digit=1.0, thickness/smoothness=0.5) affects the overall gradient scale
+
+1. Gradient competition between multiple loss functions can reduce effective update magnitudes
+2. Shared feature learning requires more aggressive updates to find representations useful for all tasks
+3. Loss weighting (digit=1.0, thickness/smoothness=0.5) affects the overall gradient scale
 
 The single-task CNN only learns digit classification, so it can use a more conservative learning rate.
-
 
 ## 🎯 Best Practices
 
 ### Loss Weighting Strategy
+
 1. **Start equal**: Begin with equal weights for all tasks
 2. **Primary task emphasis**: Give higher weight to main task (digit: 1.0, others: 0.5)
 3. **Experimental tuning**: Use grid search for optimal weighting
 
 ### Training Tips
+
 1. **Monitor all metrics**: Watch individual task performance
 2. **Early stopping**: Use combined loss or primary task for stopping
 3. **Learning rate**: May need lower LR to stabilize multi-task training (more epochs)
 
 ### Evaluation
+
 1. **Task-specific metrics**: Evaluate each task independently
 2. **Combined performance**: Consider weighted average of accuracies
 3. **Ablation studies**: Compare with single-task baselines
@@ -457,6 +486,7 @@ net:
 ## 🔗 Integration
 
 The multihead system integrates with:
+
 - **Standard architectures**: Works with CNN, can be extended to others
 - **CIFAR datasets**: Available for CIFAR-10 experiments
 - **CIFAR-100-MH format**: New binary format for real multihead labels
@@ -479,6 +509,7 @@ The **Variable Image MultiHead (VIMH)** format represents the next generation of
 ### Key Features
 
 **Advanced Capabilities**:
+
 - **Variable image dimensions**: 32x32x3, 28x28x1, and arbitrary sizes
 - **Self-describing metadata**: JSON-based configuration with parameter mappings
 - **8-bit quantization**: Efficient storage of continuous parameters (0-255)
@@ -487,6 +518,7 @@ The **Variable Image MultiHead (VIMH)** format represents the next generation of
 - **Performance optimization**: 10x faster loading with efficient dimension detection
 
 **Use Cases**:
+
 - **Audio synthesis**: Image-to-audio parameter mapping (resonator parameters)
 - **Computer vision**: Multi-target regression tasks
 - **Scientific computing**: Parameter prediction from visual data
@@ -497,17 +529,20 @@ The **Variable Image MultiHead (VIMH)** format represents the next generation of
 VIMH datasets consist of three components:
 
 #### 1. Image Data
+
 - **Format**: Pickle files (`train_batch`, `test_batch`)
 - **Structure**: `{'data': [...], 'vimh_labels': [...], 'height': 32, 'width': 32, 'channels': 3}`
 - **Images**: Flattened arrays (height × width × channels)
 
 #### 2. Label Format
+
 ```python
 # VIMH label format: [N] [param1_id] [param1_val] [param2_id] [param2_val] ...
 [2, 0, 128, 1, 64]  # 2 parameters: param_0=128, param_1=64
 ```
 
 #### 3. Metadata File (`vimh_dataset_info.json`)
+
 ```json
 {
   "format": "VIMH",
@@ -539,6 +574,7 @@ VIMH datasets consist of three components:
 ### Training with VIMH
 
 #### Basic Training
+
 ```bash
 # Train with VIMH dataset
 python src/train.py experiment=vimh_cnn
@@ -549,6 +585,7 @@ python src/train.py experiment=vimh_cnn \
 ```
 
 #### Configuration Example
+
 ```yaml
 # configs/experiment/vimh_cnn.yaml
 defaults:
@@ -587,6 +624,7 @@ python examples/vimh_training.py --analyze-only --checkpoint path/to/model.ckpt
 ```
 
 The example provides:
+
 - **Dataset inspection**: Comprehensive analysis of dataset properties
 - **Sample visualization**: Images with parameter labels
 - **Parameter distributions**: Histograms of quantized values
@@ -597,11 +635,13 @@ The example provides:
 ### Performance Characteristics
 
 **Efficiency Improvements**:
+
 - **Loading speed**: 10x faster initialization through efficient dimension detection
 - **Memory usage**: Optimized transform adjustment for variable image sizes
 - **Validation**: Cross-validation across directory name, JSON, and binary sources
 
 **Model Performance**:
+
 - **Auto-configuration**: Automatic setup from dataset metadata
 - **Variable dimensions**: Proper handling of different image sizes
 - **Transform optimization**: Automatic normalization adjustment (1-channel vs 3-channel)
@@ -609,6 +649,7 @@ The example provides:
 ### Real-World Applications
 
 #### Audio Synthesis Example
+
 ```python
 # Resonator parameter prediction
 # Images: 32x32x3 RGB spectrograms
@@ -621,6 +662,7 @@ dataset = VIMHDataset("data-vimh/vimh-32x32_8000Hz_1p0s_256dss_resonarium_2p")
 ```
 
 #### Scientific Computing Example
+
 ```python
 # Parameter prediction from visual data
 # Images: 28x28x1 grayscale sensor readings
@@ -663,6 +705,7 @@ trainer.fit(model, dm)
 ### Advanced Features
 
 #### Dimension Detection and Validation
+
 ```python
 # Efficient dimension detection with cross-validation
 dm = VIMHDataModule(data_dir="data-vimh/vimh-32x32x3_dataset")
@@ -674,6 +717,7 @@ dm = VIMHDataModule(data_dir="data-vimh/vimh-32x32x3_dataset")
 ```
 
 #### Transform Optimization
+
 ```python
 # Automatic transform adjustment based on image dimensions
 if channels == 1:
@@ -700,6 +744,7 @@ python -m pytest tests/test_vimh_datasets.py::TestVIMHDataModule::test_dimension
 ```
 
 **Test Coverage**:
+
 - **24 dataset tests**: Core functionality, edge cases, error handling
 - **3 integration tests**: Training pipeline, variable dimensions, performance
 - **Performance tests**: Optimization verification, dimension detection
@@ -710,6 +755,7 @@ python -m pytest tests/test_vimh_datasets.py::TestVIMHDataModule::test_dimension
 VIMH supersedes the CIFAR-100-MH format with enhanced capabilities:
 
 **Improvements**:
+
 - **Variable dimensions**: vs. fixed 32x32x3
 - **Self-describing metadata**: vs. hardcoded parameter mappings
 - **Performance optimization**: vs. basic loading
@@ -717,6 +763,7 @@ VIMH supersedes the CIFAR-100-MH format with enhanced capabilities:
 - **Real-world applications**: vs. synthetic examples
 
 **Migration Path**:
+
 1. **Convert datasets**: Use conversion tools (when available)
 2. **Update configurations**: Switch from `cifar100mh` to `vimh`
 3. **Leverage auto-configuration**: Remove manual head configuration
@@ -725,18 +772,21 @@ VIMH supersedes the CIFAR-100-MH format with enhanced capabilities:
 ### Best Practices
 
 #### Dataset Creation
+
 1. **Consistent naming**: Use `vimh-HxWxC_*` directory naming
 2. **Complete metadata**: Include all required fields in JSON
 3. **Validate dimensions**: Ensure consistency across all sources
 4. **Parameter mapping**: Define meaningful parameter descriptions
 
 #### Training Optimization
+
 1. **Batch size**: Start with 128, adjust based on memory/performance
 2. **Learning rate**: Use 0.001-0.002 for multihead tasks
 3. **Loss weighting**: Equal weights initially, then tune for task importance
 4. **Early stopping**: Monitor combined loss or primary task metric
 
 #### Performance Monitoring
+
 1. **Per-head metrics**: Track individual task performance
 2. **Confusion matrices**: Analyze classification patterns
 3. **Parameter distributions**: Understand data characteristics

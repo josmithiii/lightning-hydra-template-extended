@@ -154,6 +154,10 @@ configs/local/default.yaml
 /logs/
 .env
 
+# Generated diagrams and figures
+diagrams/
+.env
+
 # Aim logging
 .aim
 

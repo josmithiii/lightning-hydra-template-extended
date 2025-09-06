@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional, Tuple, List
+from typing import Any, Dict, List, Optional, Tuple
+
 import torch
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
@@ -87,20 +88,24 @@ class CIFAR100MHDataModule(LightningDataModule):
 
         # Default transforms for CIFAR-32x32 images
         # Use the same normalization as CIFAR datasets
-        self.default_transforms = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-        ])
+        self.default_transforms = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+            ]
+        )
 
         # Enhanced training transforms with data augmentation
-        self.default_train_transforms = transforms.Compose([
-            transforms.ToPILImage(),  # Convert tensor back to PIL for augmentation
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-        ])
+        self.default_train_transforms = transforms.Compose(
+            [
+                transforms.ToPILImage(),  # Convert tensor back to PIL for augmentation
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomRotation(15),
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+            ]
+        )
 
         # Set transforms (use provided or defaults)
         self.train_transform = train_transform or self.default_train_transforms
@@ -117,7 +122,9 @@ class CIFAR100MHDataModule(LightningDataModule):
         self.heads_config: Dict[str, int] = {}
         self.image_shape: Tuple[int, int, int] = (3, 32, 32)  # Default
 
-    def _multihead_collate_fn(self, batch: List[Tuple[torch.Tensor, Dict[str, int]]]) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    def _multihead_collate_fn(
+        self, batch: List[Tuple[torch.Tensor, Dict[str, int]]]
+    ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """Custom collate function for multihead labels.
 
         Converts a batch of (image, labels_dict) pairs into batched tensors.
@@ -207,23 +214,17 @@ class CIFAR100MHDataModule(LightningDataModule):
             try:
                 # Load training and test datasets
                 self.data_train = CIFAR100MHDataset(
-                    self.hparams.data_dir,
-                    train=True,
-                    transform=self.train_transform
+                    self.hparams.data_dir, train=True, transform=self.train_transform
                 )
 
                 self.data_test = CIFAR100MHDataset(
-                    self.hparams.data_dir,
-                    train=False,
-                    transform=self.test_transform
+                    self.hparams.data_dir, train=False, transform=self.test_transform
                 )
 
                 # For validation, we'll use the test dataset with val transforms
                 # In a real scenario, you might want to split the training data
                 self.data_val = CIFAR100MHDataset(
-                    self.hparams.data_dir,
-                    train=False,
-                    transform=self.val_transform
+                    self.hparams.data_dir, train=False, transform=self.val_transform
                 )
 
                 # Extract dataset configuration
@@ -231,7 +232,9 @@ class CIFAR100MHDataModule(LightningDataModule):
                 self.image_shape = self.data_train.get_image_shape()
 
             except Exception as e:
-                raise RuntimeError(f"Failed to load CIFAR-100-MH dataset from {self.hparams.data_dir}: {e}")
+                raise RuntimeError(
+                    f"Failed to load CIFAR-100-MH dataset from {self.hparams.data_dir}: {e}"
+                )
 
     def train_dataloader(self) -> DataLoader[Any]:
         """Create and return the train dataloader.
@@ -300,8 +303,8 @@ class CIFAR100MHDataModule(LightningDataModule):
         :return: A dictionary containing the datamodule state that you want to save.
         """
         return {
-            'heads_config': self.heads_config,
-            'image_shape': self.image_shape,
+            "heads_config": self.heads_config,
+            "image_shape": self.image_shape,
         }
 
     def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
@@ -310,8 +313,8 @@ class CIFAR100MHDataModule(LightningDataModule):
 
         :param state_dict: The datamodule state returned by `self.state_dict()`.
         """
-        self.heads_config = state_dict.get('heads_config', {})
-        self.image_shape = state_dict.get('image_shape', (3, 32, 32))
+        self.heads_config = state_dict.get("heads_config", {})
+        self.image_shape = state_dict.get("image_shape", (3, 32, 32))
 
     def get_dataset_info(self) -> Dict[str, Any]:
         """Get comprehensive information about the loaded dataset.
@@ -319,17 +322,17 @@ class CIFAR100MHDataModule(LightningDataModule):
         :return: Dictionary with dataset information.
         """
         if self.data_train is None:
-            return {'error': 'Dataset not loaded yet. Call setup() first.'}
+            return {"error": "Dataset not loaded yet. Call setup() first."}
 
         return {
-            'heads_config': self.heads_config,
-            'image_shape': self.image_shape,
-            'num_train_samples': len(self.data_train) if self.data_train else 0,
-            'num_val_samples': len(self.data_val) if self.data_val else 0,
-            'num_test_samples': len(self.data_test) if self.data_test else 0,
-            'batch_size': self.hparams.batch_size,
-            'num_workers': self.hparams.num_workers,
-            'data_dir': self.hparams.data_dir,
+            "heads_config": self.heads_config,
+            "image_shape": self.image_shape,
+            "num_train_samples": len(self.data_train) if self.data_train else 0,
+            "num_val_samples": len(self.data_val) if self.data_val else 0,
+            "num_test_samples": len(self.data_test) if self.data_test else 0,
+            "batch_size": self.hparams.batch_size,
+            "num_workers": self.hparams.num_workers,
+            "data_dir": self.hparams.data_dir,
         }
 
 
@@ -348,9 +351,7 @@ if __name__ == "__main__":
 
         # Initialize data module
         dm = CIFAR100MHDataModule(
-            data_dir="data/cifar-100-mh-example",
-            batch_size=4,
-            num_workers=0
+            data_dir="data/cifar-100-mh-example", batch_size=4, num_workers=0
         )
 
         # Setup the data module
@@ -364,7 +365,9 @@ if __name__ == "__main__":
         val_loader = dm.val_dataloader()
         test_loader = dm.test_dataloader()
 
-        print(f"✓ Created dataloaders - train: {len(train_loader)}, val: {len(val_loader)}, test: {len(test_loader)}")
+        print(
+            f"✓ Created dataloaders - train: {len(train_loader)}, val: {len(val_loader)}, test: {len(test_loader)}"
+        )
 
         # Test a batch
         batch_images, batch_labels = next(iter(train_loader))
@@ -376,4 +379,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"✗ Error testing data module: {e}")
         import traceback
+
         traceback.print_exc()

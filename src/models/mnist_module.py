@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
 from lightning import LightningModule
@@ -63,7 +63,7 @@ class MNISTLitModule(LightningModule):
 
         # Backward compatibility handling
         if criteria is None and criterion is not None:
-            criteria = {'digit': criterion}
+            criteria = {"digit": criterion}
         elif criteria is None:
             raise ValueError("Must provide either 'criterion' or 'criteria'")
 
@@ -81,11 +81,11 @@ class MNISTLitModule(LightningModule):
         self.example_input_array = torch.randn(1, input_channels, 28, 28)
 
         # Dynamic metric creation based on network heads config
-        if hasattr(net, 'heads_config'):
+        if hasattr(net, "heads_config"):
             head_configs = net.heads_config
         else:
             # Fallback for backward compatibility
-            head_configs = {'digit': 10}
+            head_configs = {"digit": 10}
 
         # Metrics for each head
         self.train_metrics = torch.nn.ModuleDict()
@@ -93,9 +93,15 @@ class MNISTLitModule(LightningModule):
         self.test_metrics = torch.nn.ModuleDict()
 
         for head_name, num_classes in head_configs.items():
-            self.train_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
-            self.val_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
-            self.test_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
+            self.train_metrics[f"{head_name}_acc"] = Accuracy(
+                task="multiclass", num_classes=num_classes
+            )
+            self.val_metrics[f"{head_name}_acc"] = Accuracy(
+                task="multiclass", num_classes=num_classes
+            )
+            self.test_metrics[f"{head_name}_acc"] = Accuracy(
+                task="multiclass", num_classes=num_classes
+            )
 
         # Loss tracking
         self.train_loss = MeanMetric()
@@ -113,12 +119,12 @@ class MNISTLitModule(LightningModule):
 
     def _infer_input_channels(self) -> int:
         """Infer input channels from the network architecture."""
-        if hasattr(self.net, 'conv_layers') and len(self.net.conv_layers) > 0:
+        if hasattr(self.net, "conv_layers") and len(self.net.conv_layers) > 0:
             first_layer = self.net.conv_layers[0]
-            if hasattr(first_layer, 'in_channels'):
+            if hasattr(first_layer, "in_channels"):
                 return first_layer.in_channels
-        elif hasattr(self.net, 'embedding') and hasattr(self.net.embedding, 'conv1'):
-            if hasattr(self.net.embedding.conv1, 'in_channels'):
+        elif hasattr(self.net, "embedding") and hasattr(self.net.embedding, "conv1"):
+            if hasattr(self.net.embedding.conv1, "in_channels"):
                 return self.net.embedding.conv1.in_channels
         # Default fallback
         return 1
@@ -185,8 +191,13 @@ class MNISTLitModule(LightningModule):
         self.log("train/loss", self.train_loss, on_step=False, on_epoch=True, prog_bar=True)
         for head_name in preds_dict.keys():
             metric_name = f"train/{head_name}_acc" if self.is_multihead else "train/acc"
-            self.log(metric_name, self.train_metrics[f"{head_name}_acc"],
-                    on_step=False, on_epoch=True, prog_bar=True)
+            self.log(
+                metric_name,
+                self.train_metrics[f"{head_name}_acc"],
+                on_step=False,
+                on_epoch=True,
+                prog_bar=True,
+            )
 
         return loss
 
@@ -211,8 +222,13 @@ class MNISTLitModule(LightningModule):
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         for head_name in preds_dict.keys():
             metric_name = f"val/{head_name}_acc" if self.is_multihead else "val/acc"
-            self.log(metric_name, self.val_metrics[f"{head_name}_acc"],
-                    on_step=False, on_epoch=True, prog_bar=True)
+            self.log(
+                metric_name,
+                self.val_metrics[f"{head_name}_acc"],
+                on_step=False,
+                on_epoch=True,
+                prog_bar=True,
+            )
 
     def on_validation_epoch_end(self) -> None:
         """Lightning hook that is called when a validation epoch ends."""
@@ -245,8 +261,13 @@ class MNISTLitModule(LightningModule):
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
         for head_name in preds_dict.keys():
             metric_name = f"test/{head_name}_acc" if self.is_multihead else "test/acc"
-            self.log(metric_name, self.test_metrics[f"{head_name}_acc"],
-                    on_step=False, on_epoch=True, prog_bar=True)
+            self.log(
+                metric_name,
+                self.test_metrics[f"{head_name}_acc"],
+                on_step=False,
+                on_epoch=True,
+                prog_bar=True,
+            )
 
     def on_test_epoch_end(self) -> None:
         """Lightning hook that is called when a test epoch ends."""

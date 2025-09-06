@@ -12,7 +12,8 @@ Features:
 - Automatic metric tracking for each head
 """
 
-from typing import Any, Dict, Tuple, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
+
 import torch
 import torch.nn.functional as F
 from lightning import LightningModule
@@ -99,21 +100,27 @@ class MultiheadLitModule(LightningModule):
 
         # Backward compatibility handling
         if criteria is None and criterion is not None:
-            criteria = {'head_0': criterion}
+            criteria = {"head_0": criterion}
         elif criteria is None:
             # Will be configured later in setup() if auto_configure_from_dataset is True
             if not auto_configure_from_dataset:
-                raise ValueError("Must provide either 'criterion' or 'criteria' or set auto_configure_from_dataset=True")
+                raise ValueError(
+                    "Must provide either 'criterion' or 'criteria' or set auto_configure_from_dataset=True"
+                )
             criteria = {}
 
         # If auto_configure_from_dataset is True but we have a network with heads_config,
         # initialize criteria based on network heads
-        if auto_configure_from_dataset and not criteria and hasattr(net, 'heads_config'):
-            criteria = {head_name: torch.nn.CrossEntropyLoss() for head_name in net.heads_config.keys()}
+        if auto_configure_from_dataset and not criteria and hasattr(net, "heads_config"):
+            criteria = {
+                head_name: torch.nn.CrossEntropyLoss() for head_name in net.heads_config.keys()
+            }
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False, ignore=["net", "criterion", "criteria", "scheduler"])
+        self.save_hyperparameters(
+            logger=False, ignore=["net", "criterion", "criteria", "scheduler"]
+        )
 
         self.net = net
         self.criteria = criteria
@@ -135,11 +142,11 @@ class MultiheadLitModule(LightningModule):
     def _setup_metrics(self) -> None:
         """Setup metrics based on current network configuration."""
         # Get head configurations
-        if hasattr(self.net, 'heads_config'):
+        if hasattr(self.net, "heads_config"):
             head_configs = self.net.heads_config
         else:
             # Fallback for backward compatibility
-            head_configs = {'head_0': 10}
+            head_configs = {"head_0": 10}
 
         # Metrics for each head
         self.train_metrics = torch.nn.ModuleDict()
@@ -150,13 +157,20 @@ class MultiheadLitModule(LightningModule):
             if self.output_mode == "regression":
                 # For regression, we'll use MAE as the primary metric instead of accuracy
                 from torchmetrics.regression import MeanAbsoluteError
+
                 self.train_metrics[f"{head_name}_mae"] = MeanAbsoluteError()
                 self.val_metrics[f"{head_name}_mae"] = MeanAbsoluteError()
                 self.test_metrics[f"{head_name}_mae"] = MeanAbsoluteError()
             else:
-                self.train_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
-                self.val_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
-                self.test_metrics[f"{head_name}_acc"] = Accuracy(task="multiclass", num_classes=num_classes)
+                self.train_metrics[f"{head_name}_acc"] = Accuracy(
+                    task="multiclass", num_classes=num_classes
+                )
+                self.val_metrics[f"{head_name}_acc"] = Accuracy(
+                    task="multiclass", num_classes=num_classes
+                )
+                self.test_metrics[f"{head_name}_acc"] = Accuracy(
+                    task="multiclass", num_classes=num_classes
+                )
 
         # Loss tracking
         self.train_loss = MeanMetric()
@@ -166,11 +180,11 @@ class MultiheadLitModule(LightningModule):
 
     def _setup_criteria(self) -> None:
         """Setup loss criteria based on current network configuration."""
-        if hasattr(self.net, 'heads_config'):
+        if hasattr(self.net, "heads_config"):
             head_configs = self.net.heads_config
         else:
             # Fallback for backward compatibility
-            head_configs = {'head_0': 10}
+            head_configs = {"head_0": 10}
 
         # Initialize criteria if not already set
         if not self.criteria:
@@ -196,17 +210,20 @@ class MultiheadLitModule(LightningModule):
         heads_config = dataset.get_heads_config()
 
         # Auto-configure input channels from dataset image shape
-        if hasattr(self.net, 'input_channels') and hasattr(dataset, 'image_shape'):
+        if hasattr(self.net, "input_channels") and hasattr(dataset, "image_shape"):
             dataset_channels = dataset.image_shape[0] if dataset.image_shape else 3
             if self.net.input_channels != dataset_channels:
-                print(f"Auto-configuring network input channels: {self.net.input_channels} -> {dataset_channels}")
+                print(
+                    f"Auto-configuring network input channels: {self.net.input_channels} -> {dataset_channels}"
+                )
                 self.net.input_channels = dataset_channels
 
                 # If the network has already been built (has conv layers), we need to rebuild the first layer
-                if hasattr(self.net, 'conv_layers') and hasattr(self.net.conv_layers, '0'):
+                if hasattr(self.net, "conv_layers") and hasattr(self.net.conv_layers, "0"):
                     import torch.nn as nn
+
                     first_conv = self.net.conv_layers[0]
-                    if hasattr(first_conv, 'in_channels'):
+                    if hasattr(first_conv, "in_channels"):
                         # Rebuild the first convolutional layer with correct input channels
                         new_first_conv = nn.Conv2d(
                             in_channels=dataset_channels,
@@ -214,40 +231,51 @@ class MultiheadLitModule(LightningModule):
                             kernel_size=first_conv.kernel_size,
                             stride=first_conv.stride,
                             padding=first_conv.padding,
-                            bias=first_conv.bias is not None
+                            bias=first_conv.bias is not None,
                         )
                         self.net.conv_layers[0] = new_first_conv
 
         # Update network heads configuration
-        if hasattr(self.net, 'heads_config'):
+        if hasattr(self.net, "heads_config"):
             self.net.heads_config = heads_config
 
             # Update parameter_names if the network has this attribute (needed for regression mode)
-            if hasattr(self.net, 'parameter_names'):
+            if hasattr(self.net, "parameter_names"):
                 self.net.parameter_names = list(heads_config.keys())
 
             # If the network has a _build_heads method, use it to rebuild heads
             # Call for networks that need dynamic head rebuilding (VisionTransformer, SimpleCNN in regression mode, TestMultiheadNet)
-            if hasattr(self.net, '_build_heads') and callable(getattr(self.net, '_build_heads')):
+            if hasattr(self.net, "_build_heads") and callable(getattr(self.net, "_build_heads")):
                 network_name = type(self.net).__name__
-                if (network_name == 'VisionTransformer' or
-                    (network_name == 'SimpleCNN' and getattr(self.net, 'output_mode', None) == 'regression') or
-                    network_name == 'TestMultiheadNet'):
+                if (
+                    network_name == "VisionTransformer"
+                    or (
+                        network_name == "SimpleCNN"
+                        and getattr(self.net, "output_mode", None) == "regression"
+                    )
+                    or network_name == "TestMultiheadNet"
+                ):
                     self.net._build_heads(heads_config)
                     # Update the network's multihead flag after rebuilding
-                    if hasattr(self.net, 'is_multihead'):
+                    if hasattr(self.net, "is_multihead"):
                         self.net.is_multihead = len(heads_config) > 1
         else:
             # If network doesn't have heads_config, log a warning
-            print(f"Warning: Network {type(self.net).__name__} doesn't have heads_config attribute")
+            print(
+                f"Warning: Network {type(self.net).__name__} doesn't have heads_config attribute"
+            )
 
         # Update criteria if using auto-configuration
         if self.auto_configure_from_dataset:
             # Check if we have hardcoded placeholder heads that need replacement
-            placeholder_heads = ['digit', 'synth_param1']
+            placeholder_heads = ["digit", "synth_param1"]
             has_hardcoded_placeholder = False
             for placeholder in placeholder_heads:
-                if self.criteria and placeholder in self.criteria and placeholder not in heads_config:
+                if (
+                    self.criteria
+                    and placeholder in self.criteria
+                    and placeholder not in heads_config
+                ):
                     has_hardcoded_placeholder = True
                     break
 
@@ -281,7 +309,9 @@ class MultiheadLitModule(LightningModule):
         # In a real implementation, this would update criteria with dataset-specific ranges
         pass
 
-    def _get_param_range_for_head(self, dataset: MultiheadDatasetBase, head_name: str) -> Tuple[float, float]:
+    def _get_param_range_for_head(
+        self, dataset: MultiheadDatasetBase, head_name: str
+    ) -> Tuple[float, float]:
         """Get parameter range for a specific head from dataset metadata.
 
         :param dataset: The dataset containing parameter range information
@@ -291,7 +321,9 @@ class MultiheadLitModule(LightningModule):
         # Default fallback range for regression tasks
         return (0.0, 1.0)
 
-    def _compute_predictions(self, logits: torch.Tensor, criterion, head_name: str) -> torch.Tensor:
+    def _compute_predictions(
+        self, logits: torch.Tensor, criterion, head_name: str
+    ) -> torch.Tensor:
         """Compute predictions based on loss function type."""
         if self.output_mode == "regression":
             # For regression mode, logits are already the predicted values
@@ -309,7 +341,7 @@ class MultiheadLitModule(LightningModule):
         :param auxiliary: Optional auxiliary tensor.
         :return: A tensor of logits (single head) or dict of logits (multihead).
         """
-        if hasattr(self.net, 'forward') and 'auxiliary' in self.net.forward.__code__.co_varnames:
+        if hasattr(self.net, "forward") and "auxiliary" in self.net.forward.__code__.co_varnames:
             return self.net(x, auxiliary)
         else:
             return self.net(x)
@@ -352,7 +384,9 @@ class MultiheadLitModule(LightningModule):
                 losses = {}
                 for head_name in self.criteria.keys():
                     if head_name in y and head_name in logits:
-                        losses[head_name] = self.criteria[head_name](logits[head_name], y[head_name])
+                        losses[head_name] = self.criteria[head_name](
+                            logits[head_name], y[head_name]
+                        )
                     else:
                         print(f"Warning: Head {head_name} not found in targets or logits")
             elif not isinstance(logits, dict) and isinstance(y, dict):
@@ -364,8 +398,10 @@ class MultiheadLitModule(LightningModule):
 
                 for i, head_name in enumerate(param_names):
                     if i < logits.shape[1] and head_name in y:
-                        logits_dict[head_name] = logits[:, i:i+1]  # Keep shape [batch_size, 1]
-                        losses[head_name] = self.criteria[head_name](logits_dict[head_name].squeeze(-1), y[head_name])
+                        logits_dict[head_name] = logits[:, i : i + 1]  # Keep shape [batch_size, 1]
+                        losses[head_name] = self.criteria[head_name](
+                            logits_dict[head_name].squeeze(-1), y[head_name]
+                        )
                     else:
                         print(f"Warning: Head {head_name} not found in targets or logits")
 
@@ -373,7 +409,9 @@ class MultiheadLitModule(LightningModule):
                 logits = logits_dict
             else:
                 # Fallback: if we have multihead criteria but tensor inputs, use first head
-                print(f"Warning: Multihead model but tensor inputs - falling back to single head mode")
+                print(
+                    f"Warning: Multihead model but tensor inputs - falling back to single head mode"
+                )
                 head_name = next(iter(self.criteria.keys()))
                 if isinstance(logits, dict):
                     logits_single = logits[head_name]
@@ -386,14 +424,20 @@ class MultiheadLitModule(LightningModule):
                     y_single = y
 
                 loss = self.criteria[head_name](logits_single, y_single)
-                preds = {head_name: self._compute_predictions(logits_single, self.criteria[head_name], head_name)}
+                preds = {
+                    head_name: self._compute_predictions(
+                        logits_single, self.criteria[head_name], head_name
+                    )
+                }
                 return loss, preds, {head_name: y_single}
 
             # Calculate total loss and predictions for multihead case
             total_loss = sum(self.loss_weights[name] * loss for name, loss in losses.items())
 
             preds = {
-                head_name: self._compute_predictions(logits_head, self.criteria[head_name], head_name)
+                head_name: self._compute_predictions(
+                    logits_head, self.criteria[head_name], head_name
+                )
                 for head_name, logits_head in logits.items()
             }
 
@@ -442,10 +486,14 @@ class MultiheadLitModule(LightningModule):
         for head_name in preds_dict.keys():
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.train_metrics:
-                    self.train_metrics[f"{head_name}_mae"](preds_dict[head_name], targets_dict[head_name])
+                    self.train_metrics[f"{head_name}_mae"](
+                        preds_dict[head_name], targets_dict[head_name]
+                    )
             else:
                 if f"{head_name}_acc" in self.train_metrics:
-                    self.train_metrics[f"{head_name}_acc"](preds_dict[head_name], targets_dict[head_name])
+                    self.train_metrics[f"{head_name}_acc"](
+                        preds_dict[head_name], targets_dict[head_name]
+                    )
 
         # Log metrics
         self.log("train/loss", self.train_loss, on_step=False, on_epoch=True, prog_bar=True)
@@ -453,13 +501,23 @@ class MultiheadLitModule(LightningModule):
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.train_metrics:
                     metric_name = f"train/{head_name}_mae" if self.is_multihead else "train/mae"
-                    self.log(metric_name, self.train_metrics[f"{head_name}_mae"],
-                            on_step=False, on_epoch=True, prog_bar=True)
+                    self.log(
+                        metric_name,
+                        self.train_metrics[f"{head_name}_mae"],
+                        on_step=False,
+                        on_epoch=True,
+                        prog_bar=True,
+                    )
             else:
                 if f"{head_name}_acc" in self.train_metrics:
                     metric_name = f"train/{head_name}_acc" if self.is_multihead else "train/acc"
-                    self.log(metric_name, self.train_metrics[f"{head_name}_acc"],
-                            on_step=False, on_epoch=True, prog_bar=True)
+                    self.log(
+                        metric_name,
+                        self.train_metrics[f"{head_name}_acc"],
+                        on_step=False,
+                        on_epoch=True,
+                        prog_bar=True,
+                    )
 
         return loss
 
@@ -484,10 +542,14 @@ class MultiheadLitModule(LightningModule):
         for head_name in preds_dict.keys():
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.val_metrics:
-                    self.val_metrics[f"{head_name}_mae"](preds_dict[head_name], targets_dict[head_name])
+                    self.val_metrics[f"{head_name}_mae"](
+                        preds_dict[head_name], targets_dict[head_name]
+                    )
             else:
                 if f"{head_name}_acc" in self.val_metrics:
-                    self.val_metrics[f"{head_name}_acc"](preds_dict[head_name], targets_dict[head_name])
+                    self.val_metrics[f"{head_name}_acc"](
+                        preds_dict[head_name], targets_dict[head_name]
+                    )
 
         # Log metrics
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
@@ -495,13 +557,23 @@ class MultiheadLitModule(LightningModule):
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.val_metrics:
                     metric_name = f"val/{head_name}_mae" if self.is_multihead else "val/mae"
-                    self.log(metric_name, self.val_metrics[f"{head_name}_mae"],
-                            on_step=False, on_epoch=True, prog_bar=True)
+                    self.log(
+                        metric_name,
+                        self.val_metrics[f"{head_name}_mae"],
+                        on_step=False,
+                        on_epoch=True,
+                        prog_bar=True,
+                    )
             else:
                 if f"{head_name}_acc" in self.val_metrics:
                     metric_name = f"val/{head_name}_acc" if self.is_multihead else "val/acc"
-                    self.log(metric_name, self.val_metrics[f"{head_name}_acc"],
-                            on_step=False, on_epoch=True, prog_bar=True)
+                    self.log(
+                        metric_name,
+                        self.val_metrics[f"{head_name}_acc"],
+                        on_step=False,
+                        on_epoch=True,
+                        prog_bar=True,
+                    )
 
     def on_validation_epoch_end(self) -> None:
         """Lightning hook that is called when a validation epoch ends."""
@@ -511,7 +583,9 @@ class MultiheadLitModule(LightningModule):
             if f"{primary_head}_mae" in self.val_metrics:
                 mae = self.val_metrics[f"{primary_head}_mae"].compute()
                 # Note: for MAE, we want to track the minimum (best), so we negate it
-                self.val_acc_best(-mae)  # Store negative MAE so MaxMetric tracks the best (lowest) MAE
+                self.val_acc_best(
+                    -mae
+                )  # Store negative MAE so MaxMetric tracks the best (lowest) MAE
             self.log("val/mae_best", -self.val_acc_best.compute(), sync_dist=True, prog_bar=True)
         else:
             # For classification mode, track best accuracy
@@ -546,10 +620,14 @@ class MultiheadLitModule(LightningModule):
         for head_name in preds_dict.keys():
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.test_metrics:
-                    self.test_metrics[f"{head_name}_mae"](preds_dict[head_name], targets_dict[head_name])
+                    self.test_metrics[f"{head_name}_mae"](
+                        preds_dict[head_name], targets_dict[head_name]
+                    )
             else:
                 if f"{head_name}_acc" in self.test_metrics:
-                    self.test_metrics[f"{head_name}_acc"](preds_dict[head_name], targets_dict[head_name])
+                    self.test_metrics[f"{head_name}_acc"](
+                        preds_dict[head_name], targets_dict[head_name]
+                    )
 
         # Log metrics
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
@@ -557,13 +635,23 @@ class MultiheadLitModule(LightningModule):
             if self.output_mode == "regression":
                 if f"{head_name}_mae" in self.test_metrics:
                     metric_name = f"test/{head_name}_mae" if self.is_multihead else "test/mae"
-                    self.log(metric_name, self.test_metrics[f"{head_name}_mae"],
-                            on_step=False, on_epoch=True, prog_bar=True)
+                    self.log(
+                        metric_name,
+                        self.test_metrics[f"{head_name}_mae"],
+                        on_step=False,
+                        on_epoch=True,
+                        prog_bar=True,
+                    )
             else:
                 if f"{head_name}_acc" in self.test_metrics:
                     metric_name = f"test/{head_name}_acc" if self.is_multihead else "test/acc"
-                    self.log(metric_name, self.test_metrics[f"{head_name}_acc"],
-                            on_step=False, on_epoch=True, prog_bar=True)
+                    self.log(
+                        metric_name,
+                        self.test_metrics[f"{head_name}_acc"],
+                        on_step=False,
+                        on_epoch=True,
+                        prog_bar=True,
+                    )
 
     def on_test_epoch_end(self) -> None:
         """Lightning hook that is called when a test epoch ends."""
@@ -579,8 +667,11 @@ class MultiheadLitModule(LightningModule):
         :param stage: Either `"fit"`, `"validate"`, `"test"`, or `"predict"`.
         """
         # Auto-configure from dataset if enabled
-        if self.auto_configure_from_dataset and hasattr(self.trainer, 'datamodule'):
-            if hasattr(self.trainer.datamodule, 'data_train') and self.trainer.datamodule.data_train is not None:
+        if self.auto_configure_from_dataset and hasattr(self.trainer, "datamodule"):
+            if (
+                hasattr(self.trainer.datamodule, "data_train")
+                and self.trainer.datamodule.data_train is not None
+            ):
                 dataset = self.trainer.datamodule.data_train
                 if isinstance(dataset, MultiheadDatasetBase):
                     self._auto_configure_from_dataset(dataset)
@@ -621,7 +712,7 @@ class MultiheadLitModule(LightningModule):
 
         :return: Dictionary mapping head names to number of classes
         """
-        if hasattr(self.net, 'heads_config'):
+        if hasattr(self.net, "heads_config"):
             return self.net.heads_config
         return {}
 
@@ -631,11 +722,11 @@ class MultiheadLitModule(LightningModule):
         :return: Dictionary with dataset information
         """
         info = {
-            'heads_config': self.get_heads_config(),
-            'is_multihead': self.is_multihead,
-            'auto_configure_from_dataset': self.auto_configure_from_dataset,
-            'criteria_keys': list(self.criteria.keys()) if self.criteria else [],
-            'loss_weights': self.loss_weights,
+            "heads_config": self.get_heads_config(),
+            "is_multihead": self.is_multihead,
+            "auto_configure_from_dataset": self.auto_configure_from_dataset,
+            "criteria_keys": list(self.criteria.keys()) if self.criteria else [],
+            "loss_weights": self.loss_weights,
         }
         return info
 

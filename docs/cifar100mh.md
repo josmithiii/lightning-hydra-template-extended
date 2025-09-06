@@ -15,6 +15,7 @@ Label Structure: [N] [param1_id] [param1_val] [param2_id] [param2_val] ...
 ```
 
 Where:
+
 - **N**: Number of classification heads (1-255)
 - **param_id**: Parameter identifier (0-255)
 - **param_val**: Parameter value (0-255)
@@ -259,17 +260,20 @@ python src/train.py experiment=cifar100mh_cnn \
 ### Logged Metrics
 
 **Training Metrics**:
+
 - `train/loss` - Combined weighted loss
 - `train/param_0_acc` - Accuracy for first classification head
 - `train/param_1_acc` - Accuracy for second classification head
 
 **Validation Metrics**:
+
 - `val/loss` - Combined validation loss
 - `val/param_0_acc` - Validation accuracy for first head
 - `val/param_1_acc` - Validation accuracy for second head
 - `val/acc_best` - Best validation accuracy (primary task)
 
 **Test Metrics**:
+
 - `test/loss` - Combined test loss
 - `test/param_0_acc` - Test accuracy for first head
 - `test/param_1_acc` - Test accuracy for second head
@@ -390,6 +394,7 @@ except Exception as e:
 ```
 
 **Common validation errors:**
+
 - `Missing required field in format config: label_encoding` - Incomplete metadata
 - `Sample has inconsistent image shape` - Mixed image dimensions
 - `Sample X has inconsistent label keys` - Different number of heads
@@ -420,6 +425,7 @@ pytest tests/test_multihead_training.py -v
 ```
 
 **Key validation features:**
+
 - **Auto-detection**: Automatically detects CIFAR-100-MH vs generic formats
 - **Image dimension inference**: Supports 784 (28×28×1) and 3072 (32×32×3) pixels
 - **Label structure validation**: Ensures consistent number of heads across samples
@@ -449,21 +455,25 @@ print(f'Batch memory: {batch[0].element_size() * batch[0].nelement() / 1024**2:.
 ### Common Issues
 
 1. **File Not Found**: Ensure data directory contains required files
+
    - `train_batch` (pickle file)
    - `test_batch` (pickle file)
    - `cifar100mh_dataset_info.json` (metadata)
 
 2. **Format Errors**: Check label format compliance
+
    - Labels must follow `[N, param_id, param_val, ...]` structure
    - All samples must have consistent number of heads (N value)
    - Parameter IDs can vary between samples (auto-handled)
    - Missing `label_encoding` field in metadata (auto-completed)
 
 3. **Memory Issues**: Optimize batch size and worker count
+
    - Reduce `batch_size` for memory constraints
    - Adjust `num_workers` based on system resources
 
 4. **Transform Errors**: Ensure transforms match data format
+
    - Use `ToTensor()` for numpy arrays
    - Skip `ToTensor()` if data is already tensors
 
@@ -555,16 +565,19 @@ dataset = GenericMultiheadDataset(
 ## 🎯 Best Practices
 
 ### Dataset Preparation
+
 1. **Validate format**: Use format validation tests before training
 2. **Check metadata**: Ensure parameter mappings are correct
 3. **Verify splits**: Confirm train/test split sizes match expectations
 
 ### Training Configuration
+
 1. **Start simple**: Begin with CNN architecture for baseline
 2. **Monitor all heads**: Track performance of each classification head
 3. **Adjust weighting**: Experiment with loss weights for optimal performance
 
 ### Performance Optimization
+
 1. **Use persistent workers**: Set `persistent_workers=True` for faster loading
 2. **Optimize batch size**: Balance memory usage and training speed
 3. **Pin memory**: Enable `pin_memory=True` for GPU training

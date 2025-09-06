@@ -9,11 +9,13 @@ This document outlines the general-purpose features from the AVIX project that s
 ### 1. ✅ **Architecture Enhancements**
 
 #### 1.1 SimpleMLP Architecture
+
 - **File**: `src/models/components/simple_mlp.py` (new file from AVIX)
 - **Purpose**: MLP without BatchNorm for batch_size=1 scenarios
 - **Benefits**: Provides flexibility when batch normalization isn't appropriate
 
 #### 1.2 Hybrid CNN with Auxiliary Features
+
 - **Files**: `src/models/components/simple_cnn.py` (modifications)
 - **Changes**:
   - Added `auxiliary_input_size` and `auxiliary_hidden_size` parameters
@@ -22,6 +24,7 @@ This document outlines the general-purpose features from the AVIX project that s
 - **General Purpose**: Useful for any multimodal learning task combining images with metadata
 
 #### 1.3 Vision Transformer Implementation Choice
+
 - **File**: `src/models/components/vision_transformer.py`
 - **Feature**: `use_torch_layers` parameter to switch between educational and production implementations
 - **Benefits**: Flexibility between learning/debugging and production performance
@@ -29,6 +32,7 @@ This document outlines the general-purpose features from the AVIX project that s
 ### 2. ✅ **Training and Optimization Improvements**
 
 #### 2.1 Gradient Statistics Callback
+
 - **Files**:
   - `src/utils/gradient_stats_callback.py` (new)
   - `configs/callbacks/gradient_stats.yaml` (new)
@@ -40,6 +44,7 @@ This document outlines the general-purpose features from the AVIX project that s
 - **General Purpose**: Valuable debugging tool for any deep learning project
 
 #### 2.2 Enhanced Progress Bar
+
 - **Files**:
   - `src/utils/custom_progress_bar.py` (new)
   - `configs/callbacks/grouped_progress_bar.yaml` (new)
@@ -48,6 +53,7 @@ This document outlines the general-purpose features from the AVIX project that s
 - **Benefits**: Cleaner training output, especially for multihead models
 
 #### 2.3 Default TensorBoard Logging
+
 - **File**: `configs/train.yaml`
 - **Change**: Enable TensorBoard by default instead of null logger
 - **Benefits**: Immediate gradient tracking and visualization support
@@ -55,6 +61,7 @@ This document outlines the general-purpose features from the AVIX project that s
 ### 3. ✅ **Data Handling Enhancements**
 
 #### 3.1 Soft Target Support for VIMH
+
 - **Files**: `src/data/vimh_dataset.py`, `src/data/vimh_datamodule.py`
 - **Feature**: `target_width` parameter for Gaussian soft targets
 - **Benefits**:
@@ -63,11 +70,13 @@ This document outlines the general-purpose features from the AVIX project that s
   - Backward compatible (target_width=0.0 for hard targets)
 
 #### 3.2 Flexible Transforms
+
 - **File**: `src/data/flexible_transforms.py` (new)
 - **Purpose**: Dynamic transform adjustment for different image sizes
 - **General Purpose**: Useful for any variable-dimension dataset
 
 #### 3.3 Dataset Wrapper Utilities
+
 - **File**: `src/data/dataset_wrapper.py` (new)
 - **Purpose**: Generic dataset wrapping utilities
 - **Benefits**: Easier dataset manipulation and preprocessing
@@ -75,15 +84,18 @@ This document outlines the general-purpose features from the AVIX project that s
 ### 4. ✅ **Configuration System Improvements**
 
 #### 4.1 DataLoader Warning Suppression
+
 - **File**: `configs/extras/default.yaml`
 - **Feature**: `ignore_dataloader_warnings` flag
 - **Purpose**: Suppress num_workers warnings (especially for MPS)
 
 #### 4.2 Enhanced Trainer Defaults
+
 - **File**: `configs/trainer/default.yaml`
 - **Addition**: `log_every_n_steps: 10` for detailed metric tracking
 
 #### 4.3 Progress Bar Configuration Fix
+
 - **File**: `configs/callbacks/rich_progress_bar.yaml`
 - **Change**: Switch from RichProgressBar to standard ProgressBar
 - **Reason**: Fixes Rich console compatibility issues
@@ -91,6 +103,7 @@ This document outlines the general-purpose features from the AVIX project that s
 ### 5. ✅ **Development Workflow Improvements**
 
 #### 5.1 Additional Make Targets
+
 - **File**: `Makefile`
 - **New targets to cherry-pick**:
   - `clean-data`: Clean synthesized datasets
@@ -99,6 +112,7 @@ This document outlines the general-purpose features from the AVIX project that s
   - Tensorboard launch helpers
 
 #### 5.2 CLAUDE.md Updates
+
 - **File**: `CLAUDE.md`
 - **Additions**:
   - Cleaning and maintenance commands
@@ -130,18 +144,21 @@ Since we're working with diffs rather than commits, the implementation approach 
 ## Priority Order
 
 1. **High Priority** (Core improvements):
+
    - Gradient statistics callback
    - Soft target support
    - Hybrid CNN auxiliary features
    - SimpleMLP architecture
 
 2. **Medium Priority** (Quality of life):
+
    - Progress bar improvements
    - Configuration fixes
    - Make target additions
    - Default TensorBoard logging
 
 3. **Low Priority** (Nice to have):
+
    - Dataset wrapper utilities
    - Flexible transforms
    - Documentation updates
@@ -149,14 +166,15 @@ Since we're working with diffs rather than commits, the implementation approach 
 ## Testing Checklist
 
 After cherry-picking, verify:
-- [ ] All existing tests pass
-- [ ] MNIST training still works
-- [ ] CIFAR benchmarks run correctly
-- [ ] Multihead training functions properly
-- [ ] VIMH datasets load correctly
-- [ ] New gradient statistics callback works
-- [ ] Soft targets work with backward compatibility
-- [ ] Hybrid CNN with auxiliary features trains
+
+- \[ \] All existing tests pass
+- \[ \] MNIST training still works
+- \[ \] CIFAR benchmarks run correctly
+- \[ \] Multihead training functions properly
+- \[ \] VIMH datasets load correctly
+- \[ \] New gradient statistics callback works
+- \[ \] Soft targets work with backward compatibility
+- \[ \] Hybrid CNN with auxiliary features trains
 
 ## Notes
 

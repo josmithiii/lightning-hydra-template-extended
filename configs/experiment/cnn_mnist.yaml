@@ -4,7 +4,7 @@
 # python src/train.py experiment=cnn_mnist
 
 defaults:
-  - override /data: mnist           # ../data/mnist.yaml
+  - override /data: mnist # ../data/mnist.yaml
   - override /model: mnist_cnn_421k
   - override /trainer: default
 

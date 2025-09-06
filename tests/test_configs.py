@@ -1,7 +1,7 @@
 import hydra
+import pytest
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig
-import pytest
 
 
 def test_train_config(cfg_train: DictConfig) -> None:
@@ -63,7 +63,9 @@ def test_regression_model_config() -> None:
 def test_regression_experiment_config() -> None:
     """Test that the regression experiment configuration is valid."""
     with hydra.initialize(version_base=None, config_path="../configs"):
-        cfg = hydra.compose(config_name="train", overrides=["experiment=vimh_cnn_16kdss_regression"])
+        cfg = hydra.compose(
+            config_name="train", overrides=["experiment=vimh_cnn_16kdss_regression"]
+        )
 
         assert cfg.model.output_mode == "regression"
         assert cfg.optimized_metric == "val/mae_best"

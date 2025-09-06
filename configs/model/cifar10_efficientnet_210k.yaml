@@ -18,10 +18,10 @@ criterion:
 
 net:
   _target_: src.models.components.simple_efficientnet.SimpleEfficientNet
-  input_channels: 3  # CIFAR-10 has 3 color channels
-  num_classes: 10    # CIFAR-10 has 10 classes
-  width_mult: 0.8    # Adjusted for CIFAR-10 complexity
-  depth_mult: 1.0    # Standard depth
+  input_channels: 3 # CIFAR-10 has 3 color channels
+  num_classes: 10 # CIFAR-10 has 10 classes
+  width_mult: 0.8 # Adjusted for CIFAR-10 complexity
+  depth_mult: 1.0 # Standard depth
   dropout_rate: 0.2
 
 # compile model for faster training with pytorch 2.0

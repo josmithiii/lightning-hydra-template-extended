@@ -11,7 +11,15 @@ defaults:
 task_name: "vimh_cnn_16kdss_ordinal"
 
 # Tags for experiment tracking
-tags: ["vimh", "cnn", "resonarium", "16kdss", "ordinal-regression", "distance-aware"]
+tags:
+  [
+    "vimh",
+    "cnn",
+    "resonarium",
+    "16kdss",
+    "ordinal-regression",
+    "distance-aware",
+  ]
 
 # Experiment name
 name: "vimh_cnn_16kdss_ordinal_resonarium"
@@ -25,7 +33,7 @@ optimized_metric: "val/acc_best"
 # Data configuration
 data:
   batch_size: 128
-  num_workers: 0  # MPS doesn't support multiprocessing
+  num_workers: 0 # MPS doesn't support multiprocessing
   pin_memory: true
 
 # Model configuration

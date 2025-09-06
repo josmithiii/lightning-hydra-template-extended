@@ -20,6 +20,12 @@ cl clean-logs: ## Clean logs
 f format: ## Run pre-commit hooks
 	pre-commit run -a
 
+fp format-preview: ## Preview docformatter actions
+	docformatter -c -d -r --black --wrap-summaries=99 --wrap-descriptions=99 --style=sphinx src tests
+
+fdc format-docstrings-check: ## Run docformatter pre-commit hook (manual stage)
+	pre-commit run docformatter --hook-stage manual -a
+
 sy sync: ## Merge changes from main branch to your current branch
 	git pull
 	git pull origin main
@@ -274,7 +280,7 @@ allqt all-quick-tests: tqa cbqa ## All quick tests
 lc list-configs: ## List available model configurations
 	@echo "Available model configs:"
 	@find configs/model -name "*.yaml" | sed 's|configs/model/||' | sed 's|\.yaml||' | sort
-	@echo "\nAvailable data configs:"  
+	@echo "\nAvailable data configs:"
 	@find configs/data -name "*.yaml" | sed 's|configs/data/||' | sed 's|\.yaml||' | sort
 	@echo "\nAvailable experiment configs:"
 	@find configs/experiment -name "*.yaml" | sed 's|configs/experiment/||' | sed 's|\.yaml||' | sort

@@ -60,17 +60,17 @@ def test_cifar100_class_names() -> None:
 
     # Test fine class names
     fine_classes = dm.fine_class_names
-    assert 'apple' in fine_classes
-    assert 'aquarium_fish' in fine_classes
-    assert 'wolf' in fine_classes
-    assert 'worm' in fine_classes
+    assert "apple" in fine_classes
+    assert "aquarium_fish" in fine_classes
+    assert "wolf" in fine_classes
+    assert "worm" in fine_classes
     assert len(fine_classes) == 100
 
     # Test coarse class names
     coarse_classes = dm.coarse_class_names
-    assert 'aquatic_mammals' in coarse_classes
-    assert 'vehicles_1' in coarse_classes
-    assert 'vehicles_2' in coarse_classes
+    assert "aquatic_mammals" in coarse_classes
+    assert "vehicles_1" in coarse_classes
+    assert "vehicles_2" in coarse_classes
     assert len(coarse_classes) == 20
 
 
@@ -84,11 +84,11 @@ def test_cifar100_datamodule_transforms() -> None:
 
     # Check that train transforms include augmentation (including extra rotation for CIFAR-100)
     transform_names = [type(t).__name__ for t in dm.train_transforms.transforms]
-    assert 'RandomCrop' in transform_names
-    assert 'RandomHorizontalFlip' in transform_names
-    assert 'RandomRotation' in transform_names  # CIFAR-100 specific enhancement
-    assert 'ToTensor' in transform_names
-    assert 'Normalize' in transform_names
+    assert "RandomCrop" in transform_names
+    assert "RandomHorizontalFlip" in transform_names
+    assert "RandomRotation" in transform_names  # CIFAR-100 specific enhancement
+    assert "ToTensor" in transform_names
+    assert "Normalize" in transform_names
 
 
 @pytest.mark.parametrize("use_coarse", [True, False])
@@ -117,4 +117,6 @@ def test_cifar100_enhanced_augmentation() -> None:
 
     # CIFAR-100 should have RandomRotation which CIFAR-10 doesn't have
     transform_names = [type(t).__name__ for t in dm.train_transforms.transforms]
-    assert 'RandomRotation' in transform_names, "CIFAR-100 should have RandomRotation for enhanced augmentation"
+    assert (
+        "RandomRotation" in transform_names
+    ), "CIFAR-100 should have RandomRotation for enhanced augmentation"

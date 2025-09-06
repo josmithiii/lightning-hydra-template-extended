@@ -4,7 +4,7 @@ optimizer:
   _target_: torch.optim.Adam
   _partial_: true
   lr: 0.001
-  weight_decay: 0.0001  # slightly higher weight decay for CNN
+  weight_decay: 0.0001 # slightly higher weight decay for CNN
 
 scheduler:
   _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
@@ -26,4 +26,4 @@ net:
   dropout: 0.25
 
 # compile model for faster training with pytorch 2.0
-compile: false 
+compile: false

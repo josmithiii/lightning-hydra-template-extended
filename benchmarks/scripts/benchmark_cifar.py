@@ -13,7 +13,9 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 
-def run_experiment(experiment_name: str, epochs: int = 10, accelerator: str = "cpu") -> Tuple[str, float, float]:
+def run_experiment(
+    experiment_name: str, epochs: int = 10, accelerator: str = "cpu"
+) -> Tuple[str, float, float]:
     """Run a single experiment and extract final validation accuracy.
 
     Args:
@@ -27,7 +29,8 @@ def run_experiment(experiment_name: str, epochs: int = 10, accelerator: str = "c
     print(f"\n🚀 Running {experiment_name} for {epochs} epochs...")
 
     cmd = [
-        "python", "src/train.py",
+        "python",
+        "src/train.py",
         f"experiment={experiment_name}",
         f"trainer.max_epochs={epochs}",
         f"trainer.accelerator={accelerator}",
@@ -50,22 +53,24 @@ def run_experiment(experiment_name: str, epochs: int = 10, accelerator: str = "c
         test_acc = 0.0
 
         # Look for validation accuracy in output
-        for line in output.split('\n'):
-            if 'val/acc' in line and 'val/acc_best' not in line:
+        for line in output.split("\n"):
+            if "val/acc" in line and "val/acc_best" not in line:
                 try:
-                    val_acc = float(line.split('val/acc:')[1].split()[0])
+                    val_acc = float(line.split("val/acc:")[1].split()[0])
                 except:
                     pass
-            if 'test/acc' in line:
+            if "test/acc" in line:
                 try:
-                    test_acc = float(line.split('test/acc')[1].split()[0])
+                    test_acc = float(line.split("test/acc")[1].split()[0])
                     # Handle different formats
                     if test_acc > 1:  # Percentage format
                         test_acc /= 100
                 except:
                     pass
 
-        print(f"✅ {experiment_name}: Val Acc: {val_acc:.3f}, Test Acc: {test_acc:.3f} ({duration:.1f}s)")
+        print(
+            f"✅ {experiment_name}: Val Acc: {val_acc:.3f}, Test Acc: {test_acc:.3f} ({duration:.1f}s)"
+        )
         return experiment_name, val_acc, test_acc
 
     except subprocess.TimeoutExpired:
@@ -86,7 +91,6 @@ def main():
         # Quick CIFAR-10 benchmarks
         ("cifar10_benchmark_cnn", 5),
         ("cifar10_benchmark_convnext", 5),
-
         # Quick CIFAR-100 comparison
         ("cifar100_coarse_cnn", 5),
     ]
@@ -111,22 +115,22 @@ def main():
 
     for exp_name, val_acc, test_acc in results:
         # Parse experiment details
-        if 'cifar10' in exp_name:
+        if "cifar10" in exp_name:
             dataset = "CIFAR-10"
-        elif 'cifar100_coarse' in exp_name:
+        elif "cifar100_coarse" in exp_name:
             dataset = "CIFAR-100 (20)"
-        elif 'cifar100' in exp_name:
+        elif "cifar100" in exp_name:
             dataset = "CIFAR-100 (100)"
         else:
             dataset = "Unknown"
 
-        if 'cnn' in exp_name:
+        if "cnn" in exp_name:
             arch = "SimpleCNN"
-        elif 'convnext' in exp_name:
+        elif "convnext" in exp_name:
             arch = "ConvNeXt"
-        elif 'vit' in exp_name:
+        elif "vit" in exp_name:
             arch = "ViT"
-        elif 'efficientnet' in exp_name:
+        elif "efficientnet" in exp_name:
             arch = "EfficientNet"
         else:
             arch = "Unknown"
@@ -139,9 +143,15 @@ def main():
     print("=" * 80)
 
     # Group by dataset
-    cifar10_results = [(name, val, test) for name, val, test in results if 'cifar10' in name]
-    cifar100_results = [(name, val, test) for name, val, test in results if 'cifar100' in name and 'coarse' not in name]
-    cifar100_coarse_results = [(name, val, test) for name, val, test in results if 'cifar100_coarse' in name]
+    cifar10_results = [(name, val, test) for name, val, test in results if "cifar10" in name]
+    cifar100_results = [
+        (name, val, test)
+        for name, val, test in results
+        if "cifar100" in name and "coarse" not in name
+    ]
+    cifar100_coarse_results = [
+        (name, val, test) for name, val, test in results if "cifar100_coarse" in name
+    ]
 
     if cifar10_results:
         best_cifar10 = max(cifar10_results, key=lambda x: x[1])

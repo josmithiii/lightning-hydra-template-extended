@@ -16,6 +16,7 @@ This is an extended Lightning-Hydra-Template for deep learning projects using Py
 ## Common Commands
 
 ### Training
+
 ```bash
 # Basic training
 python src/train.py
@@ -35,6 +36,7 @@ make help           # generate the list of make targets
 ```
 
 ### Testing
+
 ```bash
 # Run tests (excluding slow tests)
 pytest -k "not slow"
@@ -49,6 +51,7 @@ pytest tests/test_train.py
 ```
 
 ### Code Quality
+
 ```bash
 # Run pre-commit hooks (formatting, linting)
 pre-commit run -a
@@ -56,12 +59,14 @@ make format
 ```
 
 ### Evaluation
+
 ```bash
 # Evaluate checkpoint
 python src/eval.py ckpt_path="/path/to/checkpoint.ckpt"
 ```
 
 ### Environment Management
+
 ```bash
 source .venv/bin/activate.csh
 
@@ -71,11 +76,12 @@ make deactivate  # Shows alias setup for 'd' command
 ```
 
 ### Visualization and Analysis
+
 ```bash
 # Generate model architecture diagrams
 make td          # Text + graphical diagrams
 make tda         # All model architectures
-make tds         # Simple text-only diagrams  
+make tds         # Simple text-only diagrams
 make tdss        # Sample architectures comparison
 
 # Compare architectures systematically (3 epochs each)
@@ -83,6 +89,7 @@ make ca          # Compare medium-sized architectures
 ```
 
 ### Extended Training Commands
+
 ```bash
 # Quick training (1 epoch, limited batches)
 make tq          # SimpleDenseNet quick
@@ -98,13 +105,14 @@ make trcns       # Train ConvNeXt small (~68K params)
 ```
 
 ### CIFAR Benchmarks
+
 ```bash
 # Individual CIFAR-10 benchmarks
 make cb10c       # CIFAR-10 CNN (85-92% expected)
 make cb10cn      # CIFAR-10 ConvNeXt (90-95% expected)
 make cb10v       # CIFAR-10 ViT (88-93% expected)
 
-# CIFAR-100 benchmarks  
+# CIFAR-100 benchmarks
 make cb100c      # CIFAR-100 CNN (55-70% expected)
 make cb100cn     # CIFAR-100 ConvNeXt (70-80% expected)
 
@@ -119,6 +127,7 @@ make cbsa        # Complete CIFAR suite
 ```
 
 ### VIMH (Variable Image MultiHead) Training
+
 ```bash
 # VIMH dataset experiments
 make evimh       # VIMH CNN 16K dataset samples
@@ -131,11 +140,13 @@ python examples/vimh_training.py --demo --save-plots
 ```
 
 ### Environment Management
+
 ```bash
 source .venv/bin/activate.csh
 ```
 
 ## Troubleshooting Notes
+
 - When you see "No module named 'rootutils'", it means we need to say `source .venv/bin/activate`
 - Use MPS trainer for Mac: `python src/train.py trainer=mps` (nearly always used by user)
 - For VIMH training, set `num_workers: 0` in data config as MPS doesn't support multiprocessing
@@ -143,7 +154,9 @@ source .venv/bin/activate.csh
 ## Architecture Overview
 
 ### Extended Template Features
+
 This is an **extended** Lightning-Hydra-Template with major enhancements:
+
 - **Multiple architectures**: SimpleDenseNet, SimpleCNN, ConvNeXt-V2, ViT, EfficientNet
 - **CIFAR benchmark suite**: CIFAR-10/100 with literature-competitive baselines
 - **VIMH (Variable Image MultiHead)**: Advanced multihead dataset format with auto-configuration
@@ -152,6 +165,7 @@ This is an **extended** Lightning-Hydra-Template with major enhancements:
 - **Backward compatibility**: All original template functionality preserved
 
 ### Configuration System (Hydra)
+
 - **Main configs**: `configs/train.yaml` and `configs/eval.yaml` define default training/evaluation settings
 - **Modular configs**: Organized by component type in `configs/` subdirectories:
   - `data/`: Data module configurations (MNIST, CIFAR-10/100, VIMH)
@@ -165,6 +179,7 @@ This is an **extended** Lightning-Hydra-Template with major enhancements:
 - **Auto-configuration**: VIMH models auto-configure from dataset metadata
 
 ### Code Structure
+
 - **`src/train.py`**: Main training entry point using Hydra configuration
 - **`src/eval.py`**: Evaluation entry point for trained models
 - **`src/models/`**: Lightning modules (model implementations)
@@ -173,12 +188,14 @@ This is an **extended** Lightning-Hydra-Template with major enhancements:
 - **Dynamic instantiation**: Uses `hydra.utils.instantiate()` to create objects from config `_target_` paths
 
 ### Key Patterns
+
 - **Lightning modules**: Follow standard PyTorch Lightning patterns with `training_step`, `validation_step`, `test_step`, `configure_optimizers`
 - **Data modules**: Implement `prepare_data`, `setup`, and dataloader methods
 - **Metric tracking**: Uses torchmetrics for proper metric calculation across devices
 - **Hyperparameter logging**: All init parameters automatically saved via `self.save_hyperparameters()`
 
 ### Project Structure
+
 ```
 ├── configs/              # Hydra configuration files
 ├── src/
@@ -193,6 +210,7 @@ This is an **extended** Lightning-Hydra-Template with major enhancements:
 ```
 
 ### Dependencies and Tools
+
 - **Core ML**: `torch>=2.0.0`, `lightning>=2.0.0`, `torchmetrics>=0.11.4`, `torchvision>=0.15.0`
 - **Config**: `hydra-core==1.3.2`, `hydra-colorlog==1.2.0`, `hydra-optuna-sweeper==1.2.0`
 - **Utilities**: `rootutils` (project root setup), `rich` (terminal formatting)
@@ -221,4 +239,4 @@ This is an **extended** Lightning-Hydra-Template with major enhancements:
 - Do what has been asked; nothing more, nothing less
 - NEVER create files unless they're absolutely necessary for achieving your goal
 - ALWAYS prefer editing an existing file to creating a new one
-- NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User
+- NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User

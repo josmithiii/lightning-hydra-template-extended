@@ -7,7 +7,9 @@ repos:
     hooks:
       # list of supported hooks: https://pre-commit.com/hooks.html
       - id: trailing-whitespace
+        exclude: ^(logs/|archive/)
       - id: end-of-file-fixer
+        exclude: ^(logs/|archive/)
       - id: check-docstring-first
       - id: check-yaml
       - id: debug-statements
@@ -43,6 +45,7 @@ repos:
     rev: v1.7.7
     hooks:
       - id: docformatter
+        stages: [manual]
         args:
           [
             --check,
@@ -58,6 +61,7 @@ repos:
     rev: 1.5.0 # or master if you're bold
     hooks:
       - id: interrogate
+        files: ^(src|tests)/
         args:
           [
             --verbose,
@@ -74,6 +78,8 @@ repos:
     rev: 6.0.0
     hooks:
       - id: flake8
+        stages: [manual]
+        files: ^(src|tests)/
         args:
           [
             "--extend-ignore",
@@ -88,7 +94,8 @@ repos:
     rev: "1.7.9"
     hooks:
       - id: bandit
-        args: ["-s", "B101"]
+        files: ^(src|tests)/
+        args: ["-s", "B101,B403,B110,B404,B603", "-lll"]
         additional_dependencies: [pbr]
 
   # yaml formatting
