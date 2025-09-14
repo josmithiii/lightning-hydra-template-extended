@@ -295,3 +295,40 @@ class ArchitectureMetadataExtractor:
             metadata["input_size"] = self.default_values["input_size"]
 
         return metadata
+
+
+def configure_model_auxiliary_features(model, cfg):
+    """Configure model auxiliary input features from data config."""
+    try:
+        # Auto-configure auxiliary input size from data config
+        if (
+            hasattr(cfg, "data")
+            and hasattr(cfg.data, "auxiliary_features")
+            and cfg.data.auxiliary_features
+            and hasattr(model, "net")
+            and hasattr(model.net, "auxiliary_input_size")
+        ):
+
+            # Calculate auxiliary input size based on feature types
+            auxiliary_input_size = 0
+            for feature_type in cfg.data.auxiliary_features:
+                if feature_type == "decay_time":
+                    auxiliary_input_size += 1  # decay_time extracts 1 feature
+                # Add other feature types as needed in the future
+
+            if auxiliary_input_size > 0:
+                old_size = getattr(model.net, "auxiliary_input_size", 0)
+                model.net.auxiliary_input_size = auxiliary_input_size
+                from src.utils.pylogger import get_pylogger
+                log = get_pylogger(__name__)
+                log.info(
+                    f"Auto-configured auxiliary_input_size: {old_size} -> {auxiliary_input_size} (based on {cfg.data.auxiliary_features})"
+                )
+
+                # Rebuild auxiliary network and heads if the size changed
+                if old_size != auxiliary_input_size and hasattr(model.net, "_rebuild_auxiliary_and_heads"):
+                    model.net._rebuild_auxiliary_and_heads()
+    except Exception as e:
+        from src.utils.pylogger import get_pylogger
+        log = get_pylogger(__name__)
+        log.warning(f"Failed to auto-configure model auxiliary features: {e}")
