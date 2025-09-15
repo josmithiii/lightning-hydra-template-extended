@@ -1,4 +1,6 @@
-# Lightning-Hydra-Template-*Extended*
+# Lightning-Hydra-Template-*Extended* (LHTE)
+
+### Status: _**Beta**_
 
 ## Extensions
 
