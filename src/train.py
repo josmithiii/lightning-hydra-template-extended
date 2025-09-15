@@ -228,6 +228,8 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
                     cfg.model.net.parameter_names = parameter_names
                     # Ensure output_mode is set at network level too
                     cfg.model.net.output_mode = "regression"
+                    # Clear any existing heads_config to prevent classification head creation
+                    cfg.model.net.heads_config = None
                     # Auto-configure regression loss functions for each parameter
                     try:
                         from src.utils.vimh_utils import get_parameter_ranges_from_metadata
