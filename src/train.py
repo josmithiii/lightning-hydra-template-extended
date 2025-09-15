@@ -214,8 +214,10 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
                 # Configure model based on output mode
                 if hasattr(cfg.model, "output_mode") and cfg.model.output_mode == "regression":
-                    # For regression mode, use parameter_names
+                    # For regression mode, set parameter_names in the network config
                     cfg.model.net.parameter_names = parameter_names
+                    # Ensure output_mode is set at network level too
+                    cfg.model.net.output_mode = "regression"
                 else:
                     # For classification/ordinal mode, use heads_config
                     heads_config = get_heads_config_from_metadata(cfg.data.data_dir)
