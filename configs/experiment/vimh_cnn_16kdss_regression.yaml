@@ -28,6 +28,7 @@ data:
   batch_size: 128
   num_workers: 0 # MPS doesn't support multiprocessing
   pin_memory: true
+  label_mode: regression
 
 # Model configuration
 model:

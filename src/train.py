@@ -8,7 +8,7 @@ import rootutils
 import torch
 from lightning import Callback, LightningDataModule, LightningModule, Trainer
 from lightning.pytorch.loggers import Logger
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf, open_dict
 
 _original_torch_load = torch.load
 
@@ -87,6 +87,17 @@ def _preflight_check_label_diversity(
         try:
             datamodule.prepare_data()
             datamodule.setup("fit")
+
+        # Skip this check for regression label mode where labels are continuous
+        try:
+            if hasattr(datamodule, "hparams"):
+                label_mode = str(getattr(datamodule.hparams, "label_mode", "classification")).lower()
+                if label_mode == "regression":
+                    log.info("Preflight skipped: regression label mode (continuous targets)")
+                    return
+        except Exception:
+            pass
+
         except Exception as e:
             # If the Trainer will call setup later, it's still OK — we just need loaders now
             log.warning(f"DataModule setup failed during preflight: {e}")
@@ -218,6 +229,25 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
                     cfg.model.net.parameter_names = parameter_names
                     # Ensure output_mode is set at network level too
                     cfg.model.net.output_mode = "regression"
+                    # Auto-configure regression loss functions for each parameter
+                    try:
+                        from src.utils.vimh_utils import get_parameter_ranges_from_metadata
+                        param_ranges = get_parameter_ranges_from_metadata(cfg.data.data_dir)
+                        criteria_cfg = {}
+                        for param_name in parameter_names:
+                            rng = param_ranges.get(param_name, None)
+                            if rng is None:
+                                rng = (0.0, 1.0)
+                            criteria_cfg[param_name] = {
+                                "_target_": "src.models.losses.NormalizedRegressionLoss",
+                                "param_range": (float(rng[0]), float(rng[1])),
+                            }
+                        with open_dict(cfg.model):
+                            cfg.model.criteria = OmegaConf.create(criteria_cfg)
+                        log.info(f"Auto-configured regression loss functions for: {list(criteria_cfg.keys())}")
+                    except Exception as e:
+                        log.warning(f"Failed to configure regression losses: {e}")
+
                 else:
                     # For classification/ordinal mode, use heads_config
                     heads_config = get_heads_config_from_metadata(cfg.data.data_dir)
@@ -303,7 +333,7 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
     if cfg.get("test"):
         log.info("Starting testing!")
-        ckpt_path = trainer.checkpoint_callback.best_model_path
+        ckpt_path = cfg.get("ckpt_path") or trainer.checkpoint_callback.best_model_path
         if ckpt_path == "":
             log.warning("Best ckpt not found! Using current weights for testing...")
             ckpt_path = None

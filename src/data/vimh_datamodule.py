@@ -61,7 +61,7 @@ class VIMHDataModule(LightningDataModule):
 
     def __init__(
         self,
-        data_dir: str = "data-vimh/",
+        data_dir: str = \"data-vimh/\",
         batch_size: int = 64,
         num_workers: int = 0,
         pin_memory: bool = False,
@@ -70,6 +70,7 @@ class VIMHDataModule(LightningDataModule):
         val_transform: Optional[transforms.Compose] = None,
         test_transform: Optional[transforms.Compose] = None,
         target_width: float = 0.0,
+        label_mode: str = \"classification\",
     ) -> None:
         """Initialize a `VIMHDataModule`.
 
@@ -271,7 +272,26 @@ class VIMHDataModule(LightningDataModule):
             pass
         return None
 
-    def _fallback_dimension_detection(self, data_dir: str) -> Tuple[int, int, int]:
+
+    def _build_regression_target_transform(self):
+        """Create a target transform mapping class indices to continuous parameter values."""
+        heads_config = getattr(self, 'heads_config', {})
+        param_bounds = getattr(self, 'parameter_bounds', {})
+        def to_actual(labels: Dict[str, Any]) -> Dict[str, torch.Tensor]:
+            out: Dict[str, torch.Tensor] = {}
+            for name, idx in labels.items():
+                if isinstance(idx, torch.Tensor):
+                    idx_t = idx.to(torch.float32)
+                else:
+                    idx_t = torch.tensor(idx, dtype=torch.float32)
+                num_classes = float(heads_config.get(name, 1))
+                pmin, pmax = param_bounds.get(name, (0.0, 1.0))
+                step = (pmax - pmin) / max(1.0, (num_classes - 1.0))
+                out[name] = pmin + idx_t * step
+            return out
+        return to_actual
+
+def _fallback_dimension_detection(self, data_dir: str) -> Tuple[int, int, int]:
         """Fallback method: load temporary dataset for dimension detection.
 
         :param data_dir: Path to dataset directory
@@ -449,8 +469,12 @@ class VIMHDataModule(LightningDataModule):
 
         # Convert label lists to tensors
         batched_labels = {}
+        is_regression = str(getattr(self.hparams, 'label_mode', 'classification')).lower() == 'regression'
         for head_name, label_list in labels_dict.items():
-            batched_labels[head_name] = torch.tensor(label_list, dtype=torch.long)
+            if is_regression:
+                batched_labels[head_name] = torch.tensor(label_list, dtype=torch.float32)
+            else:
+                batched_labels[head_name] = torch.tensor(label_list, dtype=torch.long)
 
         return batched_images, batched_labels
 
@@ -575,10 +599,14 @@ class VIMHDataModule(LightningDataModule):
                 self._adjust_transforms_for_image_size(height, width)
 
                 # Now load datasets with correctly adjusted transforms
+                target_transform = None
+                if str(getattr(self.hparams, 'label_mode', 'classification')).lower() == 'regression':
+                    target_transform = self._build_regression_target_transform()
                 self.data_train = VIMHDataset(
                     self.hparams.data_dir,
                     train=True,
                     transform=self.train_transform,
+                    target_transform=target_transform,
                     target_width=self.hparams.target_width,
                 )
 
@@ -586,6 +614,7 @@ class VIMHDataModule(LightningDataModule):
                     self.hparams.data_dir,
                     train=False,
                     transform=self.test_transform,
+                    target_transform=target_transform,
                     target_width=self.hparams.target_width,
                 )
 
@@ -595,6 +624,7 @@ class VIMHDataModule(LightningDataModule):
                     self.hparams.data_dir,
                     train=False,
                     transform=self.val_transform,
+                    target_transform=target_transform,
                     target_width=self.hparams.target_width,
                 )
 
