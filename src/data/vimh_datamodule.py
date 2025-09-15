@@ -61,7 +61,7 @@ class VIMHDataModule(LightningDataModule):
 
     def __init__(
         self,
-        data_dir: str = \"data-vimh/\",
+        data_dir: str = "data-vimh/",
         batch_size: int = 64,
         num_workers: int = 0,
         pin_memory: bool = False,
@@ -70,7 +70,7 @@ class VIMHDataModule(LightningDataModule):
         val_transform: Optional[transforms.Compose] = None,
         test_transform: Optional[transforms.Compose] = None,
         target_width: float = 0.0,
-        label_mode: str = \"classification\",
+        label_mode: str = "classification",
     ) -> None:
         """Initialize a `VIMHDataModule`.
 
@@ -291,7 +291,7 @@ class VIMHDataModule(LightningDataModule):
             return out
         return to_actual
 
-def _fallback_dimension_detection(self, data_dir: str) -> Tuple[int, int, int]:
+    def _fallback_dimension_detection(self, data_dir: str) -> Tuple[int, int, int]:
         """Fallback method: load temporary dataset for dimension detection.
 
         :param data_dir: Path to dataset directory
