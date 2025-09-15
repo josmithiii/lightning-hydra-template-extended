@@ -143,11 +143,13 @@ class SimpleCNN(nn.Module):
                 )
         else:
             # Single head (backward compatibility)
-            head_name, num_classes = next(iter(heads_config.items()))
-            if output_mode == "regression":
-                self.classifier = nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
-            else:
-                self.classifier = nn.Linear(combined_feature_size, num_classes)
+            if heads_config:
+                head_name, num_classes = next(iter(heads_config.items()))
+                if output_mode == "regression":
+                    self.classifier = nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
+                else:
+                    self.classifier = nn.Linear(combined_feature_size, num_classes)
+            # If heads_config is empty, don't create classifier - will be auto-configured later
 
     def forward(self, x: torch.Tensor, auxiliary: Optional[torch.Tensor] = None):
         """Perform a single forward pass through the network.
@@ -182,25 +184,44 @@ class SimpleCNN(nn.Module):
         else:
             combined_feature_size = self.fc_hidden
 
-        if self.output_mode == "regression":
-            # Create regression heads with sigmoid activation
-            self.heads = nn.ModuleDict(
-                {
-                    head_name: nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
-                    for head_name in heads_config.keys()
-                }
-            )
-        else:
-            # Classification mode: create heads with appropriate number of classes
-            self.heads = nn.ModuleDict(
-                {
-                    head_name: nn.Linear(combined_feature_size, num_classes)
-                    for head_name, num_classes in heads_config.items()
-                }
-            )
-
+        # Update configuration
         self.heads_config = heads_config
         self.is_multihead = len(heads_config) > 1
+
+        # Remove old classifier if transitioning to multihead
+        if hasattr(self, 'classifier') and self.is_multihead:
+            delattr(self, 'classifier')
+
+        # Remove old heads if transitioning to single head
+        if hasattr(self, 'heads') and not self.is_multihead:
+            delattr(self, 'heads')
+
+        if self.is_multihead:
+            if self.output_mode == "regression":
+                # Create regression heads with sigmoid activation
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
+                        for head_name in heads_config.keys()
+                    }
+                )
+            else:
+                # Classification mode: create heads with appropriate number of classes
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Linear(combined_feature_size, num_classes)
+                        for head_name, num_classes in heads_config.items()
+                    }
+                )
+        else:
+            # Single head (backward compatibility)
+            if heads_config:
+                head_name, num_classes = next(iter(heads_config.items()))
+                if self.output_mode == "regression":
+                    self.classifier = nn.Sequential(nn.Linear(combined_feature_size, 1), nn.Sigmoid())
+                else:
+                    self.classifier = nn.Linear(combined_feature_size, num_classes)
+            # If heads_config is empty, don't create classifier - will be auto-configured later
 
     def _rebuild_auxiliary_and_heads(self) -> None:
         """Rebuild auxiliary network and heads when auxiliary_input_size changes."""
