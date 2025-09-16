@@ -70,7 +70,7 @@
   \begin{itemize}
     \mpitem Opinionated project skeleton with \texttt{src/}, \texttt{configs/}, and \texttt{tests/} ready for research
 
-    \mpitem \emph{Hydra-first workflow:} CLI overrides (e.g., \texttt{python src/train.py trainer=gpu data.batch_size=64}) for every configuration value
+    \mpitem \emph{Hydra-first workflow:} CLI overrides (e.g., \texttt{python src/train.py trainer=gpu data.batch\_size=64}) for every configuration value
 
     \mpitem \emph{PyTorch Lightning baseline:} single-head MNIST MLP experiment, reproducible training loops, and logging hooks
 
@@ -81,60 +81,79 @@
 
 \end{slide}
 
-\begin{slide}[\slideopts,toc={Spectra}]{Why Spectral Representations?}
+\begin{slide}[\slideopts,toc={Why LHTE}]{Why Lightning Hydra Template \emph{Extended}?}
 
-  Aren't we supposed to be doing everything \emph{end to end} now?
-
-  Shouldn't the input be a digital audio \emph{bit stream} by now?
+  \emph{Motivation for the Fork}
 
   \begin{itemize}
+    \mpitem One repo, many backbones: SimpleCNN, ConvNeXt-V2, EfficientNet, ViT, SDN, and multihead MLPs ship side by side
 
-    \mpitem Sure, you can do it that way, but with \emph{far more}
-    \begin{itemize}
-      \mpitem training \emph{data},
-      \mpitem training \emph{time}, 
-      \mpitem computational complexity (e.g., Transformer)
-    \end{itemize}
-    \mpitem It is more cost-effective to exploit \emph{inductive priors:}
-    \begin{itemize}
-      \mpitem The \emph{ear} is a \emph{hardware spectrum analyzer} used for all audio perception
-      \mpitem \emph{Superhuman hearing} is possible using a \emph{stack of different time-frequency resolutions}\\
-      (Multi-Scale Spectrograms)
-      \mpitem Any additional feature can be brought in as a \emph{conditioning} input\\
-      (such as \emph{pre-emphasis})
-    \end{itemize}
+    \mpitem Out-of-the-box datasets beyond MNIST: CIFAR-10/100, multihead synth suites, and the new Variable Image MultiHead (VIMH) format
 
+    \mpitem Hydra-first overrides encourage rapid prototyping --- swap data, models, trainers, and losses without touching code
+
+    \mpitem Developer ergonomics matter: 100+ make targets, scripted smoke tests, and diagram tooling keep the feedback loop tight
+
+    \mpitem Everything remains compatible with upstream LHT so existing configs and checkpoints keep working
   \end{itemize}
-
-  \vspace{-1em}
-%  \begin{quote}
-\maybepause
-    \centerline{\textit{Those who don't know signal processing are doomed to reinvent it}}
-\maybepause
-    \centerline{\textit{Those who know signal processing are doomed to re-introduce it}}
-%  \end{quote}
 
 \end{slide}
 
-%% \begin{slidewhite}[\slideopts,toc={Problem}]{Example Driving Problem: Real-Time Filter Design in an Audio Plugin}
-%%   \vspace{-2em}
-%%   \myFigureRotateToWidth{pgmeejos}{-90}{0.85\twidth}{(Red-Bordered Buttons Added to
-%%     \textbf{Plugin GUI Magic}'s Equalizer Example)}
-%% \end{slidewhite}
+\begin{slide}[\slideopts,toc={LHTE Tour}]{LHTE in 5 Minutes}
 
-%% Let xxx denote the architecture, e.g., vit_tiny
-%% \begin{slidewhite}[\slideopts,toc={xxx}]{Architecture xxx}
-%% \vspace{-2em}
-%% \myFigureToWidth{fileNameWithoutSuffix}{1.0\twidth}{}
-%% \end{slidewhite}
+  \emph{Hands-On Preview}
 
-%% % Let xxx denote the architecture, e.g., vit_tiny
-%% \begin{slidewhite}[\slideopts,toc={xxx}]{Architecture xxx}
-%% \vspace{-2em}
-%% \myFigureToWidth{fileNameWithoutSuffix}{1.0\twidth}{}
-%% \end{slidewhite}
+  \begin{itemize}
+    \mpitem \texttt{sh setup.sh} to bootstrap a uv-managed virtual environment with PyTorch + Lightning
 
-\section[toc={New Architectures}]{Neural Architectures Beyond MLP}
+    \mpitem \texttt{make h} surfaces discoverable commands; \texttt{make tqa} runs MNIST smoke trains across every architecture
+
+    \mpitem CIFAR baselines: \texttt{make cbqa} (quick sanity), \texttt{make cbs10/cbs100} (full benchmarks with logs)
+
+    \mpitem Real multihead workloads: \texttt{python src/train.py experiment=vimh\_cnn} auto-configures heads from dataset metadata
+
+    \mpitem Mix and match with CLI overrides such as \texttt{trainer.max\_epochs=1} or \texttt{model.loss=focal} to explore variants
+  \end{itemize}
+
+\end{slide}
+
+\begin{slide}[\slideopts,toc={Feature Map}]{Feature Map \& Documentation Trail}
+
+  \emph{Where to Dive Deeper}
+
+  \begin{itemize}
+    \mpitem Architectures roundup: \texttt{docs/architectures.md} for parameter counts, diagrams, and recommended use cases
+
+    \mpitem Dataset guide: \texttt{docs/vimh.md} + \texttt{docs/vimh\_cookbook.md} explain the metadata schema and sampling recipes
+
+    \mpitem Benchmark ledger: \texttt{docs/benchmarks.md} documents CIFAR + VIMH comparisons with reproducible Hydra configs
+
+    \mpitem Multihead strategy: \texttt{docs/multihead.md} covers head wiring, loss combinations, and evaluation metrics
+
+    \mpitem Vision primer handout: \texttt{docs/vision\_primer.md} mirrors these slides for quick sharing without LaTeX
+  \end{itemize}
+
+\end{slide}
+
+\begin{slide}[\slideopts,toc={Talk Flow}]{Suggested Talk Flow}
+
+  \emph{Use LHTE to Frame Your Story}
+
+  \begin{itemize}
+    \mpitem Start with the Lightning + Hydra reuse pitch, then highlight how LHTE supercharges it with modern backbones
+
+    \mpitem Walk through the architecture menu and pair each backbone with a ready-to-run experiment
+
+    \mpitem Demo quick wins: smoke tests, CIFAR comparisons, and VIMH runs with a few terminal commands
+
+    \mpitem Land on multihead motivation and roadmap --- point to benchmark snapshots and upcoming extensions
+
+    \mpitem Close by inviting the audience to clone the repo, open \texttt{docs/index.md}, and follow the handout for self-serve exploration
+  \end{itemize}
+
+\end{slide}
+
+\section[toc={New Architectures}]{LHTE Neural Architectures Beyond MLP}
 
 \begin{slidewhite}[\slideopts,toc={CNN}]{SimpleCNN Architecture}
   
