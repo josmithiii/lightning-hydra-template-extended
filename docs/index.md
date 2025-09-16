@@ -4,11 +4,12 @@ Expert-focused documentation for power users. Get up to speed quickly on what's 
 
 ## ⚡ Quick Start (5 min)
 ```bash
-source .venv/bin/activate        # Setup environment
-make h                           # See all make targets
-make tqa                         # Test all architectures (3 min)
-make cbqa                        # Quick CIFAR validation (15 min)
-make ca                          # Compare architectures (10 min)
+sh setup.sh                     # Create & install deps with uv (once)
+source .venv/bin/activate       # Activate virtualenv for this shell
+make h                          # See all make targets
+make tqa                        # Test all architectures (3 min)
+make cbqa                       # Quick CIFAR validation (15 min)
+make ca                         # Compare architectures (10 min)
 ```
 
 ## 🎯 Core Extensions
@@ -23,6 +24,7 @@ make ca                          # Compare architectures (10 min)
 - **[architectures.md](architectures.md)** - 5 architectures, params, usage patterns
 - **[vimh.md](vimh.md)** - VIMH dataset format, multihead classification
 - **[onboarding.md](onboarding.md)** - 15-minute onboarding guide
+- **[vision_primer.md](vision_primer.md)** - Slide-style overview for lightning talks
 
 ### Benchmarking & Research
 - **[benchmarks.md](benchmarks.md)** - CIFAR system, expected performance, automation
@@ -30,6 +32,7 @@ make ca                          # Compare architectures (10 min)
 
 ### Advanced Usage
 - **[multihead.md](multihead.md)** - Multi-task learning details and implementation
+- **[vimh_cookbook.md](vimh_cookbook.md)** - Practical recipes for VIMH datasets
 - **[development.md](development.md)** - Extension patterns, integration guide
 
 ## 🔧 Expert Navigation
@@ -47,6 +50,9 @@ make ca                          # Compare architectures (10 min)
 - Config Group Map → in [quickref.md](quickref.md#config-group-map) and README
 - **[../README.md](../README.md)** - Main project documentation
 - **[extensions.md](extensions.md)** - Complete feature overview
+- **[features.md](features.md)** - High-level summary of LHTE capabilities
+- **[benchmark_snapshots.md](benchmark_snapshots.md)** - Latest wall-clock + accuracy samples
+- **[presentation/README.md](presentation/README.md)** - Legacy slide deck archive (LaTeX)
 - **Makefile** - 50+ targets with h, tq, cb, e prefixes
 
 ## ⚠️ Common Pitfalls

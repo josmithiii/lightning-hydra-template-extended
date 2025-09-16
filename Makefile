@@ -43,11 +43,14 @@ tqa train-quick-all: tq sep tqc sep tqv sep tqcn sep tqvh ## Train quickly all a
 
 # TESTING TARGETS "t"
 
-t test: ## Run fast pytest tests
+t test: cfg-audit ## Run fast pytest tests
 	pytest -k "not slow"
 
 ta test-all: ## Run all pytest tests
 	pytest
+
+cfg-audit: ## Verify Hydra config references
+	python scripts/config_audit.py
 
 td test-diagram: ## Generate model architecture diagrams (text + graphical)
 	python viz/enhanced_model_diagrams.py

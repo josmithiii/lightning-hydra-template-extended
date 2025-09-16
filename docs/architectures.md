@@ -6,6 +6,8 @@ The Lightning-Hydra-Template-Extended supports multiple neural network
 architectures optimized for different use cases. All architectures are
 easily switchable through Hydra configuration.
 
+> 🧭 **Why it matters for vision enthusiasts:** Quickly compare modern backbones (CNN, ConvNeXt, ViT, EfficientNet) on the same training pipeline without touching the training loop—perfect for experimenting with new ideas or benchmarking augmentations.
+
 ## 🏗️ Architecture Comparison
 
 | Architecture | Parameters | Type | Best For | Config Files |

@@ -3,7 +3,8 @@
 Fast path for power users to validate the setup, explore capabilities, and run a meaningful experiment.
 
 ## 0–3 min: Setup
-- Activate env: `source .venv/bin/activate` (run `sh setup.sh` first if needed).
+- Bootstrap env: `sh setup.sh` (requires [uv](https://docs.astral.sh/uv/) once).
+- Activate env: `source .venv/bin/activate` (use `.csh` variant for tcsh/csh).
 - Discover commands: `make h` and list configs: `make lc`.
 
 ## 3–6 min: Validate

@@ -1,5 +1,17 @@
-# Config Hygiene Report
+# Config Hygiene
 
-- [MISSING-OVERRIDE] in configs/experiment/multihead_cnn_mnist.yaml: data -> configs/data/mnist_mh.yaml (not found)
-- [MISSING-OVERRIDE] in configs/experiment/multihead_cnn_mnist.yaml: model -> configs/model/mnist_multihead_cnn_422k.yaml (not found)
-- [MISSING-OVERRIDE] in configs/experiment/multihead_cnn_cifar10.yaml: data -> configs/data/cifar10_mh.yaml (not found)
+Run the automated audit to verify that Hydra defaults point to real YAML files.
+
+```bash
+python scripts/config_audit.py            # train/eval + all experiment configs
+python scripts/config_audit.py configs/experiment/multihead_cnn_mnist.yaml  # single file
+```
+
+The script reports missing overrides in a CI-friendly format and exits non-zero when issues are detected.
+
+Example output:
+```
+✓ All referenced Hydra configs resolved successfully.
+```
+
+Add this check to your workflow (e.g., pre-commit, CI pipeline) to catch renamed or deleted config files before they break experiments.

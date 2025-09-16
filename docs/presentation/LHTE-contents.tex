@@ -63,6 +63,24 @@
 
 \end{slide}
 
+\begin{slide}[\slideopts,toc={Original LHT}]{Original Lightning Hydra Template (LHT)}
+
+  \emph{Open-Source PyTorch Lightning + Hydra Bootstrap}
+
+  \begin{itemize}
+    \mpitem Opinionated project skeleton with \texttt{src/}, \texttt{configs/}, and \texttt{tests/} ready for research
+
+    \mpitem \emph{Hydra-first workflow:} CLI overrides (e.g., \texttt{python src/train.py trainer=gpu data.batch_size=64}) for every configuration value
+
+    \mpitem \emph{PyTorch Lightning baseline:} single-head MNIST MLP experiment, reproducible training loops, and logging hooks
+
+    \mpitem Built-in developer experience: make targets for testing/formatting, Conda or pip installation paths, and template README for new repos
+
+    \mpitem Stable foundation the LHTE fork keeps compatible so existing configs, datasets, and weights continue to run unchanged
+  \end{itemize}
+
+\end{slide}
+
 \begin{slide}[\slideopts,toc={Spectra}]{Why Spectral Representations?}
 
   Aren't we supposed to be doing everything \emph{end to end} now?

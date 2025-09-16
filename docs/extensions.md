@@ -50,8 +50,9 @@ net:
 
 ## ⚡ Expert Quick Start
 ```bash
-source .venv/bin/activate    # Setup
-make tqa                     # Test all architectures (3 min)
+sh setup.sh                 # One-time env bootstrap via uv
+source .venv/bin/activate   # Activate virtualenv (use .csh as needed)
+make tqa                    # Test all architectures (3 min)
 make cbqa                    # Quick CIFAR validation (15 min)
 make ca                      # Compare architectures (10 min)
 make cbs                     # Full benchmark suite (2h)

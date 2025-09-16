@@ -25,6 +25,8 @@
 
 ## Format Specification
 
+> 🧰 Looking for end-to-end workflows? See the [VIMH Cookbook](vimh_cookbook.md) for step-by-step recipes.
+
 ### Binary Layout Per Sample
 ```
 Metadata: 6 bytes (height, width, channels) - three 16-bit unsigned integers, little-endian

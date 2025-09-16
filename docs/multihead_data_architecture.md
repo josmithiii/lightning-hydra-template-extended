@@ -2,6 +2,8 @@
 
 This document explains the **theory of operation** for the multihead dataset architecture, including why we have three different dataset components and when to use each one.
 
+> 🧭 **Why it matters for vision enthusiasts:** Understand how VIMH datasets auto-wire label heads so you can bring in domain-specific metadata (pose, lighting, sensor params) and still train with a plug-and-play datamodule.
+
 ## 🏗️ Architecture Overview
 
 The multihead dataset system uses a **layered architecture** with three complementary components:

@@ -109,6 +109,8 @@ python src/train.py trainer=gpu   # CUDA GPU
 # Launch TensorBoard for training logs
 make tensorboard
 
+➡️ Looking for real-world timings? See [`docs/benchmark_snapshots.md`](docs/benchmark_snapshots.md) for the latest wall-clock + accuracy snapshots (hardware included).
+
 ### Common Pitfalls
 - On macOS, prefer `trainer=mps`. For VIMH on MPS, use `num_workers: 0`.
 - MNIST/CIFAR auto-download on first use; allow time and network.
@@ -159,6 +161,7 @@ This template supports the classic MNIST, CIFAR-10, and CIFAR-100 dataset format
 - **Labels**: `[N] [param1_id] [param1_val] [param2_id] [param2_val] ...`
 - **Metadata**: JSON file with parameter mappings and dataset info
 - [**Documentation:**](docs/vimh.md)
+- [**Cookbook (recipes):**](docs/vimh_cookbook.md)
 
 ---
 

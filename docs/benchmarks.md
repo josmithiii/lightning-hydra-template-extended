@@ -4,6 +4,8 @@
 
 The CIFAR Benchmark Suite provides comprehensive evaluation capabilities for computer vision models using the standard CIFAR-10 and CIFAR-100 datasets. This system enables systematic performance comparison across multiple architectures with literature-competitive baselines.
 
+> 🧭 **Why it matters for vision enthusiasts:** Reproduce strong CIFAR-10/100 baselines, sanity-check custom models, and gather comparable metrics before investing weeks in heavier image experiments.
+
 ## 🎯 Datasets
 
 ### CIFAR-10
@@ -111,7 +113,7 @@ Based on literature baselines and architecture capabilities:
 ## 🎛️ Configuration Files
 
 ### Model Configurations
-```
+```text
 configs/model/
 ├── cifar10_cnn_64k.yaml           # SimpleCNN for CIFAR-10
 ├── cifar10_convnext_210k.yaml     # ConvNeXt for CIFAR-10
@@ -125,7 +127,7 @@ configs/model/
 ```
 
 ### Data Configurations
-```
+```text
 configs/data/
 ├── cifar10.yaml                    # CIFAR-10 data loading
 ├── cifar100.yaml                   # CIFAR-100 fine-grained
@@ -133,7 +135,7 @@ configs/data/
 ```
 
 ### Experiment Configurations
-```
+```text
 configs/experiment/
 ├── cifar10_benchmark_cnn.yaml     # CIFAR-10 CNN benchmark
 ├── cifar10_benchmark_convnext.yaml # CIFAR-10 ConvNeXt benchmark
@@ -177,7 +179,7 @@ Understanding the accuracy-parameter trade-offs:
 | SimpleCNN | 3.3M | 85-92% | ⭐⭐⭐ |
 
 ### Training Speed vs Accuracy
-```
+```text
 Fast Training:     SimpleCNN > EfficientNet > ConvNeXt > ViT
 High Accuracy:     ConvNeXt > EfficientNet > ViT > SimpleCNN
 Best Efficiency:   ConvNeXt > EfficientNet > ViT > SimpleCNN
@@ -210,7 +212,7 @@ python src/train.py experiment=cifar100_coarse_cnn trainer.max_epochs=50
 ## 📋 Benchmark Checklist
 
 ### Before Running Benchmarks
-- [ ] Environment activated (`source .venv/bin/activate`)
+- [ ] Environment ready (`sh setup.sh` once, then `source .venv/bin/activate`)
 - [ ] GPU/MPS available (check with `make tmps` or `make tg`)
 - [ ] Sufficient disk space for datasets and logs
 - [ ] Time allocated (full benchmarks take hours)
@@ -253,5 +255,5 @@ The benchmark suite integrates seamlessly with:
 - **Make targets**: Convenient command shortcuts
 - **Testing framework**: Automated validation
 
-For more details on architectures, see [README-ARCHITECTURES.md](README-ARCHITECTURES.md).
-For make target reference, see [README-MAKEFILE.md](README-MAKEFILE.md).
+For model details, see [docs/architectures.md](architectures.md).
+For the full list of commands, run `make h` or consult [docs/quickref.md](quickref.md).

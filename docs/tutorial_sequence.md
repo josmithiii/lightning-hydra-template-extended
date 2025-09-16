@@ -9,7 +9,8 @@ architectures on various datasets.
 
 ```bash
 # Ensure you're in the project root and environment is activated
-source .venv/bin/activate.csh  # or your preferred activation method
+sh setup.sh            # One-time env creation with uv
+source .venv/bin/activate  # Use .csh variant for tcsh/csh
 ```
 
 ---
@@ -38,8 +39,7 @@ make tq
 
 > **Make Note:** All make targets have a short and a long form, and we're using the short forms here.
 > For example, the above examples could be typed as `make test`, `make clean`, and `make train-quick`.
-> For a complete list of make targets (auto-generated), say `make h` (or `make help`).
-> For a hopefully up-to-date more organized list (thanks Claude), see [makefile.md](./makefile.md) .
+> For a complete list of make targets (auto-generated), run `make h` (or `make help`).
 
 **What was Illustrated**: Environment setup, basic PyTorch Lightning workflow
 
@@ -396,7 +396,7 @@ python examples/vimh_training.py --demo --save-plots
 ### Environment Issues
 ```bash
 # If you see "No module named 'rootutils'"
-source .venv/bin/activate.csh
+source .venv/bin/activate  # Use .csh variant if you're on tcsh/csh
 
 # Clean slate
 make c && make cl
@@ -439,5 +439,5 @@ ls logs/train/runs/
 - **Architecture Details**: See `docs/architectures.md`
 - **Benchmark Analysis**: See `docs/benchmarks.md`
 - **VIMH Format**: See `docs/vimh.md`
-- **Make Targets**: See `docs/makefile.md`
+- **Make Targets**: Run `make h` for the auto-generated list
 - **Configuration**: See `docs/configuration.md`

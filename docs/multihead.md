@@ -7,6 +7,8 @@ Multi-task learning with shared backbone and task-specific heads. One model, mul
 - **MNIST Example**: 10-class digit + 5-class thickness + 3-class smoothness
 - **Usage**: `make emhcm` or `python src/train.py experiment=multihead_cnn_mnist`
 
+> 🧭 **Why it matters for vision enthusiasts:** Prototype multi-task perception systems (classification + attributes) with minimal wiring—great for exploring auxiliary signals, metadata heads, or multi-label problems.
+
 ## ⚡ Quick Start
 ```bash
 # MNIST multihead CNN (~99.1% digit, ~85% thickness, ~75% smoothness)

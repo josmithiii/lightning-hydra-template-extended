@@ -167,6 +167,48 @@ trma: train-myarch
 tqma: train-quick-myarch
 ```
 
+### Case Study: Adding a Vision Transformer Variant
+
+```bash
+# 0. Create feature branch
+git checkout -b feature/mobilevit
+
+# 1. Copy an existing transformer config
+cp configs/model/cifar10_vit_210k.yaml configs/model/cifar10_mobilevit_320k.yaml
+
+# 2. Implement the module
+vim src/models/components/mobile_vit.py
+
+# 3. Update Lightning module exports if needed
+vim src/models/__init__.py
+
+# 4. Add mirrored experiment config
+cp configs/experiment/cifar10_benchmark_vit.yaml \
+   configs/experiment/cifar10_benchmark_mobilevit.yaml
+
+# 5. Optional: wire a Makefile shortcut
+printf '
+cb10mv: ## CIFAR-10 MobileViT benchmark
+\tpython src/train.py experiment=cifar10_benchmark_mobilevit
+' >> Makefile
+
+# 6. Format + targeted tests
+make format
+pytest -k mobilevit
+
+# 7. Smoke test with tight limits
+python src/train.py experiment=cifar10_benchmark_mobilevit \
+    +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
+
+# 8. Record full benchmark once validated
+python src/train.py experiment=cifar10_benchmark_mobilevit tags='[cifar10,mobilevit,v1]'
+```
+
+Checklist:
+- Document the new architecture in [docs/architectures.md](architectures.md) and update parameter tables.
+- Add assertions in `tests/test_model_components.py` for output shapes and parameter counts.
+- Update [docs/benchmark_snapshots.md](benchmark_snapshots.md) after collecting stable wall-clock + accuracy numbers.
+
 ### 2. Adding New Datasets
 
 **Step 1: Create Data Module**

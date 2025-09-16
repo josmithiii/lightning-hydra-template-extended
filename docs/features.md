@@ -121,7 +121,7 @@ For detailed information, see:
 - **[architectures.md](architectures.md)** - Architecture details and comparisons
 - **[benchmarks.md](benchmarks.md)** - CIFAR benchmark system
 - **[multihead.md](multihead.md)** - Multihead classification
-- **[makefile.md](makefile.md)** - Complete make targets reference
+- **Makefile (`make h`)** - Auto-generated list of all make targets
 - **[configuration.md](configuration.md)** - Configuration patterns
 - **[development.md](development.md)** - Development and extension guide
 
