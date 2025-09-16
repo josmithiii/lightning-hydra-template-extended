@@ -5,9 +5,9 @@
 \newcommand{\theSubTitle}{Lightning Hydra Template Extended}
 %\newcommand{\theSubTitle}{Neural Spectral Modeling Template}
 \newcommand{\theShortTitle}{LHTE}
-\newcommand{\theEvent}{Audio Developer Conference Online (ADCxGather-25)}
-\newcommand{\theShortEvent}{ADCxGather-25}
-\newcommand{\theDate}{September 26, 2025}
+\newcommand{\theEvent}{Audio Developer Conference Online (ADCxGather-2025)}
+\newcommand{\theShortEvent}{ADCxGather-2025} % --- September 26
+% NO ROOM: \newcommand{\theDate}{September 26, 2025}
 
 \input stdpreshdr.tex
 % WEAN: \input ../latex/wgtmac.tex
@@ -33,7 +33,7 @@
 }
 
 \newcommand{\theAuthor}{Julius O. Smith III}
-\newcommand{\theShortAuthor}{JOS}
+\newcommand{\theShortAuthor}{Julius O. Smith III}
 
 %\renewcommand{\mpause}{\pause} % maybe pause
 %\renewcommand{\mpause}{} % or not
@@ -43,11 +43,12 @@
 %!\documentclass[style=fymajos,mode=handout,display=slidesnotes]{powerdot}
 
 \newtoggle{local}
-%\toggletrue{local} % presentation mode
-\togglefalse{local} % handout mode
+\toggletrue{local} % presentation mode
+%\togglefalse{local} % handout mode
 \input localremote.tex
 
-\date{\theDate}
+% NO ROOM: \date{\theDate}
+\date{}
 
 % Notation:
 \input macros.tex
@@ -76,9 +77,13 @@
 
 \subtitle{\theSubTitle}
 
+\vspace{-1em}
+
 \author{\theAuthor\\
-CCRMA, Stanford University \\[10pt]
-\theEvent
+CCRMA, Stanford University \\[8pt]
+\theEvent \\[10pt]
+\includegraphics[width=2cm]{eps/lhte_qr_code.eps}\\[2pt]
+{\scriptsize github.com/josmithiii/lightning-hydra-template-extended}
 }
 
 \begin{document}

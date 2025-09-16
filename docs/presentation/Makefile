@@ -5,6 +5,10 @@ LATEX = latex -shell-escape
 FIGTEX2EPS = figtex2eps
 #FIGTEX2EPS = figtex2eps -v
 
+# Define PNG to EPS conversion variables
+pngs  := $(wildcard png/*.png)
+pngepss := $(pngs:png/%.png=eps/%.eps)
+
 # Use latexmk for building (dvips/PSTricks-friendly)
 LATEXMK = latexmk
 # Ghostscript invocation avoiding deprecated .setpdfwrite (escape $ for make)
@@ -16,7 +20,7 @@ tc tclean: clean
 
  clean:
 	-$(LATEXMK) -C $(NAME).tex
-	-/bin/rm -f $(NAME) $(NAME).blg $(NAME).bbl $(NAME).log $(NAME).nav $(NAME).aux $(NAME).snm $(NAME).toc $(NAME).out
+	-/bin/rm -f $(NAME) $(NAME).blg $(NAME).bbl $(NAME).log $(NAME).nav $(NAME).aux $(NAME).snm $(NAME).toc $(NAME).out $(NAME).fdb_latexmk
 
 # MUST USE $(LATEX) FOR LOGO
 p pdf presentation: $(NAME).pdf
@@ -28,7 +32,7 @@ $(NAME).dvi: $(NAME).tex *.tex pdf/*.pdf eps/*.eps fig/*.fig
 	@echo $(LATEX) $(NAME).tex
 	$(LATEX) $(NAME).tex
 
-$(NAME).pdf: $(NAME).tex *.tex pdf/*.pdf eps/*.eps fig/*.fig
+$(NAME).pdf: $(NAME).tex *.tex pdf/*.pdf eps/*.eps fig/*.fig png/*.png $(pngepss)
 	$(LATEXMK) -pdfps -interaction=nonstopmode -halt-on-error $(LATEXMK_PS2PDF) $(NAME).tex
 
 po: $(NAME).pdf
@@ -59,3 +63,8 @@ epsfigs: $(epss)
 eps/%.eps: fig/%.fig
 	(cd ./fig; $(FIGTEX2EPS) $(<:fig/%=%))
 	mv $(<:%.fig=%.eps) eps
+
+pngeps: $(pngepss)
+
+eps/%.eps: png/%.png
+	convert $< $@

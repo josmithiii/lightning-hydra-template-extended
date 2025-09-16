@@ -231,7 +231,7 @@ cbq100cn10m cifar100-quick-convnext-10m: ## Quick CIFAR-100 ConvNeXt 10M validat
 cbq100cc cifar100-quick-coarse: ## Quick CIFAR-100 coarse validation (5 epochs)
 	python src/train.py experiment=cifar100_coarse_cnn trainer.max_epochs=5 trainer.min_epochs=1
 
-cbqa cifar-quick-all: cbq10c sep cbq10cn sep cbq10cn64 sep cbq10cn128 sep cbq100sdn sep cbq100cnn1m sep cbq100cn10m sep cbq100c sep cbq100cc  ## Run all quick CIFAR validations
+cbqa cifar-benchmark-quick-all: cbq10c sep cbq10cn sep cbq10cn64 sep cbq10cn128 sep cbq100sdn sep cbq100cnn1m sep cbq100cn10m sep cbq100c sep cbq100cc  ## Run all quick CIFAR validations
 
 # CIFAR BENCHMARK SUITES "cbs" - Systematic Comparisons
 
@@ -244,7 +244,7 @@ cbs10 benchmark-cifar10: cb10c sep cb10cn sep cb10v sep cb10e ## Run all CIFAR-1
 cbs100 benchmark-cifar100: cb100c sep cb100cn sep cb100v sep cb100e sep cb100sdn sep cb100cnn1m sep cb100cn1m sep cb100cn10m sep cb100cc sep cb100ccn ## Run all CIFAR-100 benchmarks
 	@echo "=== CIFAR-100 benchmark suite complete ==="
 
-cbsa benchmark-all: cbs10 cbs100 ## Run complete CIFAR benchmark suite
+cbsa cifar-benchmark-suite-all: cbs10 cbs100 ## Run complete CIFAR benchmark suite
 	@echo "=== Complete CIFAR benchmark suite finished ==="
 
 allqt all-quick-tests: tqa cbqa ## All quick tests
