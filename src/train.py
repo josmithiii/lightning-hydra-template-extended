@@ -71,104 +71,10 @@ from src.utils import (
     task_wrapper,
 )
 from src.utils.architecture_utils import ArchitectureMetadataExtractor
+from src.utils.preflight import check_label_diversity
+from src.utils.vimh_config import configure_model_from_metadata
 
 log = RankedLogger(__name__, rank_zero_only=True)
-
-
-def _preflight_check_label_diversity(
-    datamodule: LightningDataModule, max_batches: int = 3
-) -> None:
-    """Validate that training labels vary across a few batches per head.
-
-    Raises a ValueError if any head shows a single unique class across the sampled batches.
-    """
-    try:
-        # Ensure setup ran so loaders are available
-        try:
-            datamodule.prepare_data()
-            datamodule.setup("fit")
-        except Exception as e:
-            # If the Trainer will call setup later, it's still OK — we just need loaders now
-            log.warning(f"DataModule setup failed during preflight: {e}")
-            pass
-
-        # Skip this check for regression label mode where labels are continuous
-        try:
-            if hasattr(datamodule, "hparams"):
-                label_mode = str(getattr(datamodule.hparams, "label_mode", "classification")).lower()
-                if label_mode == "regression":
-                    log.info("Preflight skipped: regression label mode (continuous targets)")
-                    return
-        except Exception:
-            pass
-
-        loader = datamodule.train_dataloader()
-        it = iter(loader)
-        uniques: Dict[str, set] = {}
-        sampled = 0
-        while sampled < max_batches:
-            try:
-                batch = next(it)
-            except StopIteration:
-                break
-            sampled += 1
-
-            # Handle different batch formats
-            if len(batch) >= 2:
-                images, labels = batch[0], batch[1]
-
-                # Check if labels is a dict (multihead) or tensor (single head)
-                if isinstance(labels, dict):
-                    for head, tens in labels.items():
-                        if head not in uniques:
-                            uniques[head] = set()
-                        try:
-                            if tens.ndim == 1 and tens.dtype in (
-                                torch.int8,
-                                torch.int16,
-                                torch.int32,
-                                torch.int64,
-                            ):
-                                uniques[head].update(tens.tolist())
-                        except Exception:
-                            # Non-scalar labels or different dtype – skip diversity check for this head
-                            pass
-                else:
-                    # Single head case
-                    head = "main"
-                    if head not in uniques:
-                        uniques[head] = set()
-                    try:
-                        if labels.ndim == 1 and labels.dtype in (
-                            torch.int8,
-                            torch.int16,
-                            torch.int32,
-                            torch.int64,
-                        ):
-                            uniques[head].update(labels.tolist())
-                    except Exception:
-                        # Non-scalar labels or different dtype – skip diversity check
-                        pass
-
-        # Log a brief summary of unique labels observed per head
-        for head in sorted(uniques.keys()):
-            vals = sorted(list(uniques[head]))
-            preview = ", ".join(map(str, vals[:10])) + (" …" if len(vals) > 10 else "")
-            log.info(
-                f"Preflight head '{head}': {len(vals)} unique label(s) across {sampled} batch(es): [{preview}]"
-            )
-
-        problems = [h for h, s in uniques.items() if len(s) <= 1]
-        if problems:
-            details = ", ".join(f"{h}: {sorted(list(uniques[h]))}" for h in problems)
-            raise ValueError(
-                f"Label preflight failed: non-diverse targets for heads [{', '.join(problems)}]. "
-                f"Observed unique labels across {sampled} batch(es): {details}. "
-                f"This often indicates label decoding issues."
-            )
-    except Exception as e:
-        # Re-raise with clearer context
-        raise
 
 
 @task_wrapper
@@ -203,65 +109,7 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         and cfg.model.auto_configure_from_dataset
     ):
         try:
-            from src.utils.vimh_utils import (
-                get_heads_config_from_metadata,
-                get_image_dimensions_from_metadata,
-                get_parameter_names_from_metadata,
-            )
-
-            # Auto-configure input channels from dataset metadata
-            if hasattr(cfg.model, "net") and hasattr(cfg.model.net, "input_channels"):
-                height, width, channels = get_image_dimensions_from_metadata(cfg.data.data_dir)
-                if cfg.model.net.input_channels != channels:
-                    log.info(
-                        f"Auto-configuring network input channels: {cfg.model.net.input_channels} -> {channels}"
-                    )
-                    cfg.model.net.input_channels = channels
-
-            parameter_names = get_parameter_names_from_metadata(cfg.data.data_dir)
-            if parameter_names and hasattr(cfg.model, "net"):
-                log.info(f"Configuring model with parameter names from dataset: {parameter_names}")
-
-                # Configure model based on output mode
-                if hasattr(cfg.model, "output_mode") and cfg.model.output_mode == "regression":
-                    # For regression mode, set parameter_names in the network config
-                    cfg.model.net.parameter_names = parameter_names
-                    # Ensure output_mode is set at network level too
-                    cfg.model.net.output_mode = "regression"
-                    # Clear any existing heads_config to prevent classification head creation
-                    cfg.model.net.heads_config = None
-                    # Auto-configure regression loss functions for each parameter
-                    try:
-                        from src.utils.vimh_utils import get_parameter_ranges_from_metadata
-                        param_ranges = get_parameter_ranges_from_metadata(cfg.data.data_dir)
-                        criteria_cfg = {}
-                        for param_name in parameter_names:
-                            rng = param_ranges.get(param_name, None)
-                            if rng is None:
-                                rng = (0.0, 1.0)
-                            criteria_cfg[param_name] = {
-                                "_target_": "src.models.losses.NormalizedRegressionLoss",
-                                "param_range": (float(rng[0]), float(rng[1])),
-                            }
-                        with open_dict(cfg.model):
-                            cfg.model.criteria = OmegaConf.create(criteria_cfg)
-                        log.info(f"Auto-configured regression loss functions for: {list(criteria_cfg.keys())}")
-                    except Exception as e:
-                        log.warning(f"Failed to configure regression losses: {e}")
-
-                else:
-                    # For classification/ordinal mode, use heads_config
-                    heads_config = get_heads_config_from_metadata(cfg.data.data_dir)
-                    cfg.model.net.heads_config = heads_config
-
-                # Auto-configure loss_weights (equal weight for all parameters)
-                if (
-                    not hasattr(cfg.model, "loss_weights")
-                    or not cfg.model.loss_weights
-                    or len(cfg.model.loss_weights) == 0
-                ):
-                    cfg.model.loss_weights = {name: 1.0 for name in parameter_names}
-                    log.info(f"Auto-configured loss_weights: {cfg.model.loss_weights}")
+            configure_model_from_metadata(cfg, cfg.data.data_dir)
         except Exception as e:
             log.warning(f"Failed to auto-configure model from dataset metadata: {e}")
 
@@ -319,7 +167,7 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
         if enabled:
             try:
-                _preflight_check_label_diversity(datamodule, max_batches=int(batches))
+                check_label_diversity(datamodule, max_batches=int(batches))
                 log.info("Label preflight passed (diverse targets across heads)")
             except Exception as e:
                 log.error(f"Label preflight failed: {e}")

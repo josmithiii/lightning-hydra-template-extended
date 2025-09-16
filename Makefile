@@ -299,5 +299,7 @@ lc list-configs: ## List available model configurations
 	@echo "\nAvailable experiment configs:"
 	@find configs/experiment -name "*.yaml" | sed 's|configs/experiment/||' | sed 's|\.yaml||' | sort
 
+p po pres presentation:
+	(cd docs/presentation && make po)
 sep:
 	@printf '%*s\n' 180 '' | tr ' ' '+'
