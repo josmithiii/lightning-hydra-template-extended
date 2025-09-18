@@ -3,14 +3,14 @@ _target_: src.models.mnist_module.MNISTLitModule
 optimizer:
   _target_: torch.optim.Adam
   _partial_: true
-  lr: 0.001
+  lr: 0.003  # Increased initial learning rate
   weight_decay: 0.0001
 
 scheduler:
   _target_: torch.optim.lr_scheduler.MultiStepLR
   _partial_: true
-  milestones: [100, 150]
-  gamma: 0.1
+  milestones: [120, 160, 180]  # More gradual decay
+  gamma: 0.2  # Less aggressive drops (5x instead of 10x)
 
 criterion:
   _target_: torch.nn.CrossEntropyLoss
