@@ -119,14 +119,25 @@ class MNISTLitModule(LightningModule):
         return self.net(x)
 
     def _infer_input_channels(self) -> int:
-        """Infer input channels from the network architecture."""
-        if hasattr(self.net, "conv_layers") and len(self.net.conv_layers) > 0:
+        """Infer the number of input channels from the network configuration."""
+        # Check if network has explicit input_channels attribute
+        if hasattr(self.net, "input_channels"):
+            return self.net.input_channels
+
+        # Try to infer from first convolutional layer
+        if hasattr(self.net, "conv_layers") and hasattr(self.net.conv_layers, "0"):
             first_layer = self.net.conv_layers[0]
             if hasattr(first_layer, "in_channels"):
                 return first_layer.in_channels
-        elif hasattr(self.net, "embedding") and hasattr(self.net.embedding, "conv1"):
-            if hasattr(self.net.embedding.conv1, "in_channels"):
+
+        # Check embedding layer for ViT-style networks
+        if hasattr(self.net, "embedding"):
+            if hasattr(self.net.embedding, "conv") and hasattr(self.net.embedding.conv, "in_channels"):
+                return self.net.embedding.conv.in_channels
+            # Also check conv1 for backward compatibility
+            if hasattr(self.net.embedding, "conv1") and hasattr(self.net.embedding.conv1, "in_channels"):
                 return self.net.embedding.conv1.in_channels
+
         # Default fallback
         return 1
 

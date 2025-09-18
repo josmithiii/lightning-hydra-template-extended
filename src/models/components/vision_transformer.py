@@ -212,6 +212,11 @@ class VisionTransformer(nn.Module):
         super().__init__()
 
         self.use_torch_layers = use_torch_layers
+        self.n_channels = n_channels
+        self.image_size = image_size
+        # Store input shape attributes for TensorBoard summaries
+        self.input_shape = (n_channels, image_size, image_size)
+        self.input_resolution = (image_size, image_size)
 
         # Always use custom embedding layer
         self.embedding = EmbedLayer(n_channels, embed_dim, image_size, patch_size, dropout=dropout)
