@@ -15,7 +15,9 @@ include makefiles/utils.mk
 
 # Default help target
 h help:  ## Show help
-	@for file in $(MAKEFILE_LIST); do \
+	@{ \
+	for file in $(MAKEFILE_LIST); do \
 		grep -E '^[.a-zA-Z0-9_ -]+:.*?## .*$$' $$file | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'; \
-	done
+	done; \
+	} | less -R
