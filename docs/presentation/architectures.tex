@@ -9,17 +9,19 @@
   
   \begin{itemize}
     \mpitem MNIST and CIFAR-10/100 benchmark examples included, e.g.:
+    \begin{itemize}
 
-    \mpitem \emph{Two conv layers:} 3×3 kernels, 32→64 channels, MaxPool, BatchNorm
+      \mpitem \emph{Two conv layers:} 3×3 kernels, 32→64 channels, MaxPool, BatchNorm
+      
+      \mpitem \emph{Adaptive pooling:} 7×7 feature maps → FC classifier with dropout
+      
+      \mpitem \emph{Parameter variants:} 8K (small), 68K (medium), 421K (large):\\
+      \texttt{./configs/mnist\_cnn\_[8k|68k|421k].yaml}
+      
+      \mpitem \emph{Performance:} CIFAR-10: 85-92\%, CIFAR-100: 55-70\%
+    \end{itemize}
     
-    \mpitem \emph{Adaptive pooling:} 7×7 feature maps → FC classifier with dropout
-    
-    \mpitem \emph{Parameter variants:} 8K (small), 68K (medium), 421K (large):\\
-    \texttt{./configs/mnist\_cnn\_[8k|68k|421k].yaml}
-    
-    \mpitem \emph{Performance:} CIFAR-10: 85-92\%, CIFAR-100: 55-70\%
-    
-    \mpitem Supports multihead classification for multi-task learning
+    \mpitem LHTE adds multihead classification for multi-task learning
   \end{itemize}
   
 \end{slidewhite}
