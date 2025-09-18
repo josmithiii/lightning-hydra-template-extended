@@ -1,68 +1,85 @@
 \section[toc={New Dataset Formats}]{Datasets Beyond MNIST}
 
 \begin{slide}[\slideopts,toc={CIFAR-10}]{CIFAR-10 Dataset Support}
-  
-  \centerline{\includegraphics[width=0.6\textwidth]{cifar10_samples.eps}}
 
-  \emph{Standard Computer Vision Benchmark}
+  \vspace{-1em}
   
+  \emph{Standard Computer Vision Benchmark}
+
+  \vspace{0.5em}
+
+%  \centerline{
+    \includegraphics[width=0.6\textwidth]{cifar10_samples.eps}
+%  }
+  
+  \vspace{-0.5em}
+
   \begin{itemize}
-    \item 10 classes, 32×32 RGB, 50K train / 10K test
+    \item 10 classes, 32×32x3 (RGB), 50K train / 10K test
     
-    \item \emph{LHTE Results:}
+    %% \item \emph{LHTE Results:}
     %% \begin{itemize}
     %%   \item CNN (85-92\%)
     %%   \item ConvNeXt (90-95\%)
     %%   \item ViT (88-93\%)
     %% \end{itemize}
-    \item \emph{LHTE Results:} CNN (85-92\%), ConvNeXt (90-95\%), ViT (88-93\%)
+    \item \emph{LHTE Results:} CNN (85-92\%), ViT (88-93\%), ConvNeXt (90-95\%)
     
-    \item \emph{Commands:} \texttt{make cbq10c} (quick), \quad \texttt{make cb10c} (full)
-    
-    \item Literature-competitive performance out-of-the-box
+    \item \emph{CIFAR-10 CNN Benchmark Commands (also have MLP, ViT, ConvNeXt, EfficientNet, CNN-MultiHead, \ldots):}
+      \begin{itemize}
+        \item \texttt{make cbq10c}\quad (CIFAR-10 Benchmark Quick, CNN)
+        \item \texttt{make cb10c} \quad\, (CIFAR-10 Benchmark, CNN)
+      \end{itemize}
+    \item Literature-reproducing performance out-of-the-box
   \end{itemize}
   
 \end{slide}
 
 \begin{slide}[\slideopts,toc={CIFAR-100}]{CIFAR-100 Dataset Support}
   
-  \centerline{\includegraphics[width=0.7\textwidth]{cifar100_samples.eps}}
-
-  \emph{Fine-Grained Classification Challenge}
+  \vspace{-1em}
   
+  \emph{Fine-Grained Classification Challenge}
+
+  \vspace{0.5em}
+
+%  \centerline{
+    \includegraphics[width=0.7\textwidth]{cifar100_samples.eps}
+%  }
+  
+  \vspace{-0.5em}
+
   \begin{itemize}
-    \item 100 fine classes or 20 coarse superclasses, 32×32 RGB
+    \item 100 fine classes or 20 coarse superclasses, 32×32x3 RGB
     
     \item \emph{Performance:} ConvNeXt leads at 70-80\% (fine), 85\% (coarse)
     
     \item \emph{Multihead:} Simultaneous fine + coarse classification
     
-    \item \emph{Commands:} \texttt{make cb100c}, \quad \texttt{make cbs100}
+    \item \emph{CIFAR-100 Benchmark Commands} (say \texttt{make help} for the complete list):\\
+      \;\texttt{make cb100c}\quad (or \texttt{make cifar100-cnn}: 55-70\% expected accuracy)\\
+      \;\texttt{make cbs100}\quad (run \emph{all} CIFAR-100 benchmarks --- the ``benchmark suite''))
 
   \end{itemize}
   
 \end{slide}
 
-\begin{slidewhite}[\slideopts,toc={VIMH}]{Variable Image MultiHead (VIMH) Format}
-  \vspace{-2.5em}
-  \myFigureRotateToBox{vimh-proj}{-90}{\twidth}{0.45\theight}{}
-  
-  \vspace{-0.5em}
-  \emph{Generalized Dataset Format for Multi-Parameter Learning}
-  \vspace{-0.5em}
-  
+\begin{wideslidewhite}[\slideopts,toc={VIMH}]{Variable Image MultiHead (VIMH) Format}
+  \vspace{-2em}
+  \emph{Generalized Dataset Format for Multi-Parameter Learning (Multi-Category Classification or Regression)}
+  \vspace{-2em}
+  % \myFigureRotateToBox{vimh-proj}{-90}{\twidth}{0.45\theight}{}
+  \myFigureToBox{vimh-proj}{1.1\twidth}{0.46\theight}{}
+  \vspace{-2em}
   \begin{itemize}
     \mpitem \emph{Self-describing:} Variable dimensions up to 65k×65k×65k (16-bit metadata)
-    
     \mpitem \emph{Flexible labels:} 0-255 parameters, 8-bit quantized (~100 steps)
-    
     \mpitem \emph{Per sample:} [height, width, channels] + [N params] + [ID,val pairs] + image
-    
     \mpitem \emph{Applications:} Audio spectrograms, vision, scientific data
-    
     \mpitem Models auto-configure from dataset metadata
+    \mpitem Say \texttt{make help | grep vimh}
   \end{itemize}
-\end{slidewhite}
+\end{wideslidewhite}
   
 %% \begin{slide}[\slideopts,toc={}]{Variable Image MultiHead (VIMH) Format}
 %%   \centerline{\includegraphics[width=0.9\textwidth]{png/sample_data.eps}}
