@@ -1,3 +1,4 @@
+import math
 from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
@@ -77,8 +78,8 @@ class MNISTLitModule(LightningModule):
         self.is_multihead = len(criteria) > 1
 
         # Set example input for TensorBoard graph logging - infer from network
-        input_channels = self._infer_input_channels()
-        self.example_input_array = torch.randn(1, input_channels, 28, 28)
+        example_input_shape = self._infer_example_input_shape()
+        self.example_input_array = torch.randn(*example_input_shape)
 
         # Dynamic metric creation based on network heads config
         if hasattr(net, "heads_config"):
@@ -128,6 +129,69 @@ class MNISTLitModule(LightningModule):
                 return self.net.embedding.conv1.in_channels
         # Default fallback
         return 1
+
+    def _infer_example_input_shape(self) -> Tuple[int, int, int, int]:
+        """Infer a reasonable example input shape for the wrapped network."""
+        channels = self._infer_input_channels()
+        height, width = self._infer_spatial_dims()
+        return (1, channels, height, width)
+
+    def _infer_spatial_dims(self) -> Tuple[int, int]:
+        """Infer input spatial dimensions, falling back to 28x28 when unknown."""
+        candidates = [
+            getattr(self.net, attr, None)
+            for attr in (
+                "input_shape",
+                "input_resolution",
+                "input_size",
+                "image_size",
+                "img_size",
+            )
+        ]
+
+        # Some modules keep spatial info on a nested embedding module
+        embedding = getattr(self.net, "embedding", None)
+        if embedding is not None:
+            candidates.extend(
+                getattr(embedding, attr, None)
+                for attr in ("input_shape", "input_resolution", "image_size", "img_size")
+            )
+
+        for candidate in candidates:
+            dims = self._normalize_to_hw(candidate)
+            if dims is not None:
+                return dims
+
+        return (28, 28)
+
+    @staticmethod
+    def _normalize_to_hw(value: Optional[Any]) -> Optional[Tuple[int, int]]:
+        """Convert assorted metadata formats into an (height, width) tuple."""
+        if value is None:
+            return None
+
+        if isinstance(value, (list, tuple)):
+            if len(value) == 3:
+                # Assume (channels, height, width)
+                return int(value[1]), int(value[2])
+            if len(value) == 2:
+                return int(value[0]), int(value[1])
+            if len(value) == 1:
+                val = int(value[0])
+                return (val, val)
+
+        if isinstance(value, int):
+            if value <= 0:
+                return None
+            root = int(round(math.sqrt(value)))
+            if root * root == value:
+                return (root, root)
+            return (value, value)
+
+        if isinstance(value, torch.Size):
+            return MNISTLitModule._normalize_to_hw(tuple(value))
+
+        return None
 
     def on_train_start(self) -> None:
         """Lightning hook that is called when training begins."""
