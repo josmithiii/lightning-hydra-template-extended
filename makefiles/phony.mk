@@ -16,7 +16,7 @@
 .PHONY: t test ta test-all cfg-audit
 
 # Diagram targets
-.PHONY: td test-diagram tda test-diagram-all tdl test-diagram-list tds test-diagram-simple tdsc test-diagram-simple-config tdsl test-diagram-simple-list tdss test-diagram-simple-samples tdsm test-diagram-simple-mnist tdsc10 test-diagram-simple-cifar10
+.PHONY: td text-diagram tda text-diagram-all tdl text-diagram-list tds text-diagram-simple tdsc text-diagram-simple-config tdsl text-diagram-simple-list tdss text-diagram-simple-samples tdsm text-diagram-simple-mnist tdsc10 text-diagram-simple-cifar10
 
 # Architecture comparison
 .PHONY: ca compare-arch

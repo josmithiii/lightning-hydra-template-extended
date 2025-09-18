@@ -8,6 +8,7 @@ include makefiles/phony.mk
 include makefiles/clean.mk
 include makefiles/display.mk
 include makefiles/train-quick.mk
+include makefiles/diagrams.mk
 include makefiles/test.mk
 include makefiles/experiments.mk
 include makefiles/cifar.mk
