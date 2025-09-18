@@ -20,7 +20,7 @@ cb10e cifar10-efficientnet: ## Run CIFAR-10 EfficientNet benchmark (89-94% expec
 	time python src/train.py experiment=cifar10_benchmark_efficientnet
 
 # CIFAR-100 benchmarks
-cb100c cifar100-cnn: ## Run CIFAR-100 CNN benchmark (55-70% expected accuracy) [not MPS compatible]
+cb100c cifar100-cnn: ## Run CIFAR-100 CNN benchmark (55-70% expected accuracy)
 	time python src/train.py experiment=cifar100_benchmark_cnn
 
 cb100cmh cifar100-cnn-multihead: ## Run CIFAR-100 CNN benchmark using multihead classifier
