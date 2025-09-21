@@ -18,8 +18,25 @@ mkdir -p experiment_logs
 # Get the absolute path to the experiment_logs directory
 LOG_DIR="$(pwd)/experiment_logs"
 
+# Parse command line arguments
+FORCE_MODE=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --force|-f)
+            FORCE_MODE=true
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 echo -e "${BLUE}=== Lightning-Hydra-Template-Extended Experiment Runner ===${NC}"
 echo -e "${BLUE}Log directory: ${LOG_DIR}${NC}"
+if [ "$FORCE_MODE" = true ]; then
+    echo -e "${YELLOW}Force mode: ON (ignoring all experiment markers)${NC}"
+fi
 echo ""
 
 # Array of all experiment names (without .yaml extension)
@@ -227,6 +244,16 @@ run_experiments() {
     echo -e "${BLUE}Total experiments to process: ${total_experiments}${NC}"
     echo ""
 
+    # Determine processing mode for all experiments
+    local processing_mode
+    if [ "$FORCE_MODE" = true ]; then
+        processing_mode="force"
+        echo -e "${YELLOW}Force mode: All experiments will be run normally${NC}"
+    else
+        processing_mode="normal"
+    fi
+    echo ""
+
     # If arguments provided, run only specified experiments
     if [ $# -gt 0 ]; then
         echo -e "${YELLOW}Running specified experiments: $@${NC}"
@@ -237,14 +264,79 @@ run_experiments() {
             local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
 
             if [[ " ${experiments[@]} " =~ " ${experiment_spec} " ]]; then
+                if [ "$processing_mode" = "force" ]; then
+                    # Force mode: ignore markers and run all experiments normally
+                    echo -e "${YELLOW}  Running (force): $experiment_spec${NC}"
+                    run_experiment "$experiment_name" "run"
+                    if [ $? -eq 0 ]; then
+                        ((completed++))
+                    else
+                        ((failed++))
+                    fi
+                else
+                    # Normal mode: respect markers
+                    case "$marker" in
+                        "Y")
+                            echo -e "${BLUE}  Skipping: $experiment_spec${NC}"
+                            run_experiment "$experiment_name" "skip"
+                            ((skipped++))
+                            ;;
+                        "N")
+                            echo -e "${YELLOW}  Debugging: $experiment_spec${NC}"
+                            run_experiment "$experiment_name" "debug"
+                            if [ $? -eq 0 ]; then
+                                ((completed++))
+                            else
+                                ((failed++))
+                            fi
+                            ;;
+                        " ")
+                            echo -e "${YELLOW}  Running: $experiment_spec${NC}"
+                            run_experiment "$experiment_name" "run"
+                            if [ $? -eq 0 ]; then
+                                ((completed++))
+                            else
+                                ((failed++))
+                            fi
+                            ;;
+                    esac
+                fi
+            else
+                echo -e "${RED}Warning: Experiment '${experiment_spec}' not found in experiment list${NC}"
+            fi
+        done
+    else
+        # Run all experiments
+        if [ "$processing_mode" = "force" ]; then
+            echo -e "${YELLOW}Running all experiments in force mode...${NC}"
+        else
+            echo -e "${YELLOW}Processing all experiments...${NC}"
+        fi
+        for experiment in "${experiments[@]}"; do
+            # Parse the experiment entry
+            local parsed=$(parse_experiment "$experiment")
+            local marker=$(echo "$parsed" | cut -d' ' -f1)
+            local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
+
+            if [ "$processing_mode" = "force" ]; then
+                # Force mode: ignore markers and run all experiments normally
+                echo -e "${YELLOW}  Running (force): $experiment${NC}"
+                run_experiment "$experiment_name" "run"
+                if [ $? -eq 0 ]; then
+                    ((completed++))
+                else
+                    ((failed++))
+                fi
+            else
+                # Normal mode: respect markers
                 case "$marker" in
                     "Y")
-                        echo -e "${BLUE}  Skipping: $experiment_spec${NC}"
+                        echo -e "${BLUE}  Skipping: $experiment${NC}"
                         run_experiment "$experiment_name" "skip"
                         ((skipped++))
                         ;;
                     "N")
-                        echo -e "${YELLOW}  Debugging: $experiment_spec${NC}"
+                        echo -e "${YELLOW}  Debugging: $experiment${NC}"
                         run_experiment "$experiment_name" "debug"
                         if [ $? -eq 0 ]; then
                             ((completed++))
@@ -253,7 +345,7 @@ run_experiments() {
                         fi
                         ;;
                     " ")
-                        echo -e "${YELLOW}  Running: $experiment_spec${NC}"
+                        echo -e "${YELLOW}  Running: $experiment${NC}"
                         run_experiment "$experiment_name" "run"
                         if [ $? -eq 0 ]; then
                             ((completed++))
@@ -262,44 +354,7 @@ run_experiments() {
                         fi
                         ;;
                 esac
-            else
-                echo -e "${RED}Warning: Experiment '${experiment_spec}' not found in experiment list${NC}"
             fi
-        done
-    else
-        # Run all experiments
-        echo -e "${YELLOW}Processing all experiments...${NC}"
-        for experiment in "${experiments[@]}"; do
-            # Parse the experiment entry
-            local parsed=$(parse_experiment "$experiment")
-            local marker=$(echo "$parsed" | cut -d' ' -f1)
-            local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
-
-            case "$marker" in
-                "Y")
-                    echo -e "${BLUE}  Skipping: $experiment${NC}"
-                    run_experiment "$experiment_name" "skip"
-                    ((skipped++))
-                    ;;
-                "N")
-                    echo -e "${YELLOW}  Debugging: $experiment${NC}"
-                    run_experiment "$experiment_name" "debug"
-                    if [ $? -eq 0 ]; then
-                        ((completed++))
-                    else
-                        ((failed++))
-                    fi
-                    ;;
-                " ")
-                    echo -e "${YELLOW}  Running: $experiment${NC}"
-                    run_experiment "$experiment_name" "run"
-                    if [ $? -eq 0 ]; then
-                        ((completed++))
-                    else
-                        ((failed++))
-                    fi
-                    ;;
-            esac
         done
     fi
 
@@ -333,6 +388,7 @@ show_help() {
     echo "Options:"
     echo "  No arguments         - Process all experiments according to markings"
     echo "  experiment_names     - Process only specified experiments"
+    echo "  --force, -f         - Ignore markers and run all experiments normally"
     echo "  --list              - List all available experiments"
     echo "  --help              - Show this help message"
     echo ""
@@ -340,6 +396,8 @@ show_help() {
     echo "  $0                                    # Process all experiments"
     echo "  $0 cifar10_cnn example               # Process specific experiments"
     echo "  $0 \"N cifar10_benchmark_convnext\"   # Debug a failed experiment"
+    echo "  $0 --force                           # Run all experiments ignoring markers"
+    echo "  $0 -f cifar10_cnn                   # Force-run specific experiment"
     echo "  $0 --list                            # List available experiments"
     echo ""
     echo "Log files are saved to: experiment_logs/EXPERIMENT_NAME-log.txt"
