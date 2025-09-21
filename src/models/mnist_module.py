@@ -124,6 +124,10 @@ class MNISTLitModule(LightningModule):
         if hasattr(self.net, "input_channels"):
             return self.net.input_channels
 
+        # Check for in_chans attribute (used by ConvNeXt and other models)
+        if hasattr(self.net, "in_chans"):
+            return self.net.in_chans
+
         # Try to infer from first convolutional layer
         if hasattr(self.net, "conv_layers") and hasattr(self.net.conv_layers, "0"):
             first_layer = self.net.conv_layers[0]
