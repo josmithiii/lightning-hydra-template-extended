@@ -108,7 +108,13 @@ run_parallel_experiments() {
         # Parse the experiment entry
         local parsed=$(parse_experiment "$experiment")
         local marker=$(echo "$parsed" | cut -d' ' -f1)
-        local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
+        if [[ "$parsed" =~ ^[YN]\  ]]; then
+            # Has marker, extract name from field 2
+            local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
+        else
+            # No marker, use the full parsed string
+            local experiment_name="$parsed"
+        fi
 
         # Determine mode based on processing mode and marker
         local mode="run"
@@ -432,7 +438,13 @@ list_experiments() {
         # Parse the experiment entry
         local parsed=$(parse_experiment "$experiment")
         local marker=$(echo "$parsed" | cut -d' ' -f1)
-        local name=$(echo "$parsed" | cut -d' ' -f2-)
+        if [[ "$parsed" =~ ^[YN]\  ]]; then
+            # Has marker, extract name from field 2
+            local name=$(echo "$parsed" | cut -d' ' -f2-)
+        else
+            # No marker, use the full parsed string
+            local name="$parsed"
+        fi
 
         case "$marker" in
             "Y")
