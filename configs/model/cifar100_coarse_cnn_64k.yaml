@@ -19,6 +19,7 @@ criterion:
 net:
   _target_: src.models.components.simple_cnn.SimpleCNN
   input_channels: 3 # CIFAR-100 has 3 color channels
+  input_size: 32 # CIFAR images are 32x32 pixels
   conv1_channels: 64
   conv2_channels: 128
   fc_hidden: 512
