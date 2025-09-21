@@ -88,9 +88,9 @@ class CIFAR100MHDataModule(LightningDataModule):
 
         # Default transforms for CIFAR-32x32 images
         # Use the same normalization as CIFAR datasets
+        # Note: Base dataset already returns tensors, so no ToTensor() needed
         self.default_transforms = transforms.Compose(
             [
-                transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
