@@ -77,9 +77,13 @@ class MNISTLitModule(LightningModule):
         self.loss_weights = loss_weights or {name: 1.0 for name in criteria.keys()}
         self.is_multihead = len(criteria) > 1
 
-        # Set example input for TensorBoard graph logging - infer from network
-        example_input_shape = self._infer_example_input_shape()
-        self.example_input_array = torch.randn(*example_input_shape)
+        # Set example input for TensorBoard graph logging - skip for multihead to avoid JIT tracer issues
+        if not self.is_multihead:
+            example_input_shape = self._infer_example_input_shape()
+            self.example_input_array = torch.randn(*example_input_shape)
+        else:
+            # Multihead models return dicts which break TensorBoard's JIT tracer
+            self.example_input_array = None
 
         # Dynamic metric creation based on network heads config
         if hasattr(net, "heads_config"):
