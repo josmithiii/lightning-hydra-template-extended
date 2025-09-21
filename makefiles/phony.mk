@@ -28,7 +28,7 @@
 .PHONY: cb10c cifar10-cnn cb10cn cifar10-convnext cb10cn64 cifar10-convnext-64k-optimized cb10cn128 cifar10-convnext-128k-optimized cb10v cifar10-vit cb10e cifar10-efficientnet
 
 # CIFAR-100 benchmarks
-.PHONY: cb100c cifar100-cnn cb100cmh cifar100-cnn-multihead cb100cn cifar100-convnext cb100v cifar100-vit cb100e cifar100-efficientnet cb100sdn cifar100-sdn cb100cnn1m cifar100-cnn-1m cb100cn1m cifar100-convnext-1m cb100cn10m cifar100-convnext-10m cb100cc cifar100-coarse-cnn cb100ccn cifar100-coarse-convnext
+.PHONY: cb100c cifar100-cnn cb100ci cifar100-cnn-improved cb100cmh cifar100-cnn-multihead cb100cn cifar100-convnext cb100cnmh cifar100-convnext-multihead cb100v cifar100-vit cb100e cifar100-efficientnet cb100sdn cifar100-sdn cb100cnn1m cifar100-cnn-1m cb100cn1m cifar100-convnext-1m cb100cn10m cifar100-convnext-10m cb100cc cifar100-coarse-cnn cb100ccn cifar100-coarse-convnext
 
 # Quick CIFAR benchmarks
 .PHONY: cbq10c cifar10-quick-cnn cbq10cn cifar10-quick-convnext cbq10cn64 cifar10-quick-convnext-64k cbq10cn128 cifar10-quick-convnext-128k cbq100c cifar100-quick-cnn cbq100sdn cifar100-quick-sdn cbq100cnn1m cifar100-quick-cnn-1m cbq100cn1m cifar100-quick-convnext-1m cbq100cn10m cifar100-quick-convnext-10m cbq100cc cifar100-quick-coarse cbqa cifar-benchmark-quick-all

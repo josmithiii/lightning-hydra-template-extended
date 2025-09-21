@@ -23,8 +23,23 @@ cb10e cifar10-efficientnet: ## Run CIFAR-10 EfficientNet benchmark (89-94% expec
 cb100c cifar100-cnn: ## Run CIFAR-100 CNN benchmark (55-70% expected accuracy)
 	time python src/train.py experiment=cifar100_benchmark_cnn
 
+cb100ci cifar100-cnn-improved: ## Run CIFAR-100 CNN benchmark improved (UPDATE expected accuracy)
+	time python src/train.py experiment=cifar100_benchmark_cnn_improved
+
 cb100cmh cifar100-cnn-multihead: ## Run CIFAR-100 CNN benchmark using multihead classifier
 	time python src/train.py experiment=cifar100mh_cnn
+
+cb100cnmh cifar100-convnext-multihead: ## Run CIFAR-100 ConvNeXt using multihead classifier
+	time python src/train.py experiment=cifar100mh_convnext
+
+cb100emh cifar100-efficientnet-multihead: ## Run CIFAR-100 EfficientNet using multihead classifier
+	time python src/train.py experiment=cifar100mh_efficientnet
+
+cb100vmh cifar100-vit-multihead: ## Run CIFAR-100 ViT using multihead classifier
+	time python src/train.py experiment=cifar100mh_vit
+
+cb100mha cifar100-multihead-all: cb100cmh cb100cnmh cb100emh cb100vmh
+## Run all CIFAR-100 multihead experiments
 
 cb100cn cifar100-convnext: ## Run CIFAR-100 ConvNeXt benchmark (70-80% expected accuracy)
 	time python src/train.py experiment=cifar100_benchmark_convnext
