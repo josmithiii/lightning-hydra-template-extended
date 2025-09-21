@@ -589,11 +589,32 @@ class MultiheadLitModule(LightningModule):
         else:
             # For classification mode, track best accuracy
             if self.is_multihead:
-                # For multihead, track best accuracy of primary task (first head)
-                primary_head = next(iter(self.criteria.keys()))
-                if f"{primary_head}_acc" in self.val_metrics:
-                    acc = self.val_metrics[f"{primary_head}_acc"].compute()
-                    self.val_acc_best(acc)
+                # For multihead, compute average accuracy across all heads
+                head_accs = []
+                for head_name in self.criteria.keys():
+                    if f"{head_name}_acc" in self.val_metrics:
+                        acc = self.val_metrics[f"{head_name}_acc"].compute()
+                        head_accs.append(acc)
+
+                if head_accs:
+                    # Compute weighted average using loss weights
+                    weighted_sum = sum(
+                        acc * self.loss_weights.get(head_name, 1.0)
+                        for acc, head_name in zip(head_accs, self.criteria.keys())
+                        if f"{head_name}_acc" in self.val_metrics
+                    )
+                    total_weight = sum(
+                        self.loss_weights.get(head_name, 1.0)
+                        for head_name in self.criteria.keys()
+                        if f"{head_name}_acc" in self.val_metrics
+                    )
+                    avg_acc = weighted_sum / total_weight if total_weight > 0 else 0.0
+                    self.val_acc_best(avg_acc)
+
+                    # Also log simple average for comparison
+                    simple_avg = sum(head_accs) / len(head_accs)
+                    self.log("val/avg_acc", simple_avg, sync_dist=True, prog_bar=True)
+                    self.log("val/weighted_avg_acc", avg_acc, sync_dist=True, prog_bar=True)
             else:
                 # For single head, track the only accuracy
                 head_name = next(iter(self.criteria.keys()))
