@@ -125,12 +125,12 @@ class CIFAR100MHDataset(MultiheadDatasetBase):
         if not self.batch_file.exists():
             raise FileNotFoundError(f"Dataset file not found: {self.batch_file}")
 
-        # Validate format version if specified
+        # Validate format version if specified (accept both CIFAR-100-MH and VIMH)
         if "format" in self.metadata_format:
-            expected_format = "CIFAR-100-MH"
+            expected_formats = ["CIFAR-100-MH", "VIMH"]
             actual_format = self.metadata_format.get("format")
-            if actual_format != expected_format:
-                print(f"Warning: Expected format '{expected_format}', got '{actual_format}'")
+            if actual_format not in expected_formats:
+                print(f"Warning: Expected format {expected_formats}, got '{actual_format}'")
 
         # Validate sample count matches metadata
         if "train_samples" in self.metadata_format and self.train:
