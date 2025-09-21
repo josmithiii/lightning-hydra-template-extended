@@ -255,7 +255,7 @@ log_dir: /path/to/your/logs
 
 # Hardware optimization
 data:
-  num_workers: 8
+  num_workers: 0 # Set to 0 for MPS compatibility
   pin_memory: true
 
 trainer:

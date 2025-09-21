@@ -133,7 +133,7 @@ _target_: src.data.cifar100mh_datamodule.CIFAR100MHDataModule
 
 data_dir: ${paths.data_dir}/cifar100mh
 batch_size: 64
-num_workers: 4
+num_workers: 0 # Set to 0 for MPS compatibility
 pin_memory: True
 persistent_workers: True
 

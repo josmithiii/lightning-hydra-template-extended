@@ -129,7 +129,7 @@ _target_: src.data.mnist_datamodule.MNISTDataModule
 data_dir: ${paths.data_dir}
 batch_size: 128
 train_val_test_split: [55_000, 5_000, 10_000]
-num_workers: 2
+num_workers: 0 # Set to 0 for MPS compatibility
 pin_memory: False
 persistent_workers: False
 
@@ -561,7 +561,7 @@ defaults:
 data:
   data_dir: data-vimh/vimh-32x32_8000Hz_1p0s_256dss_resonarium_2p
   batch_size: 128
-  num_workers: 4
+  num_workers: 0 # Set to 0 for MPS compatibility
 
 model:
   # Auto-configures from dataset metadata
