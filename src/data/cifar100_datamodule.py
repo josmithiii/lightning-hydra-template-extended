@@ -4,7 +4,7 @@ import torch
 from lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.datasets import CIFAR100
-from torchvision.transforms import transforms
+from torchvision import transforms
 
 
 class CIFAR100WithCoarseLabels(CIFAR100):
@@ -99,6 +99,8 @@ class CIFAR100DataModule(LightningDataModule):
         pin_memory: bool = False,
         persistent_workers: bool = True,
         use_coarse_labels: bool = False,
+        train_transforms: Optional[Any] = None,
+        transforms: Optional[Any] = None,
     ) -> None:
         """Initialize a `CIFAR100DataModule`.
 
@@ -109,6 +111,8 @@ class CIFAR100DataModule(LightningDataModule):
         :param pin_memory: Whether to pin memory. Defaults to `False`.
         :param persistent_workers: Whether to use persistent workers. Defaults to `False`.
         :param use_coarse_labels: Whether to use coarse labels (20 classes) instead of fine labels (100 classes). Defaults to `False`.
+        :param train_transforms: Custom transforms for training data. If None, uses default augmented transforms.
+        :param transforms: Custom transforms for validation/test data. If None, uses default transforms.
         """
         super().__init__()
 
@@ -119,25 +123,35 @@ class CIFAR100DataModule(LightningDataModule):
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False)
 
-        # CIFAR-100 uses the same normalization as CIFAR-10
-        # These are the standard normalization values for CIFAR datasets
-        self.transforms = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-            ]
-        )
+        # Use provided transforms or fall back to defaults
+        # Store reference to transforms module to avoid naming conflict with parameter
+        import torchvision.transforms as T
 
-        # Enhanced data augmentation for CIFAR-100 (more challenging dataset)
-        self.train_transforms = transforms.Compose(
-            [
-                transforms.RandomCrop(32, padding=4),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(15),  # Additional augmentation for CIFAR-100
-                transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-            ]
-        )
+        if transforms is None:
+            # CIFAR-100 uses the same normalization as CIFAR-10
+            # These are the standard normalization values for CIFAR datasets
+            self.transforms = T.Compose(
+                [
+                    T.ToTensor(),
+                    T.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                ]
+            )
+        else:
+            self.transforms = transforms
+
+        if train_transforms is None:
+            # Enhanced data augmentation for CIFAR-100 (more challenging dataset)
+            self.train_transforms = T.Compose(
+                [
+                    T.RandomCrop(32, padding=4),
+                    T.RandomHorizontalFlip(),
+                    T.RandomRotation(15),  # Additional augmentation for CIFAR-100
+                    T.ToTensor(),
+                    T.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                ]
+            )
+        else:
+            self.train_transforms = train_transforms
 
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
