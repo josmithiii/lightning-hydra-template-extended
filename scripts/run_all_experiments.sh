@@ -3,7 +3,8 @@
 # Run All Experiments Script
 # This script runs each experiment configuration and captures output to experiment_logs/
 
-set -e  # Exit on any error
+set -eE  # Exit on any error and trap errors
+trap 'echo "Error occurred at line $LINENO with exit code $?"' ERR
 
 # Colors for output
 RED='\033[0;31m'
@@ -99,7 +100,7 @@ parse_experiment() {
 
 # Function to run experiments in parallel with job control
 run_parallel_experiments() {
-    local experiment_list=("$@")
+    experiment_list=("$@")
     local active_jobs=0
     local job_pids=()
     local job_names=()
@@ -124,7 +125,7 @@ run_parallel_experiments() {
             case "$marker" in
                 "Y") mode="skip" ;;
                 "N") mode="debug" ;;
-                " ") mode="run" ;;
+                *) mode="run" ;;  # Default for unmarked experiments
             esac
         fi
 
@@ -134,7 +135,7 @@ run_parallel_experiments() {
         job_pids+=($job_pid)
         job_names+=("$experiment")
 
-        ((active_jobs++))
+        active_jobs=$((active_jobs + 1))
 
         # Wait if we've reached max jobs
         if [ $active_jobs -ge $MAX_JOBS ]; then
@@ -146,14 +147,14 @@ run_parallel_experiments() {
                     # Job finished
                     local exit_code=$?
                     if [ $exit_code -eq 0 ]; then
-                        ((completed++))
+                        completed=$((completed + 1))
                     else
-                        ((failed++))
+                        failed=$((failed + 1))
                     fi
                     break
                 fi
             done
-            ((active_jobs--))
+            active_jobs=$((active_jobs - 1))
         fi
     done
 
@@ -337,15 +338,16 @@ run_experiment() {
 run_experiments() {
     local start_time=$(date +%s)
     local total_experiments=${#experiments[@]}
-    local completed=0
-    local failed=0
-    local skipped=0
+    # Make these global so they can be accessed from run_parallel_experiments
+    completed=0
+    failed=0
+    skipped=0
 
     echo -e "${BLUE}Total experiments to process: ${total_experiments}${NC}"
     echo ""
 
-    # Determine processing mode for all experiments
-    local processing_mode
+    # Determine processing mode for all experiments (global for run_parallel_experiments)
+    processing_mode=""
     if [ "$FORCE_MODE" = true ]; then
         processing_mode="force"
         echo -e "${YELLOW}Force mode: All experiments will be run normally${NC}"
