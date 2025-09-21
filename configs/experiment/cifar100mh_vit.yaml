@@ -52,3 +52,6 @@ logger:
     group: "cifar100mh"
   aim:
     experiment: "cifar100mh"
+
+# Override optimized metric for multihead setup
+optimized_metric: "val/avg_acc"

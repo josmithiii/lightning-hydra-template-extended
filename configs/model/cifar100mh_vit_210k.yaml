@@ -26,9 +26,11 @@ scheduler:
 
 # Different criterion per head (will be auto-configured based on dataset)
 criteria:
-  param_0:
+  fine_label:
     _target_: torch.nn.CrossEntropyLoss
-  param_1:
+  coarse_label:
+    _target_: torch.nn.CrossEntropyLoss
+  texture:
     _target_: torch.nn.CrossEntropyLoss
 
 # Loss weighting auto-configured from dataset JNDs (Just Noticeable Differences)

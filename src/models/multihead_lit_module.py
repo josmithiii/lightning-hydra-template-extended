@@ -476,13 +476,19 @@ class MultiheadLitModule(LightningModule):
                 return loss, preds, {head_name: y_single}
 
             # Calculate total loss and predictions for multihead case
-            total_loss = sum(self.loss_weights[name] * loss for name, loss in losses.items())
+            if not losses:
+                # If no losses were computed (all heads failed), return zero tensor
+                device = next(self.parameters()).device
+                total_loss = torch.tensor(0.0, device=device, requires_grad=True)
+            else:
+                total_loss = sum(self.loss_weights[name] * loss for name, loss in losses.items())
 
             preds = {
                 head_name: self._compute_predictions(
                     logits_head, self.criteria[head_name], head_name
                 )
                 for head_name, logits_head in logits.items()
+                if head_name in self.criteria
             }
 
             # Return targets in dict format

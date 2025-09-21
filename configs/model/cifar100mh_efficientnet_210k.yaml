@@ -4,8 +4,9 @@ net:
   _target_: src.models.components.simple_efficientnet.SimpleEfficientNet
   input_channels: 3 # CIFAR-100-MH has 3 color channels
   heads_config:
-    param_0: 100 # Default - will be overridden by dataset
-    param_1: 100 # Default - will be overridden by dataset
+    fine_label: 100 # Default - will be overridden by dataset
+    coarse_label: 20 # Default - will be overridden by dataset
+    texture: 8 # Default - will be overridden by dataset
   dropout_rate: 0.3
 
 optimizer:
@@ -22,9 +23,11 @@ scheduler:
 
 # Different criterion per head (will be auto-configured based on dataset)
 criteria:
-  param_0:
+  fine_label:
     _target_: torch.nn.CrossEntropyLoss
-  param_1:
+  coarse_label:
+    _target_: torch.nn.CrossEntropyLoss
+  texture:
     _target_: torch.nn.CrossEntropyLoss
 
 # Loss weighting auto-configured from dataset JNDs (Just Noticeable Differences)
