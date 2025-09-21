@@ -128,6 +128,12 @@ class MNISTLitModule(LightningModule):
         if hasattr(self.net, "in_chans"):
             return self.net.in_chans
 
+        # Check stem layer for EfficientNet-style networks
+        if hasattr(self.net, "stem") and hasattr(self.net.stem, "0"):
+            first_stem_layer = self.net.stem[0]
+            if hasattr(first_stem_layer, "in_channels"):
+                return first_stem_layer.in_channels
+
         # Try to infer from first convolutional layer
         if hasattr(self.net, "conv_layers") and hasattr(self.net.conv_layers, "0"):
             first_layer = self.net.conv_layers[0]
