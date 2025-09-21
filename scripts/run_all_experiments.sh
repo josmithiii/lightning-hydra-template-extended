@@ -54,12 +54,12 @@ echo ""
 # Array of all experiment names (without .yaml extension)
 experiments=(
     "Y cifar10_benchmark_cnn"
-    "N cifar10_benchmark_convnext"
-    "cifar10_benchmark_efficientnet"
-    "cifar10_benchmark_vit"
-    "cifar10_cnn_cpu"
-    "cifar10_cnn"
-    "cifar10_convnext_128k_optimized"
+    "Y cifar10_benchmark_convnext"
+    "N cifar10_benchmark_efficientnet"
+    "Y cifar10_benchmark_vit"
+    "Y cifar10_cnn_cpu"
+    "Y cifar10_cnn"
+    "Y cifar10_convnext_128k_optimized"
     "cifar10_convnext_64k_optimized"
     "cifar100_benchmark_cnn_improved"
     "cifar100_benchmark_cnn"
@@ -330,8 +330,8 @@ run_experiment() {
         echo -e "${YELLOW}  Debug mode: Detailed output follows...${NC}"
         echo ""
 
-        # In debug mode, show real-time output and capture to log
-        time python src/train.py experiment="${experiment_name}" 2>&1 | tee "${log_file}"
+        # In debug mode, show real-time output and capture to log (including time output)
+        { time python src/train.py experiment="${experiment_name}"; } 2>&1 | tee -a "${log_file}"
         local exit_code=${PIPESTATUS[0]}
 
         echo ""
@@ -346,8 +346,8 @@ run_experiment() {
             echo -e "${YELLOW}  Debug mode failed - log moved to: ${failed_log_file}${NC}"
         fi
     else
-        # Normal mode - capture output to log file
-        time python src/train.py experiment="${experiment_name}" >> "${log_file}" 2>&1
+        # Normal mode - capture output to log file (including time output)
+        { time python src/train.py experiment="${experiment_name}"; } >> "${log_file}" 2>&1
         local exit_code=$?
     fi
 
