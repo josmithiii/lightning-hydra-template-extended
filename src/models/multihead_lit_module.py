@@ -264,6 +264,13 @@ class MultiheadLitModule(LightningModule):
                 f"Warning: Network {type(self.net).__name__} doesn't have heads_config attribute"
             )
 
+        # Auto-configure JND-based loss weights if available
+        if hasattr(dataset, 'metadata_format') and dataset.metadata_format:
+            jnd_weights = self._compute_jnd_weights(dataset.metadata_format)
+            if jnd_weights:
+                print(f"Auto-configuring JND-based loss weights: {jnd_weights}")
+                self.loss_weights.update(jnd_weights)
+
         # Update criteria if using auto-configuration
         if self.auto_configure_from_dataset:
             # Check if we have hardcoded placeholder heads that need replacement
@@ -319,6 +326,44 @@ class MultiheadLitModule(LightningModule):
         """
         # Default fallback range for regression tasks
         return (0.0, 1.0)
+
+    def _compute_jnd_weights(self, metadata_format: dict) -> dict:
+        """Compute JND-based loss weights from dataset metadata.
+
+        Weight each head's loss by the number of JNDs (Just Noticeable Differences).
+        For classification: JNDs = 1 + (max-min)/step, where step=1 for discrete classes
+        For regression: JNDs = 1 + (max-min)/step, using provided step size
+
+        :param metadata_format: Dataset metadata containing parameter mappings
+        :return: Dictionary of head names to JND-based weights
+        """
+        jnd_weights = {}
+
+        if 'parameter_mappings' not in metadata_format:
+            return jnd_weights
+
+        param_mappings = metadata_format['parameter_mappings']
+
+        for param_name, param_info in param_mappings.items():
+            param_min = param_info.get('min', 0)
+            param_max = param_info.get('max', 1)
+            param_step = param_info.get('step', None)
+            param_type = param_info.get('type', 'classification')
+
+            # For classification, step is implicitly 1 (each class is one JND)
+            if param_type == 'classification' or param_step is None:
+                param_step = 1.0
+
+            # Compute number of JNDs: 1 + (max-min)/step
+            # The +1 accounts for the fact that with N steps, you have N+1 values
+            if param_step > 0:
+                num_jnds = 1 + (param_max - param_min) / param_step
+                jnd_weights[param_name] = float(num_jnds)
+            else:
+                # If step is 0, parameter is constant (min == max)
+                jnd_weights[param_name] = 1.0
+
+        return jnd_weights
 
     def _compute_predictions(
         self, logits: torch.Tensor, criterion, head_name: str

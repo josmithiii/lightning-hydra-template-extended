@@ -23,11 +23,9 @@ criteria:
   texture:
     _target_: torch.nn.CrossEntropyLoss
 
-# Loss weighting (equal weight to all heads by default)
-loss_weights:
-  fine_label: 1.0
-  coarse_label: 1.0
-  texture: 1.0
+# Loss weighting auto-configured from dataset JNDs (Just Noticeable Differences)
+# JND-based weights: fine_label=100, coarse_label=20, texture=8 (based on number of classes)
+loss_weights: {} # Empty - will be auto-configured from dataset metadata
 
 net:
   _target_: src.models.components.simple_cnn.SimpleCNN

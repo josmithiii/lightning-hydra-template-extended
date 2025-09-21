@@ -27,12 +27,6 @@ criteria:
   param_1:
     _target_: torch.nn.CrossEntropyLoss
 
-# Loss weighting (equal weight to all heads by default)
-loss_weights:
-  param_0: 1.0
-  param_1: 1.0
-
-compile: false
-
-# Auto-configure heads from dataset metadata
-auto_configure_from_dataset: true
+# Loss weighting auto-configured from dataset JNDs (Just Noticeable Differences)
+# JND-based weights: fine_label=100, coarse_label=20, texture=8 (based on number of classes)
+# loss_weights: # Commented out - auto-configured from dataset metadata
