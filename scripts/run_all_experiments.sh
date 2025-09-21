@@ -104,6 +104,7 @@ run_parallel_experiments() {
     local active_jobs=0
     local job_pids=()
     local job_names=()
+    local job_modes=()
 
     for experiment in "${experiment_list[@]}"; do
         # Parse the experiment entry
@@ -134,38 +135,88 @@ run_parallel_experiments() {
         local job_pid=$!
         job_pids+=($job_pid)
         job_names+=("$experiment")
+        job_modes+=("$mode")
 
         active_jobs=$((active_jobs + 1))
 
         # Wait if we've reached max jobs
         if [ $active_jobs -ge $MAX_JOBS ]; then
-            # Wait for any job to finish
-            wait -n
-            # Find which job finished and update counters
-            for i in "${!job_pids[@]}"; do
-                if ! kill -0 "${job_pids[i]}" 2>/dev/null; then
-                    # Job finished
-                    local exit_code=$?
-                    if [ $exit_code -eq 0 ]; then
-                        completed=$((completed + 1))
-                    else
-                        failed=$((failed + 1))
+            local job_finished=false
+            while [ "$job_finished" = false ]; do
+                for i in "${!job_pids[@]}"; do
+                    local pid="${job_pids[i]}"
+                    if [ -z "$pid" ]; then
+                        continue
                     fi
-                    break
+                    if ! kill -0 "$pid" 2>/dev/null; then
+                        local exit_code
+                        if wait "$pid"; then
+                            exit_code=0
+                        else
+                            exit_code=$?
+                        fi
+
+                        local job_mode="${job_modes[i]}"
+                        if [ "$job_mode" = "skip" ]; then
+                            skipped=$((skipped + 1))
+                        elif [ $exit_code -eq 0 ]; then
+                            completed=$((completed + 1))
+                        else
+                            failed=$((failed + 1))
+                        fi
+
+                        unset job_pids[i]
+                        unset job_names[i]
+                        unset job_modes[i]
+                        active_jobs=$((active_jobs - 1))
+                        job_finished=true
+                        break
+                    fi
+                done
+
+                if [ "$job_finished" = false ]; then
+                    sleep 0.2
                 fi
             done
-            active_jobs=$((active_jobs - 1))
         fi
     done
 
     # Wait for all remaining jobs to complete
-    for pid in "${job_pids[@]}"; do
-        wait "$pid"
-        local exit_code=$?
-        if [ $exit_code -eq 0 ]; then
-            ((completed++))
-        else
-            ((failed++))
+    while [ $active_jobs -gt 0 ]; do
+        local job_finished=false
+        for i in "${!job_pids[@]}"; do
+            local pid="${job_pids[i]}"
+            if [ -z "$pid" ]; then
+                continue
+            fi
+            if ! kill -0 "$pid" 2>/dev/null; then
+                local exit_code
+                if wait "$pid"; then
+                    exit_code=0
+                else
+                    exit_code=$?
+                fi
+
+                local job_mode="${job_modes[i]}"
+                if [ "$job_mode" = "skip" ]; then
+                    skipped=$((skipped + 1))
+                elif [ $exit_code -eq 0 ]; then
+                    completed=$((completed + 1))
+                else
+                    failed=$((failed + 1))
+                fi
+
+                unset job_pids[i]
+                unset job_names[i]
+                unset job_modes[i]
+                active_jobs=$((active_jobs - 1))
+                job_finished=true
+                break
+            fi
+        done
+
+        if [ "$job_finished" = false ]; then
+            sleep 0.2
         fi
     done
 }
