@@ -201,6 +201,15 @@ run_experiment() {
 
         echo ""
         echo -e "${YELLOW}  Debug mode: Execution completed with exit code $exit_code${NC}"
+
+        # If debug mode failed, rename the log file to include _FAILED
+        if [ $exit_code -ne 0 ]; then
+            local log_file_without_extension="${log_file%.*}"
+            local log_file_extension="${log_file##*.}"
+            local failed_log_file="${log_file_without_extension}_FAILED.${log_file_extension}"
+            mv "${log_file}" "${failed_log_file}"
+            echo -e "${YELLOW}  Debug mode failed - log moved to: ${failed_log_file}${NC}"
+        fi
     else
         # Normal mode - capture output to log file
         python src/train.py experiment="${experiment_name}" >> "${log_file}" 2>&1
@@ -219,7 +228,15 @@ run_experiment() {
         } >> "${log_file}"
     else
         echo -e "${RED}[$(date '+%H:%M:%S')] ✗ Failed: ${experiment_name} (exit code: $exit_code)${NC}"
-        # Add failure footer to log file
+
+        # Create failed log file name (insert _FAILED before .txt)
+        local log_file_without_extension="${log_file%.*}"
+        local log_file_extension="${log_file##*.}"
+        local failed_log_file="${log_file_without_extension}_FAILED.${log_file_extension}"
+
+        echo -e "${YELLOW}  Failed log will be saved to: ${failed_log_file}${NC}"
+
+        # Add failure footer to failed log file
         {
             echo ""
             echo "==================================================================="
@@ -227,7 +244,7 @@ run_experiment() {
             echo "EXIT CODE: $exit_code"
             echo "FINISHED: $(date)"
             echo "==================================================================="
-        } >> "${log_file}"
+        } >> "${failed_log_file}"
     fi
 
     echo ""
