@@ -37,7 +37,7 @@ model:
 
 data:
   batch_size: 128
-  num_workers: 4
+  num_workers: 0
   pin_memory: false # Not needed for CPU
 
 logger:

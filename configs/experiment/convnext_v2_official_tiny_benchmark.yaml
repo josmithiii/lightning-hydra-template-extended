@@ -56,7 +56,7 @@ model:
 
 data:
   batch_size: 128 # Scaled for single GPU (official: 32 * 8 GPUs = 256 effective)
-  num_workers: 4
+  num_workers: 0
 
 # Enable all official training techniques (adapted for Lightning)
 callbacks:

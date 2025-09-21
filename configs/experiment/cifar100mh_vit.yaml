@@ -33,7 +33,7 @@ model:
 
 data:
   batch_size: 64 # Smaller batch size for ViT due to memory requirements
-  num_workers: 4
+  num_workers: 0
   pin_memory: true
 
 # Override callback monitoring metrics for multihead setup
