@@ -93,7 +93,7 @@ parse_experiment() {
         local name="${BASH_REMATCH[2]}"
         echo "$marker $name"
     else
-        echo "  $experiment_entry"
+        echo "$experiment_entry"
     fi
 }
 
@@ -261,19 +261,19 @@ run_experiment() {
         echo "==================================================================="
         echo "EXPERIMENT: ${experiment_name}"
         echo "STARTED: $(date)"
-        echo "COMMAND: python src/train.py experiment=${experiment_name}"
+        echo "COMMAND: time python src/train.py experiment=${experiment_name}"
         echo "==================================================================="
         echo ""
     } > "${log_file}"
 
     # Run the experiment and capture both stdout and stderr
     if [ "$mode" = "debug" ]; then
-        echo -e "${YELLOW}  Executing: python src/train.py experiment=${experiment_name}${NC}"
+        echo -e "${YELLOW}  Executing: time python src/train.py experiment=${experiment_name}${NC}"
         echo -e "${YELLOW}  Debug mode: Detailed output follows...${NC}"
         echo ""
 
         # In debug mode, show real-time output and capture to log
-        python src/train.py experiment="${experiment_name}" 2>&1 | tee "${log_file}"
+        time python src/train.py experiment="${experiment_name}" 2>&1 | tee "${log_file}"
         local exit_code=${PIPESTATUS[0]}
 
         echo ""
@@ -289,7 +289,7 @@ run_experiment() {
         fi
     else
         # Normal mode - capture output to log file
-        python src/train.py experiment="${experiment_name}" >> "${log_file}" 2>&1
+        time python src/train.py experiment="${experiment_name}" >> "${log_file}" 2>&1
         local exit_code=$?
     fi
 
