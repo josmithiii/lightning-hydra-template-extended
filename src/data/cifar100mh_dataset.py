@@ -44,12 +44,28 @@ class CIFAR100MHDataset(MultiheadDatasetBase):
             # Load from directory structure
             self.data_dir = data_path
             self.batch_file = self.data_dir / ("train_batch" if train else "test_batch")
-            self.metadata_file = self.data_dir / "cifar100mh_dataset_info.json"
+            # Try both CIFAR100MH and VIMH metadata file names for compatibility
+            cifar_metadata = self.data_dir / "cifar100mh_dataset_info.json"
+            vimh_metadata = self.data_dir / "vimh_dataset_info.json"
+            if cifar_metadata.exists():
+                self.metadata_file = cifar_metadata
+            elif vimh_metadata.exists():
+                self.metadata_file = vimh_metadata
+            else:
+                raise FileNotFoundError(f"No metadata file found in {self.data_dir}")
         else:
             # Single file specified
             self.batch_file = data_path
             self.data_dir = data_path.parent
-            self.metadata_file = self.data_dir / "cifar100mh_dataset_info.json"
+            # Try both CIFAR100MH and VIMH metadata file names for compatibility
+            cifar_metadata = self.data_dir / "cifar100mh_dataset_info.json"
+            vimh_metadata = self.data_dir / "vimh_dataset_info.json"
+            if cifar_metadata.exists():
+                self.metadata_file = cifar_metadata
+            elif vimh_metadata.exists():
+                self.metadata_file = vimh_metadata
+            else:
+                raise FileNotFoundError(f"No metadata file found in {self.data_dir}")
 
         # Load metadata configuration
         metadata_format = self._load_metadata_config()
