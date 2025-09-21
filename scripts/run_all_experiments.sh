@@ -24,8 +24,8 @@ echo ""
 
 # Array of all experiment names (without .yaml extension)
 experiments=(
-    "cifar10_benchmark_cnn"
-    "cifar10_benchmark_convnext"
+    "Y cifar10_benchmark_cnn"
+    "N cifar10_benchmark_convnext"
     "cifar10_benchmark_efficientnet"
     "cifar10_benchmark_vit"
     "cifar10_cnn_cpu"
@@ -55,13 +55,45 @@ experiments=(
     "vit_mnist"
 )
 
+# Function to parse experiment name and return (marker, name)
+parse_experiment() {
+    local experiment_entry="$1"
+
+    # Check if experiment has a marker (Y/N prefix)
+    if [[ "$experiment_entry" =~ ^([YN])\ (.+)$ ]]; then
+        local marker="${BASH_REMATCH[1]}"
+        local name="${BASH_REMATCH[2]}"
+        echo "$marker $name"
+    else
+        echo "  $experiment_entry"
+    fi
+}
+
 # Function to run a single experiment
 run_experiment() {
     local experiment_name="$1"
+    local mode="${2:-run}"  # Default mode is "run" if not specified
     local log_file="${LOG_DIR}/${experiment_name}-log.txt"
 
-    echo -e "${YELLOW}[$(date '+%H:%M:%S')] Starting experiment: ${experiment_name}${NC}"
-    echo -e "${BLUE}  Output will be saved to: ${log_file}${NC}"
+    case "$mode" in
+        "skip")
+            echo -e "${BLUE}[$(date '+%H:%M:%S')] Skipping experiment: ${experiment_name} (marked as successful)${NC}"
+            return 0
+            ;;
+        "debug")
+            echo -e "${YELLOW}[$(date '+%H:%M:%S')] Debugging experiment: ${experiment_name} (marked as failed)${NC}"
+            echo -e "${BLUE}  Output will be saved to: ${log_file}${NC}"
+            echo -e "${YELLOW}  Debug mode: Will show detailed error information${NC}"
+            ;;
+        "run")
+            echo -e "${YELLOW}[$(date '+%H:%M:%S')] Starting experiment: ${experiment_name}${NC}"
+            echo -e "${BLUE}  Output will be saved to: ${log_file}${NC}"
+            ;;
+        *)
+            echo -e "${RED}Error: Invalid mode '$mode' for experiment '$experiment_name'${NC}"
+            return 1
+            ;;
+    esac
 
     # Check if log file already exists and rename it if so
     if [ -f "${log_file}" ]; then
@@ -141,7 +173,24 @@ run_experiment() {
     } > "${log_file}"
 
     # Run the experiment and capture both stdout and stderr
-    if python src/train.py experiment="${experiment_name}" >> "${log_file}" 2>&1; then
+    if [ "$mode" = "debug" ]; then
+        echo -e "${YELLOW}  Executing: python src/train.py experiment=${experiment_name}${NC}"
+        echo -e "${YELLOW}  Debug mode: Detailed output follows...${NC}"
+        echo ""
+
+        # In debug mode, show real-time output and capture to log
+        python src/train.py experiment="${experiment_name}" 2>&1 | tee "${log_file}"
+        local exit_code=${PIPESTATUS[0]}
+
+        echo ""
+        echo -e "${YELLOW}  Debug mode: Execution completed with exit code $exit_code${NC}"
+    else
+        # Normal mode - capture output to log file
+        python src/train.py experiment="${experiment_name}" >> "${log_file}" 2>&1
+        local exit_code=$?
+    fi
+
+    if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}[$(date '+%H:%M:%S')] ✓ Completed: ${experiment_name}${NC}"
         # Add completion footer to log file
         {
@@ -152,12 +201,13 @@ run_experiment() {
             echo "==================================================================="
         } >> "${log_file}"
     else
-        echo -e "${RED}[$(date '+%H:%M:%S')] ✗ Failed: ${experiment_name}${NC}"
+        echo -e "${RED}[$(date '+%H:%M:%S')] ✗ Failed: ${experiment_name} (exit code: $exit_code)${NC}"
         # Add failure footer to log file
         {
             echo ""
             echo "==================================================================="
             echo "EXPERIMENT FAILED"
+            echo "EXIT CODE: $exit_code"
             echo "FINISHED: $(date)"
             echo "==================================================================="
         } >> "${log_file}"
@@ -172,35 +222,84 @@ run_experiments() {
     local total_experiments=${#experiments[@]}
     local completed=0
     local failed=0
+    local skipped=0
 
-    echo -e "${BLUE}Total experiments to run: ${total_experiments}${NC}"
+    echo -e "${BLUE}Total experiments to process: ${total_experiments}${NC}"
     echo ""
 
     # If arguments provided, run only specified experiments
     if [ $# -gt 0 ]; then
         echo -e "${YELLOW}Running specified experiments: $@${NC}"
-        for experiment in "$@"; do
-            if [[ " ${experiments[@]} " =~ " ${experiment} " ]]; then
-                run_experiment "${experiment}"
-                if [ $? -eq 0 ]; then
-                    ((completed++))
-                else
-                    ((failed++))
-                fi
+        for experiment_spec in "$@"; do
+            # Parse the experiment specification
+            local parsed=$(parse_experiment "$experiment_spec")
+            local marker=$(echo "$parsed" | cut -d' ' -f1)
+            local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
+
+            if [[ " ${experiments[@]} " =~ " ${experiment_spec} " ]]; then
+                case "$marker" in
+                    "Y")
+                        echo -e "${BLUE}  Skipping: $experiment_spec${NC}"
+                        run_experiment "$experiment_name" "skip"
+                        ((skipped++))
+                        ;;
+                    "N")
+                        echo -e "${YELLOW}  Debugging: $experiment_spec${NC}"
+                        run_experiment "$experiment_name" "debug"
+                        if [ $? -eq 0 ]; then
+                            ((completed++))
+                        else
+                            ((failed++))
+                        fi
+                        ;;
+                    " ")
+                        echo -e "${YELLOW}  Running: $experiment_spec${NC}"
+                        run_experiment "$experiment_name" "run"
+                        if [ $? -eq 0 ]; then
+                            ((completed++))
+                        else
+                            ((failed++))
+                        fi
+                        ;;
+                esac
             else
-                echo -e "${RED}Warning: Experiment '${experiment}' not found in experiment list${NC}"
+                echo -e "${RED}Warning: Experiment '${experiment_spec}' not found in experiment list${NC}"
             fi
         done
     else
         # Run all experiments
-        echo -e "${YELLOW}Running all experiments...${NC}"
+        echo -e "${YELLOW}Processing all experiments...${NC}"
         for experiment in "${experiments[@]}"; do
-            run_experiment "${experiment}"
-            if [ $? -eq 0 ]; then
-                ((completed++))
-            else
-                ((failed++))
-            fi
+            # Parse the experiment entry
+            local parsed=$(parse_experiment "$experiment")
+            local marker=$(echo "$parsed" | cut -d' ' -f1)
+            local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
+
+            case "$marker" in
+                "Y")
+                    echo -e "${BLUE}  Skipping: $experiment${NC}"
+                    run_experiment "$experiment_name" "skip"
+                    ((skipped++))
+                    ;;
+                "N")
+                    echo -e "${YELLOW}  Debugging: $experiment${NC}"
+                    run_experiment "$experiment_name" "debug"
+                    if [ $? -eq 0 ]; then
+                        ((completed++))
+                    else
+                        ((failed++))
+                    fi
+                    ;;
+                " ")
+                    echo -e "${YELLOW}  Running: $experiment${NC}"
+                    run_experiment "$experiment_name" "run"
+                    if [ $? -eq 0 ]; then
+                        ((completed++))
+                    else
+                        ((failed++))
+                    fi
+                    ;;
+            esac
         done
     fi
 
@@ -214,6 +313,8 @@ run_experiments() {
     echo -e "${BLUE}=== EXPERIMENT SUMMARY ===${NC}"
     echo -e "${GREEN}Completed: ${completed}${NC}"
     echo -e "${RED}Failed: ${failed}${NC}"
+    echo -e "${BLUE}Skipped: ${skipped}${NC}"
+    echo -e "${BLUE}Total processed: $((completed + failed + skipped))${NC}"
     echo -e "${BLUE}Total time: ${hours}h ${minutes}m ${seconds}s${NC}"
     echo -e "${BLUE}Logs saved in: ${LOG_DIR}${NC}"
 }
@@ -224,28 +325,55 @@ show_help() {
     echo ""
     echo "Run Lightning-Hydra-Template-Extended experiments and save logs."
     echo ""
+    echo "Experiment Marking Scheme:"
+    echo "  Y experiment_name    - Skip (already successful)"
+    echo "  N experiment_name    - Debug mode (failed, needs attention)"
+    echo "  experiment_name      - Run normally (no marking)"
+    echo ""
     echo "Options:"
-    echo "  No arguments    - Run all experiments"
-    echo "  experiment_names - Run only specified experiments"
-    echo "  --list          - List all available experiments"
-    echo "  --help          - Show this help message"
+    echo "  No arguments         - Process all experiments according to markings"
+    echo "  experiment_names     - Process only specified experiments"
+    echo "  --list              - List all available experiments"
+    echo "  --help              - Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0                                    # Run all experiments"
-    echo "  $0 cifar10_cnn example               # Run specific experiments"
+    echo "  $0                                    # Process all experiments"
+    echo "  $0 cifar10_cnn example               # Process specific experiments"
+    echo "  $0 \"N cifar10_benchmark_convnext\"   # Debug a failed experiment"
     echo "  $0 --list                            # List available experiments"
     echo ""
     echo "Log files are saved to: experiment_logs/EXPERIMENT_NAME-log.txt"
+    echo "Debug mode shows real-time output and captures detailed error information."
 }
 
 # List experiments function
 list_experiments() {
     echo -e "${BLUE}Available experiments:${NC}"
     for experiment in "${experiments[@]}"; do
-        echo "  ${experiment}"
+        # Parse the experiment entry
+        local parsed=$(parse_experiment "$experiment")
+        local marker=$(echo "$parsed" | cut -d' ' -f1)
+        local name=$(echo "$parsed" | cut -d' ' -f2-)
+
+        case "$marker" in
+            "Y")
+                echo -e "  ${GREEN}✓${NC} ${experiment} ${BLUE}(successful)${NC}"
+                ;;
+            "N")
+                echo -e "  ${RED}✗${NC} ${experiment} ${YELLOW}(failed)${NC}"
+                ;;
+            " ")
+                echo -e "  ${BLUE}•${NC} ${experiment} ${BLUE}(pending)${NC}"
+                ;;
+        esac
     done
     echo ""
     echo -e "${BLUE}Total: ${#experiments[@]} experiments${NC}"
+    echo ""
+    echo -e "${BLUE}Legend:${NC}"
+    echo -e "  ${GREEN}✓${NC} = Successful (will be skipped)"
+    echo -e "  ${RED}✗${NC} = Failed (will be debugged)"
+    echo -e "  ${BLUE}•${NC} = Pending (will be run normally)"
 }
 
 # Parse command line arguments
