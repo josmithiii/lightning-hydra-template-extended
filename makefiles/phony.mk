@@ -22,7 +22,7 @@
 .PHONY: ca compare-arch
 
 # Experiment targets
-.PHONY: e esdn exp-sdn ec10c exp-cifar10-cnn evit exp-vit ev995 exp-vit-995 ecm exp-cnn-mnist emhcm exp-multihead-cnn-mnist emhcc10 exp-multihead-cnn-cifar10 evimh exp-vimh-16kdss evimho exp-vimh-16kdss-ordinal evimhr exp-vimh-16kdss-regression excn exp-convnext ecnb exp-convnext-benchmark
+.PHONY: e esdn exp-sdn ec10c exp-cifar10-cnn evit exp-vit ev995 exp-vit-995 ecm exp-cnn-mnist emhcm exp-multihead-cnn-mnist emhcc10 exp-multihead-cnn-cifar10 evimh exp-vimh-16kdss evimho exp-vimh-16kdss-ordinal evimhr exp-vimh-16kdss-regression excn exp-convnext ecnb exp-convnext-benchmark ea exp-all en exp-new exp-clean
 
 # CIFAR-10 benchmarks
 .PHONY: cb10c cifar10-cnn cb10cn cifar10-convnext cb10cn64 cifar10-convnext-64k-optimized cb10cn128 cifar10-convnext-128k-optimized cb10v cifar10-vit cb10e cifar10-efficientnet
