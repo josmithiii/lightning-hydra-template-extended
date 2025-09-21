@@ -20,11 +20,21 @@ LOG_DIR="$(pwd)/experiment_logs"
 
 # Parse command line arguments
 FORCE_MODE=false
+MAX_JOBS=2  # Default to 2 parallel jobs
 while [[ $# -gt 0 ]]; do
     case $1 in
         --force|-f)
             FORCE_MODE=true
             shift
+            ;;
+        --jobs|-j)
+            if [[ -n "$2" && "$2" =~ ^[0-9]+$ ]]; then
+                MAX_JOBS="$2"
+                shift 2
+            else
+                echo -e "${RED}Error: --jobs requires a numeric argument${NC}"
+                exit 1
+            fi
             ;;
         *)
             break
@@ -37,6 +47,7 @@ echo -e "${BLUE}Log directory: ${LOG_DIR}${NC}"
 if [ "$FORCE_MODE" = true ]; then
     echo -e "${YELLOW}Force mode: ON (ignoring all experiment markers)${NC}"
 fi
+echo -e "${BLUE}Parallel jobs: ${MAX_JOBS}${NC}"
 echo ""
 
 # Array of all experiment names (without .yaml extension)
@@ -84,6 +95,72 @@ parse_experiment() {
     else
         echo "  $experiment_entry"
     fi
+}
+
+# Function to run experiments in parallel with job control
+run_parallel_experiments() {
+    local experiment_list=("$@")
+    local active_jobs=0
+    local job_pids=()
+    local job_names=()
+
+    for experiment in "${experiment_list[@]}"; do
+        # Parse the experiment entry
+        local parsed=$(parse_experiment "$experiment")
+        local marker=$(echo "$parsed" | cut -d' ' -f1)
+        local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
+
+        # Determine mode based on processing mode and marker
+        local mode="run"
+        if [ "$processing_mode" = "force" ]; then
+            mode="run"
+        else
+            case "$marker" in
+                "Y") mode="skip" ;;
+                "N") mode="debug" ;;
+                " ") mode="run" ;;
+            esac
+        fi
+
+        # Run experiment in background
+        run_experiment "$experiment_name" "$mode" &
+        local job_pid=$!
+        job_pids+=($job_pid)
+        job_names+=("$experiment")
+
+        ((active_jobs++))
+
+        # Wait if we've reached max jobs
+        if [ $active_jobs -ge $MAX_JOBS ]; then
+            # Wait for any job to finish
+            wait -n
+            # Find which job finished and update counters
+            for i in "${!job_pids[@]}"; do
+                if ! kill -0 "${job_pids[i]}" 2>/dev/null; then
+                    # Job finished
+                    local exit_code=$?
+                    if [ $exit_code -eq 0 ]; then
+                        ((completed++))
+                    else
+                        ((failed++))
+                    fi
+                    break
+                fi
+            done
+            ((active_jobs--))
+        fi
+    done
+
+    # Wait for all remaining jobs to complete
+    for pid in "${job_pids[@]}"; do
+        wait "$pid"
+        local exit_code=$?
+        if [ $exit_code -eq 0 ]; then
+            ((completed++))
+        else
+            ((failed++))
+        fi
+    done
 }
 
 # Function to run a single experiment
@@ -274,54 +351,19 @@ run_experiments() {
     # If arguments provided, run only specified experiments
     if [ $# -gt 0 ]; then
         echo -e "${YELLOW}Running specified experiments: $@${NC}"
-        for experiment_spec in "$@"; do
-            # Parse the experiment specification
-            local parsed=$(parse_experiment "$experiment_spec")
-            local marker=$(echo "$parsed" | cut -d' ' -f1)
-            local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
 
+        # Filter experiments to only those specified
+        local filtered_experiments=()
+        for experiment_spec in "$@"; do
             if [[ " ${experiments[@]} " =~ " ${experiment_spec} " ]]; then
-                if [ "$processing_mode" = "force" ]; then
-                    # Force mode: ignore markers and run all experiments normally
-                    echo -e "${YELLOW}  Running (force): $experiment_spec${NC}"
-                    run_experiment "$experiment_name" "run"
-                    if [ $? -eq 0 ]; then
-                        ((completed++))
-                    else
-                        ((failed++))
-                    fi
-                else
-                    # Normal mode: respect markers
-                    case "$marker" in
-                        "Y")
-                            echo -e "${BLUE}  Skipping: $experiment_spec${NC}"
-                            run_experiment "$experiment_name" "skip"
-                            ((skipped++))
-                            ;;
-                        "N")
-                            echo -e "${YELLOW}  Debugging: $experiment_spec${NC}"
-                            run_experiment "$experiment_name" "debug"
-                            if [ $? -eq 0 ]; then
-                                ((completed++))
-                            else
-                                ((failed++))
-                            fi
-                            ;;
-                        " ")
-                            echo -e "${YELLOW}  Running: $experiment_spec${NC}"
-                            run_experiment "$experiment_name" "run"
-                            if [ $? -eq 0 ]; then
-                                ((completed++))
-                            else
-                                ((failed++))
-                            fi
-                            ;;
-                    esac
-                fi
+                filtered_experiments+=("$experiment_spec")
             else
                 echo -e "${RED}Warning: Experiment '${experiment_spec}' not found in experiment list${NC}"
             fi
         done
+
+        # Run filtered experiments in parallel
+        run_parallel_experiments "${filtered_experiments[@]}"
     else
         # Run all experiments
         if [ "$processing_mode" = "force" ]; then
@@ -329,50 +371,9 @@ run_experiments() {
         else
             echo -e "${YELLOW}Processing all experiments...${NC}"
         fi
-        for experiment in "${experiments[@]}"; do
-            # Parse the experiment entry
-            local parsed=$(parse_experiment "$experiment")
-            local marker=$(echo "$parsed" | cut -d' ' -f1)
-            local experiment_name=$(echo "$parsed" | cut -d' ' -f2-)
 
-            if [ "$processing_mode" = "force" ]; then
-                # Force mode: ignore markers and run all experiments normally
-                echo -e "${YELLOW}  Running (force): $experiment${NC}"
-                run_experiment "$experiment_name" "run"
-                if [ $? -eq 0 ]; then
-                    ((completed++))
-                else
-                    ((failed++))
-                fi
-            else
-                # Normal mode: respect markers
-                case "$marker" in
-                    "Y")
-                        echo -e "${BLUE}  Skipping: $experiment${NC}"
-                        run_experiment "$experiment_name" "skip"
-                        ((skipped++))
-                        ;;
-                    "N")
-                        echo -e "${YELLOW}  Debugging: $experiment${NC}"
-                        run_experiment "$experiment_name" "debug"
-                        if [ $? -eq 0 ]; then
-                            ((completed++))
-                        else
-                            ((failed++))
-                        fi
-                        ;;
-                    " ")
-                        echo -e "${YELLOW}  Running: $experiment${NC}"
-                        run_experiment "$experiment_name" "run"
-                        if [ $? -eq 0 ]; then
-                            ((completed++))
-                        else
-                            ((failed++))
-                        fi
-                        ;;
-                esac
-            fi
-        done
+        # Run all experiments in parallel
+        run_parallel_experiments "${experiments[@]}"
     fi
 
     # Summary
@@ -406,6 +407,7 @@ show_help() {
     echo "  No arguments         - Process all experiments according to markings"
     echo "  experiment_names     - Process only specified experiments"
     echo "  --force, -f         - Ignore markers and run all experiments normally"
+    echo "  --jobs, -j NUM      - Run NUM experiments in parallel (default: 2)"
     echo "  --list              - List all available experiments"
     echo "  --help              - Show this help message"
     echo ""
@@ -415,6 +417,8 @@ show_help() {
     echo "  $0 \"N cifar10_benchmark_convnext\"   # Debug a failed experiment"
     echo "  $0 --force                           # Run all experiments ignoring markers"
     echo "  $0 -f cifar10_cnn                   # Force-run specific experiment"
+    echo "  $0 --jobs 4                         # Run 4 experiments in parallel"
+    echo "  $0 -j 8 --force                     # Run 8 experiments in parallel, ignore markers"
     echo "  $0 --list                            # List available experiments"
     echo ""
     echo "Log files are saved to: experiment_logs/EXPERIMENT_NAME-log.txt"
