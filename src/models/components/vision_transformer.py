@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -205,9 +205,13 @@ class VisionTransformer(nn.Module):
         n_layers: int = 6,
         n_attention_heads: int = 4,
         forward_mul: int = 2,
-        output_size: int = 10,
+        output_size: Optional[int] = None,
+        heads_config: Optional[Dict[str, int]] = None,
         dropout: float = 0.1,
         use_torch_layers: bool = False,
+        output_mode: str = "classification",
+        parameter_names: Optional[List[str]] = None,
+        parameter_ranges: Optional[Dict[str, Tuple[float, float]]] = None,
     ):
         super().__init__()
 
@@ -217,6 +221,31 @@ class VisionTransformer(nn.Module):
         # Store input shape attributes for TensorBoard summaries
         self.input_shape = (n_channels, image_size, image_size)
         self.input_resolution = (image_size, image_size)
+
+        # Store output mode and parameter information
+        self.output_mode = output_mode
+        self.parameter_names = parameter_names or []
+        self.parameter_ranges = parameter_ranges or {}
+
+        # Handle configuration based on output mode
+        if output_mode == "regression":
+            # For regression, we need parameter names (can be empty if auto-configured later)
+            if parameter_names:
+                # Create heads_config for regression (each parameter gets 1 output)
+                heads_config = {name: 1 for name in parameter_names}
+            else:
+                # Will be auto-configured later from dataset
+                heads_config = {}
+        else:
+            # Backward compatibility: convert old single-head config to multihead
+            if heads_config is None:
+                if output_size is not None:
+                    heads_config = {"digit": output_size}
+                else:
+                    heads_config = {"digit": 10}  # Default MNIST
+
+        self.heads_config = heads_config
+        self.is_multihead = len(heads_config) > 1
 
         # Always use custom embedding layer
         self.embedding = EmbedLayer(n_channels, embed_dim, image_size, patch_size, dropout=dropout)
@@ -245,7 +274,47 @@ class VisionTransformer(nn.Module):
             )
             self.norm = nn.LayerNorm(embed_dim)
 
-        self.classifier = Classifier(embed_dim, output_size)
+        # Multiple heads or single head for backward compatibility
+        if self.is_multihead:
+            if output_mode == "regression":
+                # For regression, create heads with sigmoid activation
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Sequential(
+                            nn.Linear(embed_dim, embed_dim),
+                            nn.Tanh(),
+                            nn.Linear(embed_dim, 1),
+                            nn.Sigmoid()
+                        )
+                        for head_name in heads_config.keys()
+                    }
+                )
+            else:
+                # Classification heads
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Sequential(
+                            nn.Linear(embed_dim, embed_dim),
+                            nn.Tanh(),
+                            nn.Linear(embed_dim, num_classes)
+                        )
+                        for head_name, num_classes in heads_config.items()
+                    }
+                )
+        else:
+            # Single head (backward compatibility)
+            if heads_config:
+                head_name, num_classes = next(iter(heads_config.items()))
+                if output_mode == "regression":
+                    self.classifier = nn.Sequential(
+                        nn.Linear(embed_dim, embed_dim),
+                        nn.Tanh(),
+                        nn.Linear(embed_dim, 1),
+                        nn.Sigmoid()
+                    )
+                else:
+                    self.classifier = Classifier(embed_dim, num_classes)
+            # If heads_config is empty, don't create classifier - will be auto-configured later
 
         self.apply(self._init_weights)
 
@@ -285,16 +354,106 @@ class VisionTransformer(nn.Module):
                 x = block(x)
             x = self.norm(x)
 
-        x = self.classifier(x)
-        return x
+        # Extract CLS token embedding
+        cls_token = x[:, 0, :]  # B, S, E --> B, E
+
+        if self.is_multihead:
+            return {head_name: head(cls_token) for head_name, head in self.heads.items()}
+        else:
+            # Single head output (backward compatibility)
+            if hasattr(self, 'classifier'):
+                if isinstance(self.classifier, Classifier):
+                    # Use the original Classifier which handles CLS token extraction
+                    return self.classifier(x)
+                else:
+                    # Use the new sequential classifier with pre-extracted CLS token
+                    return self.classifier(cls_token)
+            else:
+                # No classifier configured - should not happen in normal operation
+                raise ValueError("No classifier configured. Model may not be properly initialized.")
+
+    def _build_heads(self, heads_config: Dict[str, int]) -> None:
+        """Rebuild heads for auto-configuration (supports both classification and regression modes)."""
+        # Get embed_dim from existing layers
+        if hasattr(self, 'heads') and self.heads:
+            # Get embed_dim from existing head
+            first_head = next(iter(self.heads.values()))
+            if isinstance(first_head, nn.Sequential):
+                embed_dim = first_head[0].in_features
+            else:
+                embed_dim = first_head.in_features
+        elif hasattr(self, 'classifier'):
+            if isinstance(self.classifier, Classifier):
+                embed_dim = self.classifier.fc1.in_features
+            elif isinstance(self.classifier, nn.Sequential):
+                embed_dim = self.classifier[0].in_features
+            else:
+                embed_dim = self.classifier.in_features
+        else:
+            # Fallback to norm layer size
+            embed_dim = self.norm.normalized_shape[0]
+
+        # Update configuration
+        self.heads_config = heads_config
+        self.is_multihead = len(heads_config) > 1
+
+        # Remove old classifier if transitioning to multihead
+        if hasattr(self, 'classifier') and self.is_multihead:
+            delattr(self, 'classifier')
+
+        # Remove old heads if transitioning to single head
+        if hasattr(self, 'heads') and not self.is_multihead:
+            delattr(self, 'heads')
+
+        if self.is_multihead:
+            if self.output_mode == "regression":
+                # Create regression heads with sigmoid activation
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Sequential(
+                            nn.Linear(embed_dim, embed_dim),
+                            nn.Tanh(),
+                            nn.Linear(embed_dim, 1),
+                            nn.Sigmoid()
+                        )
+                        for head_name in heads_config.keys()
+                    }
+                )
+            else:
+                # Classification mode: create heads with appropriate number of classes
+                self.heads = nn.ModuleDict(
+                    {
+                        head_name: nn.Sequential(
+                            nn.Linear(embed_dim, embed_dim),
+                            nn.Tanh(),
+                            nn.Linear(embed_dim, num_classes)
+                        )
+                        for head_name, num_classes in heads_config.items()
+                    }
+                )
+        else:
+            # Single head (backward compatibility)
+            if heads_config:
+                head_name, num_classes = next(iter(heads_config.items()))
+                if self.output_mode == "regression":
+                    self.classifier = nn.Sequential(
+                        nn.Linear(embed_dim, embed_dim),
+                        nn.Tanh(),
+                        nn.Linear(embed_dim, 1),
+                        nn.Sigmoid()
+                    )
+                else:
+                    self.classifier = Classifier(embed_dim, num_classes)
+            # If heads_config is empty, don't create classifier - will be auto-configured later
 
 
 if __name__ == "__main__":
     # Test the Vision Transformer
     print("Testing Vision Transformer:")
 
-    # Test with MNIST-like input
-    model = VisionTransformer(
+    # Test single-head mode (backward compatibility)
+    print("Single-head mode:")
+    model_single = VisionTransformer(
         n_channels=1,
         image_size=28,
         patch_size=4,
@@ -306,32 +465,29 @@ if __name__ == "__main__":
         dropout=0.1,
     )
 
-    x = torch.randn(2, 1, 28, 28)  # Batch of 2 MNIST images
-    output = model(x)
-    print(f"Input shape: {x.shape}")
-    print(f"Output shape: {output.shape}")
+    x_single = torch.randn(2, 1, 28, 28)  # Batch of 2 MNIST images
+    output_single = model_single(x_single)
+    print(f"  Input: {x_single.shape} -> Output: {output_single.shape}")
+    print(f"  Parameters: {sum(p.numel() for p in model_single.parameters()):,}")
 
-    # Test parameter count
-    total_params = sum(p.numel() for p in model.parameters())
-    print(f"Total parameters: {total_params:,}")
-
-    # Test PyTorch layers version
-    print("\nTesting Vision Transformer with PyTorch layers:")
-    model_torch = VisionTransformer(
-        n_channels=1,
-        image_size=28,
+    # Test multihead mode
+    print("\nMultihead mode:")
+    model_multi = VisionTransformer(
+        n_channels=3,
+        image_size=32,
         patch_size=4,
         embed_dim=64,
         n_layers=4,
         n_attention_heads=4,
         forward_mul=2,
-        output_size=10,
+        heads_config={"fine_label": 100, "coarse_label": 20, "texture": 8},
         dropout=0.1,
-        use_torch_layers=True,
     )
 
-    output_torch = model_torch(x)
-    print(f"PyTorch layers output shape: {output_torch.shape}")
-
-    total_params_torch = sum(p.numel() for p in model_torch.parameters())
-    print(f"PyTorch layers total parameters: {total_params_torch:,}")
+    x_multi = torch.randn(2, 3, 32, 32)  # Batch of 2 CIFAR images
+    output_multi = model_multi(x_multi)
+    print(f"  Input: {x_multi.shape}")
+    print(f"  Output type: {type(output_multi)}")
+    for head_name, logits in output_multi.items():
+        print(f"    {head_name}: {logits.shape}")
+    print(f"  Parameters: {sum(p.numel() for p in model_multi.parameters()):,}")
