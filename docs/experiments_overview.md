@@ -19,10 +19,10 @@ This document summarizes all experiment configurations in the Lightning-Hydra-Te
 | cifar100_benchmark_convnext | cifar100_convnext_210k | CrossEntropy | 39.68% | 20m30s | 296K | CIFAR-100 ConvNeXt benchmark |
 | cifar100_coarse_cnn | cifar100_coarse_cnn_64k | CrossEntropy | 41.94% | - | 3.3M | **Coarse-grained classification** (20 classes) |
 | cifar100_cnn | cifar100_cnn_1m_original | CrossEntropy | 44.96% | 17m21s | 1.2M | **Fine-grained classification** (100 classes) |
-| cifar100mh_cnn | cifar100mh_cnn_64k | JND-weighted | 22.40% | 14m6s | 1.2M | **Multihead CNN** with real labels |
+| cifar100mh_cnn | cifar100mh_cnn_64k | JND-weighted | 22.40%¹ | 14m6s | 1.2M | **Multihead CNN** with real labels |
 | cifar100mh_convnext | cifar100mh_convnext_210k | JND-weighted | 26.21% | 111m49s | 299K | **Multihead ConvNeXt** with cosine annealing |
 | cifar100mh_efficientnet | cifar100mh_efficientnet_210k | JND-weighted | 25.61% | 339m35s | 7.3M | **Multihead EfficientNet** with cosine annealing |
-| cifar100mh_vit | cifar100mh_vit_210k | JND-weighted | Failed | - | 14.7M | **Multihead Vision Transformer**, smaller batch size |
+| cifar100mh_vit | cifar100mh_vit_210k | JND-weighted | 11.10% | 135m7s | 14.7M | **Multihead Vision Transformer**, smaller batch size |
 | cnn_mnist | mnist_cnn_421k | CrossEntropy | 99.10% | 2m28s | 421K | Short training (1-10 epochs) |
 | convnext_mnist | mnist_convnext_210k | CrossEntropy | 98.88% | 5m7s | 288K | Cosine annealing scheduler |
 | convnext_v2_official_tiny_benchmark | mnist_convnext_210k | CrossEntropy | 99.15% | 10m23s | 288K | **Official ConvNeXt V2-Tiny benchmark**, mixed precision |
@@ -35,6 +35,8 @@ This document summarizes all experiment configurations in the Lightning-Hydra-Te
 | vimh_cnn | vimh_cnn_64k | JND-weighted | 23.50% | 46s | 1.5M | VIMH CNN baseline, MPS optimizations |
 | vit_mnist_995 | mnist_vit_995 | CrossEntropy | 99.44% | 41m47s | 210K | **Ultra-optimized tiny model**, 200 epochs |
 | vit_mnist | mnist_vit_210k | CrossEntropy | 98.24% | 3m9s | 210K | Cosine annealing scheduler |
+
+¹ **Acc/Loss Calculation Note**: For multihead models with JND-weighted loss, the Acc/Loss column shows the average accuracy across all prediction heads. For example, cifar100mh_vit achieved individual head accuracies of 11.62% (fine_label), 8.80% (coarse_label), and 12.87% (texture), resulting in an average of 11.10%. Single-head models show their direct accuracy metric, while regression models show MAE values.
 
 ## Architecture Categories
 
