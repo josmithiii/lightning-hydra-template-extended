@@ -36,6 +36,7 @@ For a fast start, see:
 
 - Onboarding guide: [docs/onboarding.md](docs/onboarding.md)
 - Expert cheat sheet: [docs/quickref.md](docs/quickref.md)
+- Performance results: [docs/experiments_overview.md](docs/experiments_overview.md)
 
 ### 🚀 Quick Start
 

@@ -27,6 +27,7 @@ make ca                         # Compare architectures (10 min)
 - **[vision_primer.md](vision_primer.md)** - Slide-style overview for lightning talks
 
 ### Benchmarking & Research
+- **[experiments_overview.md](experiments_overview.md)** - Complete experiment results table with performance metrics
 - **[benchmarks.md](benchmarks.md)** - CIFAR system, expected performance, automation
 - **[configuration.md](configuration.md)** - Hydra patterns, experiments, best practices
 
@@ -46,6 +47,7 @@ make ca                         # Compare architectures (10 min)
 
 ## 📖 Reference
 - **[quickref.md](quickref.md)** - Expert cheat sheet (start here)
+- **[experiments_overview.md](experiments_overview.md)** - Performance results for all 29 experiments
 - Hydra overrides → see section in [quickref.md](quickref.md)
 - Config Group Map → in [quickref.md](quickref.md#config-group-map) and README
 - **[../README.md](../README.md)** - Main project documentation
