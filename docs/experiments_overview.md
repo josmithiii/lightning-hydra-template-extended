@@ -1,6 +1,11 @@
 # Lightning-Hydra-Template-Extended (LHTE) Experiment Overview
 
-This document summarizes all experiment configurations in the Lightning-Hydra-Template-Extended (LHTE) project directory `configs/experiment/`.
+This document summarizes all experiment configurations in the Lightning-Hydra-Template-Extended (LHTE) experiments directory `configs/experiment/`.
+
+The table was created by
+[../scripts/extract_logs.py](../scripts/extract_logs.py)
+after running
+[../scripts/run_all_experiments.sh](../scripts/run_all_experiments.sh)
 
 ## Experiment Summary Table
 
