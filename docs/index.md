@@ -24,7 +24,6 @@ make ca                         # Compare architectures (10 min)
 - **[architectures.md](architectures.md)** - 5 architectures, params, usage patterns
 - **[vimh.md](vimh.md)** - VIMH dataset format, multihead classification
 - **[onboarding.md](onboarding.md)** - 15-minute onboarding guide
-- **[vision_primer.md](vision_primer.md)** - Slide-style overview for lightning talks
 
 ### Benchmarking & Research
 - **[experiments_overview.md](experiments_overview.md)** - Complete experiment results table with performance metrics
