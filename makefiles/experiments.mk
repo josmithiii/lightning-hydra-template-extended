@@ -34,6 +34,15 @@ evimho exp-vimh-16kdss-ordinal: ## Run VIMH CNN training with ordinal regression
 evimhr exp-vimh-16kdss-regression: ## Run VIMH CNN training with pure regression heads (sigmoid + parameter mapping)
 	time python src/train.py experiment=vimh_cnn_16kdss_regression # ./configs/experiment/vimh_cnn_16kdss_regression.yaml
 
+evimhst exp-vimh-16kdss-soft-target: ## Run VIMH CNN training with soft target loss (smooth probability distributions)
+	time python src/train.py experiment=vimh_cnn_16kdss_soft_target
+
+evimhwce exp-vimh-16kdss-weighted-ce: ## Run VIMH CNN training with weighted cross entropy loss (distance-based penalties)
+	time python src/train.py experiment=vimh_cnn_16kdss_weighted_ce
+
+evimhqr exp-vimh-16kdss-quantized-regression: ## Run VIMH CNN training with quantized regression loss (direct continuous prediction)
+	time python src/train.py experiment=vimh_cnn_16kdss_quantized_regression
+
 excn exp-convnext: ## Run ConvNeXt-V2 experiment
 	time python src/train.py experiment=convnext_mnist
 

@@ -121,9 +121,14 @@ make cbsa        # Complete CIFAR suite
 ### VIMH (Variable Image MultiHead) Training
 ```bash
 # VIMH dataset experiments
-make evimh       # VIMH CNN 16K dataset samples
-make evimho      # VIMH ordinal regression
-make evimhr      # VIMH pure regression heads
+make evimh       # VIMH CNN 16K dataset samples (standard cross entropy)
+make evimho      # VIMH ordinal regression (distance-aware loss)
+make evimhr      # VIMH pure regression heads (sigmoid + parameter mapping)
+
+# New Enhanced Loss Types
+make evimhst     # VIMH soft target loss (smooth probability distributions)
+make evimhwce    # VIMH weighted cross entropy (distance-based penalties)
+make evimhqr     # VIMH quantized regression (direct continuous prediction)
 
 # Direct VIMH training
 python src/train.py experiment=vimh_cnn_16kdss
@@ -163,6 +168,36 @@ This is an **extended** Lightning-Hydra-Template with major enhancements:
 - **Config composition**: Uses Hydra's `defaults` list to compose configurations
 - **Override system**: Parameters can be overridden via command line (e.g., `python src/train.py trainer.max_epochs=20`)
 - **Auto-configuration**: VIMH models auto-configure from dataset metadata
+
+### Enhanced Loss Type System
+The project includes a powerful loss function system with 6 built-in types optimized for different scenarios:
+
+#### **Loss Types Available**
+- **`"cross_entropy"`** - Standard classification loss
+- **`"ordinal_regression"`** - Distance-aware loss for quantized continuous parameters (combines regression + classification)
+- **`"quantized_regression"`** - Direct regression for continuous parameters in discrete bins
+- **`"weighted_cross_entropy"`** - Classification with distance-based penalties (closer predictions get lower penalties)
+- **`"soft_target"`** - Smooth probability distributions around target classes (reduces quantization artifacts)
+- **`"normalized_regression"`** - Pure regression with sigmoid-activated outputs in [0,1] range
+
+#### **Simple Configuration**
+```yaml
+# Old way - manual configuration required
+output_mode: regression
+criteria:
+  param1:
+    _target_: src.models.losses.OrdinalRegressionLoss
+    # ... many parameters needed
+
+# New way - automatic configuration!
+loss_type: "ordinal_regression"  # Everything else auto-configured!
+```
+
+#### **Automatic Parameter Configuration**
+- **Parameter ranges** extracted from dataset metadata
+- **Number of classes** determined from dataset heads
+- **Loss function parameters** set with proven defaults
+- **Backward compatibility** maintained (existing configs still work)
 
 ### Code Structure
 - **`src/train.py`**: Main training entry point using Hydra configuration

@@ -14,7 +14,7 @@ scheduler:
   patience: 10
 
 # Simple loss type specification - auto-configures everything else!
-loss_type: "ordinal_regression"
+loss_type: "quantized_regression"
 
 # Criteria and loss_weights will be auto-configured from dataset metadata
 loss_weights: {} # Will be auto-configured from dataset metadata

@@ -13,6 +13,7 @@ from .losses import (
     QuantizedRegressionLoss,
     WeightedCrossEntropyLoss,
 )
+from .soft_target_loss import SoftTargetLoss
 
 
 class VIMHLitModule(LightningModule):
@@ -65,7 +66,8 @@ class VIMHLitModule(LightningModule):
         loss_weights: Optional[Dict[str, float]] = None,
         compile: bool = False,
         auto_configure_from_dataset: bool = True,
-        output_mode: str = "classification",
+        loss_type: str = "cross_entropy",
+        output_mode: Optional[str] = None,  # Deprecated, use loss_type instead
     ) -> None:
         """Initialize a `VIMHLitModule`.
 
@@ -77,7 +79,8 @@ class VIMHLitModule(LightningModule):
         :param loss_weights: Optional weights for combining losses from different heads.
         :param compile: Whether to compile the model.
         :param auto_configure_from_dataset: Whether to auto-configure heads from dataset.
-        :param output_mode: Output mode - "classification" or "regression".
+        :param loss_type: Type of loss function - "cross_entropy", "ordinal_regression", "quantized_regression", "weighted_cross_entropy", "soft_target", "normalized_regression".
+        :param output_mode: Deprecated, use loss_type instead.
         """
         super().__init__()
 
@@ -86,7 +89,17 @@ class VIMHLitModule(LightningModule):
         self._initial_criteria = criteria
         self._initial_criterion = criterion
         self._initial_loss_weights = loss_weights
-        self.output_mode = output_mode
+
+        # Handle backward compatibility for output_mode
+        if output_mode is not None:
+            if output_mode == "regression":
+                loss_type = "normalized_regression"
+            elif output_mode == "classification":
+                loss_type = "cross_entropy"
+
+        self.loss_type = loss_type
+        # Keep output_mode for backward compatibility in other parts of code
+        self.output_mode = "regression" if loss_type == "normalized_regression" else "classification"
 
         # Backward compatibility handling
         if criteria is None and criterion is not None:
@@ -128,6 +141,54 @@ class VIMHLitModule(LightningModule):
         self.val_loss = None
         self.test_loss = None
         self.val_acc_best = None
+
+    def _create_loss_function(self, loss_type: str, num_classes: int = 256, param_range: float = 1.0, regression_loss_type: str = "mse") -> torch.nn.Module:
+        """Create a loss function based on loss_type string.
+
+        :param loss_type: One of "cross_entropy", "ordinal_regression", "quantized_regression",
+                         "weighted_cross_entropy", "soft_target", "normalized_regression"
+        :param num_classes: Number of classes for classification-based losses
+        :param param_range: Parameter range for regression-based losses
+        :param regression_loss_type: Loss type for normalized regression ('mse', 'l1', 'huber')
+        :return: Configured loss function
+        """
+        if loss_type == "cross_entropy":
+            return torch.nn.CrossEntropyLoss()
+        elif loss_type == "ordinal_regression":
+            return OrdinalRegressionLoss(
+                num_classes=num_classes,
+                param_range=param_range,
+                regression_loss="l1",
+                alpha=0.1
+            )
+        elif loss_type == "quantized_regression":
+            return QuantizedRegressionLoss(
+                num_classes=num_classes,
+                param_range=param_range,
+                loss_type="l1"
+            )
+        elif loss_type == "weighted_cross_entropy":
+            return WeightedCrossEntropyLoss(
+                num_classes=num_classes,
+                distance_power=2.0,
+                base_weight=1.0
+            )
+        elif loss_type == "soft_target":
+            return SoftTargetLoss(
+                num_classes=num_classes,
+                mode="triangular",
+                width=2
+            )
+        elif loss_type == "normalized_regression":
+            return NormalizedRegressionLoss(
+                param_range=(0.0, 1.0),  # Will be updated by auto-configuration
+                loss_type=regression_loss_type,
+                return_perceptual_units=True
+            )
+        else:
+            raise ValueError(f"Unknown loss_type: {loss_type}. Must be one of: "
+                           "cross_entropy, ordinal_regression, quantized_regression, "
+                           "weighted_cross_entropy, soft_target, normalized_regression")
 
     def _setup_metrics(self) -> None:
         """Setup metrics based on current network configuration."""
@@ -225,10 +286,17 @@ class VIMHLitModule(LightningModule):
             if self.criteria:
                 self._update_criteria_with_parameter_ranges(dataset)
             else:
-                # No pre-configured criteria, use default CrossEntropyLoss
+                # No pre-configured criteria - create using loss_type
                 self.criteria = {}
-                for head_name in heads_config.keys():
-                    self.criteria[head_name] = torch.nn.CrossEntropyLoss()
+                for head_name, num_classes in heads_config.items():
+                    # Get parameter range for this head
+                    param_range = self._get_param_range_for_head(dataset, head_name)
+                    # Create loss function based on loss_type
+                    self.criteria[head_name] = self._create_loss_function(
+                        loss_type=self.loss_type,
+                        num_classes=num_classes,
+                        param_range=param_range
+                    )
 
             # Update loss weights if not already set
             if not self.loss_weights:
@@ -236,6 +304,55 @@ class VIMHLitModule(LightningModule):
 
         # Update multihead flag
         self.is_multihead = len(self.criteria) > 1
+
+    def _get_param_range_for_head(
+        self, dataset: MultiheadDatasetBase, head_name: str
+    ) -> float:
+        """Get parameter range for a specific head from dataset metadata.
+
+        :param dataset: The dataset containing parameter range information
+        :param head_name: Name of the parameter head
+        :return: Parameter range (max - min) as float
+        """
+        # Try to get parameter ranges from datamodule first
+        param_ranges = {}
+        try:
+            if hasattr(self.trainer, "datamodule"):
+                if hasattr(self.trainer.datamodule, "param_ranges"):
+                    param_ranges = self.trainer.datamodule.param_ranges
+        except RuntimeError:
+            # No trainer attached, try dataset directly
+            pass
+
+        # If not found in datamodule, try dataset directly
+        if not param_ranges and hasattr(dataset, "param_ranges"):
+            param_ranges = dataset.param_ranges
+
+        # Look for the specific parameter range
+        if head_name in param_ranges:
+            param_range = param_ranges[head_name]
+            if isinstance(param_range, (tuple, list)) and len(param_range) == 2:
+                return float(param_range[1] - param_range[0])  # max - min
+            elif isinstance(param_range, (int, float)):
+                return float(param_range)
+            else:
+                print(f"Warning: Invalid parameter range for '{head_name}': {param_range}")
+                return 1.0
+
+        # Try to get from dataset metadata if it's a VIMH dataset
+        if hasattr(dataset, "_metadata") and dataset._metadata:
+            param_mappings = dataset._metadata.get("parameter_mappings", {})
+            if head_name in param_mappings:
+                mapping = param_mappings[head_name]
+                if "min" in mapping and "max" in mapping:
+                    return float(mapping["max"] - mapping["min"])
+                else:
+                    print(f"Warning: Parameter '{head_name}' metadata missing 'min' or 'max' bounds.")
+                    return 1.0
+
+        # Default fallback
+        print(f"Warning: No parameter range information available for head '{head_name}', using default: 1.0")
+        return 1.0
 
     def _update_criteria_with_parameter_ranges(self, dataset: MultiheadDatasetBase) -> None:
         """Update existing criteria with parameter ranges from dataset metadata.
