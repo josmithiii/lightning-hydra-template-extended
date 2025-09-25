@@ -90,8 +90,8 @@ class VIMHLitModule(LightningModule):
         self._initial_criterion = criterion
         self._initial_loss_weights = loss_weights
 
-        # Handle backward compatibility for output_mode
-        if output_mode is not None:
+        # Handle backward compatibility for output_mode (only if loss_type was not explicitly set)
+        if output_mode is not None and loss_type == "cross_entropy":  # cross_entropy is the default
             if output_mode == "regression":
                 loss_type = "normalized_regression"
             elif output_mode == "classification":
@@ -105,19 +105,22 @@ class VIMHLitModule(LightningModule):
         if criteria is None and criterion is not None:
             criteria = {"head_0": criterion}
         elif criteria is None:
-            # Will be configured later in setup() if auto_configure_from_dataset is True
-            if not auto_configure_from_dataset:
+            # Auto-create criteria based on loss_type if network has heads_config
+            if hasattr(net, "heads_config") and net.heads_config:
+                criteria = {}
+                for head_name, num_classes in net.heads_config.items():
+                    # Use default param_range for now (will be updated by auto-configuration if enabled)
+                    criteria[head_name] = self._create_loss_function(
+                        loss_type=self.loss_type,
+                        num_classes=num_classes,
+                        param_range=1.0
+                    )
+            elif not auto_configure_from_dataset:
                 raise ValueError(
                     "Must provide either 'criterion' or 'criteria' or set auto_configure_from_dataset=True"
                 )
-            criteria = {}
-
-        # If auto_configure_from_dataset is True but we have a network with heads_config,
-        # initialize criteria based on network heads
-        if auto_configure_from_dataset and not criteria and hasattr(net, "heads_config"):
-            criteria = {
-                head_name: torch.nn.CrossEntropyLoss() for head_name in net.heads_config.keys()
-            }
+            else:
+                criteria = {}  # Will be configured later in setup()
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -282,11 +285,12 @@ class VIMHLitModule(LightningModule):
 
         # Update criteria if using auto-configuration
         if self.auto_configure_from_dataset:
-            # If criteria were pre-configured, preserve them and update with parameter ranges
-            if self.criteria:
-                self._update_criteria_with_parameter_ranges(dataset)
-            else:
-                # No pre-configured criteria - create using loss_type
+            # Check if heads_config changed significantly (different keys or placeholder heads)
+            current_heads = set(self.criteria.keys()) if self.criteria else set()
+            new_heads = set(heads_config.keys())
+
+            # If heads changed or we have placeholder heads, recreate criteria completely
+            if current_heads != new_heads or "placeholder" in current_heads:
                 self.criteria = {}
                 for head_name, num_classes in heads_config.items():
                     # Get parameter range for this head
@@ -297,6 +301,9 @@ class VIMHLitModule(LightningModule):
                         num_classes=num_classes,
                         param_range=param_range
                     )
+            else:
+                # Heads match, just update parameter ranges for existing criteria
+                self._update_criteria_with_parameter_ranges(dataset)
 
             # Update loss weights if not already set
             if not self.loss_weights:
