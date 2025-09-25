@@ -52,7 +52,8 @@ class CIFAR100MHDataset(MultiheadDatasetBase):
             elif vimh_metadata.exists():
                 self.metadata_file = vimh_metadata
             else:
-                raise FileNotFoundError(f"No metadata file found in {self.data_dir}")
+                # No metadata file found, will use default configuration
+                self.metadata_file = None
         else:
             # Single file specified
             self.batch_file = data_path
@@ -65,7 +66,8 @@ class CIFAR100MHDataset(MultiheadDatasetBase):
             elif vimh_metadata.exists():
                 self.metadata_file = vimh_metadata
             else:
-                raise FileNotFoundError(f"No metadata file found in {self.data_dir}")
+                # No metadata file found, will use default configuration
+                self.metadata_file = None
 
         # Load metadata configuration
         metadata_format = self._load_metadata_config()
@@ -84,7 +86,7 @@ class CIFAR100MHDataset(MultiheadDatasetBase):
 
         :return: Metadata configuration dictionary
         """
-        if not self.metadata_file.exists():
+        if self.metadata_file is None or not self.metadata_file.exists():
             # Provide default configuration
             return {
                 "format": "CIFAR-100-MH",
