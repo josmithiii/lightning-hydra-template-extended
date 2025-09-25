@@ -127,6 +127,21 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     if hasattr(model, "is_multihead"):
         log.info(f"Model is multihead: {model.is_multihead}")
 
+    # Log loss type for extract_logs.py parsing
+    loss_type = "unknown"
+    if hasattr(cfg.model, "loss_type") and cfg.model.loss_type:
+        loss_type = cfg.model.loss_type
+    elif hasattr(model, "criteria") and model.criteria:
+        # Try to infer from criterion types
+        criterion_types = [type(c).__name__ for c in model.criteria.values()]
+        if "OrdinalRegressionLoss" in criterion_types:
+            loss_type = "ordinal_regression"
+        elif "CrossEntropyLoss" in criterion_types:
+            loss_type = "cross_entropy"
+        elif "MSELoss" in criterion_types or "L1Loss" in criterion_types:
+            loss_type = "normalized_regression"
+    log.info(f"EXPERIMENT CONFIG: loss_type={loss_type}")
+
     log.info("Instantiating callbacks...")
     callbacks: List[Callback] = instantiate_callbacks(cfg.get("callbacks"))
 
@@ -177,6 +192,10 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
         log.info("Starting training!")
         trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.get("ckpt_path"))
+
+        # Log actual epochs completed for extract_logs.py parsing
+        actual_epochs = trainer.current_epoch + 1 if trainer.current_epoch >= 0 else 0
+        log.info(f"TRAINING COMPLETED: actual_epochs={actual_epochs}")
 
     train_metrics = trainer.callback_metrics
 

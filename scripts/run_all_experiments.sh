@@ -221,6 +221,28 @@ run_parallel_experiments() {
     done
 }
 
+# Function to extract and display errors from log file
+show_errors_from_log() {
+    local log_file="$1"
+    local experiment_name="$2"
+
+    if [ ! -f "$log_file" ]; then
+        return
+    fi
+
+    # Extract error lines from the log file (lines containing common error patterns)
+    local error_lines=$(grep -E "(Error|ERROR|Exception|EXCEPTION|Traceback|Failed|FAILED|fatal|FATAL)" "$log_file" | head -20)
+
+    if [ -n "$error_lines" ]; then
+        echo -e "${RED}[$(date '+%H:%M:%S')] Error details for ${experiment_name}:${NC}"
+        echo -e "${YELLOW}--- Last 20 error lines from log ---${NC}"
+        echo "$error_lines"
+        echo -e "${YELLOW}--- End error extract ---${NC}"
+        echo -e "${BLUE}Full log: ${log_file}${NC}"
+        echo ""
+    fi
+}
+
 # Function to run a single experiment
 run_experiment() {
     local experiment_name="$1"
@@ -344,6 +366,7 @@ run_experiment() {
             local failed_log_file="${log_file_without_extension}_FAILED.${log_file_extension}"
             mv "${log_file}" "${failed_log_file}"
             echo -e "${YELLOW}  Debug mode failed - log moved to: ${failed_log_file}${NC}"
+            echo -e "${YELLOW}  (Errors were already displayed above in debug mode)${NC}"
         fi
     else
         # Normal mode - capture output to log file (including time output)
@@ -369,7 +392,9 @@ run_experiment() {
         local log_file_extension="${log_file##*.}"
         local failed_log_file="${log_file_without_extension}_FAILED.${log_file_extension}"
 
-        echo -e "${YELLOW}  Failed log will be saved to: ${failed_log_file}${NC}"
+        # Move log file to failed log file first
+        mv "${log_file}" "${failed_log_file}"
+        echo -e "${YELLOW}  Failed log saved to: ${failed_log_file}${NC}"
 
         # Add failure footer to failed log file
         {
@@ -380,6 +405,9 @@ run_experiment() {
             echo "FINISHED: $(date)"
             echo "==================================================================="
         } >> "${failed_log_file}"
+
+        # Show errors from the failed log file
+        show_errors_from_log "${failed_log_file}" "${experiment_name}"
     fi
 
     echo ""
@@ -471,14 +499,14 @@ show_help() {
     echo "  --help              - Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0                                    # Process all experiments"
-    echo "  $0 cifar10_cnn example               # Process specific experiments"
-    echo "  $0 \"N cifar10_benchmark_convnext\"   # Debug a failed experiment"
-    echo "  $0 --force                           # Run all experiments ignoring markers"
-    echo "  $0 -f cifar10_cnn                   # Force-run specific experiment"
-    echo "  $0 --jobs 4                         # Run 4 experiments in parallel"
-    echo "  $0 -j 8 --force                     # Run 8 experiments in parallel, ignore markers"
-    echo "  $0 --list                            # List available experiments"
+    echo "  $0                                # Run all experiments not marked 'Y'"
+    echo "  $0 cifar10_cnn example            # Process specific experiments"
+    echo "  $0 \"N wah_cnn_tiny_regression\"  # Debug a failed experiment (marked 'N')"
+    echo "  $0 --force                        # Run all experiments ignoring markers"
+    echo "  $0 -f cifar10_cnn                 # Force-run specific experiment"
+    echo "  $0 --jobs 4                       # Run 4 experiments in parallel"
+    echo "  $0 -j 8 --force                   # Run 8 experiments in parallel, ignore markers"
+    echo "  $0 --list                         # List available experiments"
     echo ""
     echo "Log files are saved to: experiment_logs/EXPERIMENT_NAME-log.txt"
     echo "Debug mode shows real-time output and captures detailed error information."
