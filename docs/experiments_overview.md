@@ -9,39 +9,48 @@ after running
 
 ## Experiment Summary Table
 
-| Experiment | Architecture | Loss Type | Acc/Loss | Runtime | #Params | Special Notes |
-|------------|-------------|-----------|----------|---------|---------|---------------|
-| cifar10_benchmark_cnn | cifar10_cnn_64k | CrossEntropy | 78.71% | 5m12s | 1.1M | CIFAR-10 CNN benchmark, optimized training config |
-| cifar10_benchmark_convnext | cifar10_convnext_210k | CrossEntropy | 72.21% | 9m28s | 288K | CIFAR-10 ConvNeXt benchmark |
-| cifar10_benchmark_efficientnet | cifar10_efficientnet_210k | CrossEntropy | Failed | - | 5.0M | CIFAR-10 EfficientNet benchmark |
-| cifar10_benchmark_vit | cifar10_vit_210k | CrossEntropy | 73.77% | 9m3s | 213K | CIFAR-10 Vision Transformer benchmark |
-| cifar10_cnn_cpu | cifar10_cnn_64k | CrossEntropy | 78.76% | 27m5s | 1.1M | **CPU-only training** due to MPS compatibility issues |
-| cifar10_cnn | cifar10_cnn_64k | CrossEntropy | 78.07% | 5m17s | 1.1M | CIFAR-10 CNN baseline, standard training |
-| cifar10_convnext_128k_optimized | cifar10_convnext_128k | CrossEntropy | 76.43% | 12m9s | 309K | CIFAR-10 specific optimizations |
-| cifar10_convnext_64k_optimized | cifar10_convnext_64k | CrossEntropy | 71.76% | 9m35s | 122K | CIFAR-10 specific optimizations |
-| cifar100_benchmark_cnn_improved | cifar100_cnn_1m_improved | CrossEntropy | 58.16% | - | 2.6M | **Improved version** with data augmentation |
-| cifar100_benchmark_cnn | cifar100_cnn_1m_multistep | CrossEntropy | 52.08% | 37m6s | 1.2M | CIFAR-100 CNN benchmark, multistep scheduler |
-| cifar100_benchmark_convnext | cifar100_convnext_210k | CrossEntropy | 39.68% | 20m30s | 296K | CIFAR-100 ConvNeXt benchmark |
-| cifar100_coarse_cnn | cifar100_coarse_cnn_64k | CrossEntropy | 41.94% | - | 3.3M | **Coarse-grained classification** (20 classes) |
-| cifar100_cnn | cifar100_cnn_1m_original | CrossEntropy | 44.96% | 17m21s | 1.2M | **Fine-grained classification** (100 classes) |
-| cifar100mh_cnn | cifar100mh_cnn_64k | JND-weighted | 22.40%¹ | 14m6s | 1.2M | **Multihead CNN** with real labels |
-| cifar100mh_convnext | cifar100mh_convnext_210k | JND-weighted | 26.21% | 111m49s | 299K | **Multihead ConvNeXt** with cosine annealing |
-| cifar100mh_efficientnet | cifar100mh_efficientnet_210k | JND-weighted | 25.61% | 339m35s | 7.3M | **Multihead EfficientNet** with cosine annealing |
-| cifar100mh_vit | cifar100mh_vit_210k | JND-weighted | 11.10% | 135m7s | 14.7M | **Multihead Vision Transformer**, smaller batch size |
-| cnn_mnist | mnist_cnn_421k | CrossEntropy | 99.10% | 2m28s | 421K | Short training (1-10 epochs) |
-| convnext_mnist | mnist_convnext_210k | CrossEntropy | 98.88% | 5m7s | 288K | Cosine annealing scheduler |
-| convnext_v2_official_tiny_benchmark | mnist_convnext_210k | CrossEntropy | 99.15% | 10m23s | 288K | **Official ConvNeXt V2-Tiny benchmark**, mixed precision |
-| example | mnist_sdn_68k | CrossEntropy | 98.24% | 1m17s | 151K | Original Lightning-Hydra-Template example, 10 epochs only |
-| multihead_cnn_cifar10 | cifar10_mh_cnn_64k | JND-weighted | 84.49% | 5m37s | 1.1M | **Multihead CNN** demo with custom monitoring |
-| multihead_cnn_mnist | mnist_mh_cnn_422k | JND-weighted | 99.01% | 2m22s | 422K | **Multihead CNN** demo |
-| vimh_cnn_16kdss | vimh_cnn_64k | JND-weighted | 23.54% | 16m28s | 1.5M | **VIMH** with 16K dataset samples, resonarium dataset |
-| vimh_cnn_16kdss_ordinal | vimh_cnn_64k_ordinal | JND-weighted | 21.27% | 12m10s | 1.5M | **VIMH ordinal regression**, distance-aware loss |
-| vimh_cnn_16kdss_regression | vimh_cnn_64k_regression | MSE/MAE | 8.79 MAE | 3m48s | 1.1M | **VIMH pure regression** heads, monitors MAE |
-| vimh_cnn | vimh_cnn_64k | JND-weighted | 23.50% | 46s | 1.5M | VIMH CNN baseline, MPS optimizations |
-| vit_mnist_995 | mnist_vit_995 | CrossEntropy | 99.44% | 41m47s | 210K | **Ultra-optimized tiny model**, 200 epochs |
-| vit_mnist | mnist_vit_210k | CrossEntropy | 98.24% | 3m9s | 210K | Cosine annealing scheduler |
+| Experiment Name | Loss Type | Aggregate Metric | log10_decay_time | wah_position | Batch Size | Num Epochs | Runtime | Parameters |
+|-----------------|-----------|------------------|------------------|----------------|------------|------------|---------|------------|
+| cifar100_benchmark_cnn         | cross_entropy | 1.7620*↓         | N/ANone          | N/ANone        | N/A        | 200        | 37m5.808s | 1.2 M |
+| cifar100_benchmark_cnn_improved | cross_entropy | 2.1996*↓         | N/ANone          | N/ANone        | N/A        | 200        | 33m31s   | 2.6 M |
+| cifar100_benchmark_convnext    | cross_entropy | 2.6845*↓         | N/ANone          | N/ANone        | N/A        | 100        | 20m30.106s | 296 K |
+| cifar100_cnn                   | cross_entropy | 2.0759*↓         | N/ANone          | N/ANone        | N/A        | 100        | 17m21.252s | 1.2 M |
+| cifar100_coarse_cnn            | cross_entropy | 1.9254*↓         | N/ANone          | N/ANone        | N/A        | 60         | 41m2s    | 3.3 M |
+| cifar100mh_cnn                 | cross_entropy | 354.3169*↓       | N/ANone          | N/ANone        | N/A        | 100        | 14m5.995s | 1.2 M |
+| cifar100mh_convnext            | cross_entropy | 346.8721*↓       | N/ANone          | N/ANone        | N/A        | 100        | 111m48.814s | 299 K |
+| cifar100mh_efficientnet        | cross_entropy | 363.3585*↓       | N/ANone          | N/ANone        | N/A        | N/A        | 339m35.024s | 7.3 M |
+| cifar100mh_vit                 | cross_entropy | 478.5045*↓       | N/ANone          | N/ANone        | N/A        | 100        | 135m6.623s | 14.7 M |
+| cifar10_benchmark_cnn          | cross_entropy | 0.6148*↓         | N/ANone          | N/ANone        | N/A        | 50         | 5m11.831s | 1.1 M |
+| cifar10_benchmark_convnext     | cross_entropy | 0.8397*↓         | N/ANone          | N/ANone        | N/A        | 50         | 9m28.298s | 288 K |
+| cifar10_benchmark_efficientnet | Incomplete  | N/A↑             | N/A↑             | N/A↑           | N/A        | 50         | 40m24s   | 5.0 M |
+| cifar10_benchmark_vit          | cross_entropy | 0.7496*↓         | N/ANone          | N/ANone        | N/A        | 50         | 9m3.062s | 213 K |
+| cifar10_cnn                    | cross_entropy | 0.6279*↓         | N/ANone          | N/ANone        | N/A        | 50         | 5m17.412s | 1.1 M |
+| cifar10_cnn_cpu                | cross_entropy | 0.6162*↓         | N/ANone          | N/ANone        | N/A        | 50         | 27m4.933s | 1.1 M |
+| cifar10_convnext_128k_optimized | cross_entropy | 0.7360*↓         | N/ANone          | N/ANone        | N/A        | 50         | 12m9.069s | 309 K |
+| cifar10_convnext_64k_optimized | cross_entropy | 0.8407*↓         | N/ANone          | N/ANone        | N/A        | 50         | 9m34.547s | 122 K |
+| cnn_mnist                      | cross_entropy | 0.0306*↓         | N/ANone          | N/ANone        | N/A        | 10         | 2m27.687s | 421 K |
+| convnext_mnist                 | cross_entropy | 0.0428*↓         | N/ANone          | N/ANone        | N/A        | 20         | 5m6.750s | 288 K |
+| convnext_v2_official_tiny_benchmark | cross_entropy | 0.5250*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 10m22.690s | 288 K |
+| example                        | cross_entropy | 0.0631*↓         | N/ANone          | N/ANone        | N/A        | 10         | 1m16.779s | 151 K |
+| multihead_cnn_cifar10          | cross_entropy | 1.0279*↓         | N/ANone          | N/ANone        | N/A        | 20         | 5m36.892s | 1.1 M |
+| multihead_cnn_mnist            | cross_entropy | 0.0615*↓         | N/ANone          | N/ANone        | N/A        | 10         | 2m22.067s | 422 K |
+| vimh_cnn                       | cross_entropy | 5.3176*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 0m46.201s | 1.5 M |
+| vimh_cnn_16kdss                | cross_entropy | 7.2989*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 16m28.097s | 1.5 M |
+| vimh_cnn_16kdss_ordinal        | ordinal     | 7.5690*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 12m10.277s | 1.5 M |
+| vimh_cnn_16kdss_regression     | normalized_regression | 0.0000*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 3m47.873s | 1.1 M |
+| vit_mnist                      | cross_entropy | 0.0593*↓         | N/ANone          | N/ANone        | N/A        | 20         | 3m8.591s | 210 K |
+| vit_mnist_995                  | cross_entropy | 0.0190*↓         | N/ANone          | N/ANone        | N/A        | 200        | 41m46.551s | 210 K |
 
-¹ **Acc/Loss Calculation Note**: For multihead models with JND-weighted loss, the Acc/Loss column shows the average accuracy across all prediction heads. For example, cifar100mh_vit achieved individual head accuracies of 11.62% (fine_label), 8.80% (coarse_label), and 12.87% (texture), resulting in an average of 11.10%. Single-head models show their direct accuracy metric, while regression models show MAE values.
+Notes:
+- Loss Type shows the configured loss function from model config (e.g., cross_entropy, normalized_regression, ordinal).
+- Classification models (cross_entropy, ordinal) use JND-weighted accuracy metrics; regression models use MSE/MAE loss functions.
+- Arrows indicate optimization direction: ↑ for higher-is-better (accuracies), ↓ for lower-is-better (losses/errors).
+- Aggregate Metric is the mean of the available per-head test metrics for log10_decay_time and wah_position (falls back to test/loss when heads are missing).
+- Values marked with * indicate fallback to test/loss due to missing head metrics.
+- Per-head columns report the exact metric logged (accuracy for classification heads, MAE for regression heads); values are rounded to 4 decimals.
+- Batch Size is parsed from the Hydra data configuration line.
+- Num Epochs shows actual epochs completed when available (from training completion log), otherwise falls back to configured max_epochs.
+- Runtime uses the shell `real` timer when present (falls back to log timestamps otherwise); Parameters come from the Lightning model summary output.
 
 ## Architecture Categories
 
