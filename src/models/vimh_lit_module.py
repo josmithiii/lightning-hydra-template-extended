@@ -289,19 +289,11 @@ class VIMHLitModule(LightningModule):
             current_heads = set(self.criteria.keys()) if self.criteria else set()
             new_heads = set(heads_config.keys())
 
-            # Check if criteria were created with default parameter ranges at initialization
-            has_default_param_range = False
-            if self.criteria and hasattr(self.net, "heads_config"):
-                # If criteria exist and use default param_range=1.0, they should be recreated
-                # with proper parameter ranges from the dataset
-                for head_name, criterion in self.criteria.items():
-                    # Check if this criterion has a param_range attribute with default value
-                    if hasattr(criterion, 'param_range') and criterion.param_range == 1.0:
-                        has_default_param_range = True
-                        break
+            # Check if criteria were auto-generated (user didn't provide initial criteria)
+            criteria_were_auto_generated = self._initial_criteria is None
 
-            # If heads changed, have placeholder heads, or have default param ranges, recreate criteria completely
-            if current_heads != new_heads or "placeholder" in current_heads or has_default_param_range:
+            # If heads changed, have placeholder heads, or criteria were auto-generated, recreate criteria completely
+            if current_heads != new_heads or "placeholder" in current_heads or criteria_were_auto_generated:
                 self.criteria = {}
                 for head_name, num_classes in heads_config.items():
                     # Get parameter range for this head
