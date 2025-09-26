@@ -5,7 +5,10 @@ import os
 import re
 from datetime import datetime
 
-HEAD_NAMES = ("log10_decay_time", "wah_position")
+# Common head names for different datasets
+# VIMH: texture, fine_label, coarse_label
+# MNIST/CIFAR: typically single-head (main, digit) or multihead variants
+HEAD_NAMES = ("texture", "fine_label", "coarse_label", "digit", "main")
 METRIC_PRIORITY = ("loss", "mae", "rmse", "mse", "acc")
 BATCH_SIZE_PATTERN = re.compile(r"batch_size=([0-9]+)")
 MAX_EPOCHS_PATTERN = re.compile(r"max_epochs=([0-9]+)")
@@ -211,42 +214,51 @@ parser.add_argument('--csv', nargs='?', const='experiment_results.csv',
 args = parser.parse_args()
 
 # Process all log files
-os.chdir('./experiment_logs')
-log_files = [f for f in os.listdir('.') if f.endswith('-log.txt')]
+experiment_logs_dir = './experiment_logs'
+log_files = [f for f in os.listdir(experiment_logs_dir) if f.endswith('-log.txt')]
 results = []
 
 for log_file in sorted(log_files):
-    results.append(extract_info_final(log_file))
+    results.append(extract_info_final(os.path.join(experiment_logs_dir, log_file)))
 
 # Print results in structured format
 header = (
     '| Experiment Name | Loss Type | Aggregate Metric | '
-    'log10_decay_time | wah_position | Batch Size | Num Epochs | Runtime | Parameters |'
+    'texture | fine_label | coarse_label | Batch Size | Num Epochs | Runtime | Parameters |'
 )
 print(header)
-print('|-----------------|-----------|------------------|------------------|----------------|------------|------------|---------|------------|')
+print('|-----------------|-----------|------------------|------------------|------------|--------------|------------|------------|---------|------------|')
 for result in results:
-    exp_name = result['filename'].replace('-log.txt', '')
+    exp_name = os.path.basename(result['filename']).replace('-log.txt', '')
     head_metrics = result['head_metrics']
     head_directions = result['head_directions']
 
     # Format metrics with arrows
     aggregate_metric = f"{result['aggregate_metric']}{result['aggregate_direction']}"
-    decay_metric = f"{head_metrics['log10_decay_time']}{head_directions['log10_decay_time']}"
-    wah_metric = f"{head_metrics['wah_position']}{head_directions['wah_position']}"
+
+    # Find which heads are actually present in this result
+    present_heads = [head for head in HEAD_NAMES if head_metrics[head] != 'N/A']
+
+    # Format present head metrics
+    head_columns = []
+    for head in HEAD_NAMES[:3]:  # Show first 3 possible heads to maintain table structure
+        if head in present_heads:
+            head_columns.append(f"{head_metrics[head]}{head_directions[head]}")
+        else:
+            head_columns.append('N/A')
 
     print(
         f"| {exp_name:<30} | {result['loss_type']:<11} | {aggregate_metric:<16} | "
-        f"{decay_metric:<16} | {wah_metric:<14} | {result['batch_size']:<10} | {result['num_epochs']:<10} | {result['runtime']:<8} | {result['params']} |"
+        f"{head_columns[0]:<16} | {head_columns[1]:<14} | {head_columns[2]:<14} | {result['batch_size']:<10} | {result['num_epochs']:<10} | {result['runtime']:<8} | {result['params']} |"
     )
 
 print('\nNotes:')
 print('- Loss Type shows the configured loss function from model config (e.g., cross_entropy, normalized_regression, ordinal).')
 print('- Classification models (cross_entropy, ordinal) use JND-weighted accuracy metrics; regression models use MSE/MAE loss functions.')
 print('- Arrows indicate optimization direction: ↑ for higher-is-better (accuracies), ↓ for lower-is-better (losses/errors).')
-print('- Aggregate Metric is the mean of the available per-head test metrics for log10_decay_time and wah_position (falls back to test/loss when heads are missing).')
+print('- Aggregate Metric is the mean of the available per-head test metrics from detected heads (falls back to test/loss when heads are missing).')
 print('- Values marked with * indicate fallback to test/loss due to missing head metrics.')
-print('- Per-head columns report the exact metric logged (accuracy for classification heads, MAE for regression heads); values are rounded to 4 decimals.')
+print('- Head columns show metrics for different dataset types: texture/fine_label/coarse_label (VIMH), digit (MNIST), main (CIFAR-10); values are rounded to 4 decimals.')
 print('- Batch Size is parsed from the Hydra data configuration line.')
 print('- Num Epochs shows actual epochs completed when available (from training completion log), otherwise falls back to configured max_epochs.')
 print('- Runtime uses the shell `real` timer when present (falls back to log timestamps otherwise); Parameters come from the Lightning model summary output.')
@@ -255,19 +267,22 @@ print('- Runtime uses the shell `real` timer when present (falls back to log tim
 if args.csv:
     csv_filename = args.csv
     with open(csv_filename, 'w', newline='') as csvfile:
-        fieldnames = ['Experiment_Name', 'Loss_Type', 'Aggregate_Metric', 'log10_decay_time', 'wah_position', 'Batch_Size', 'Num_Epochs', 'Runtime', 'Parameters']
+        fieldnames = ['Experiment_Name', 'Loss_Type', 'Aggregate_Metric', 'texture', 'fine_label', 'coarse_label', 'digit', 'main', 'Batch_Size', 'Num_Epochs', 'Runtime', 'Parameters']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()
         for result in results:
-            exp_name = result['filename'].replace('-log.txt', '')
+            exp_name = os.path.basename(result['filename']).replace('-log.txt', '')
             head_metrics = result['head_metrics']
             writer.writerow({
                 'Experiment_Name': exp_name,
                 'Loss_Type': result['loss_type'],
                 'Aggregate_Metric': result['aggregate_metric'],
-                'log10_decay_time': head_metrics['log10_decay_time'],
-                'wah_position': head_metrics['wah_position'],
+                'texture': head_metrics.get('texture', 'N/A'),
+                'fine_label': head_metrics.get('fine_label', 'N/A'),
+                'coarse_label': head_metrics.get('coarse_label', 'N/A'),
+                'digit': head_metrics.get('digit', 'N/A'),
+                'main': head_metrics.get('main', 'N/A'),
                 'Batch_Size': result['batch_size'],
                 'Num_Epochs': result['num_epochs'],
                 'Runtime': result['runtime'],
