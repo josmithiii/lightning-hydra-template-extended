@@ -7,14 +7,14 @@ SHELL := /bin/bash
 include makefiles/phony.mk
 
 # Include organized sections
-include makefiles/clean.mk
+include makefiles/test.mk
 include makefiles/display.mk
 include makefiles/train-quick.mk
 include makefiles/diagrams.mk
-include makefiles/test.mk
 include makefiles/experiments.mk
 include makefiles/cifar.mk
 include makefiles/utils.mk
+include makefiles/clean.mk
 
 # Default help target
 h help:  ## Show help

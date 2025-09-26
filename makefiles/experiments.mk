@@ -16,43 +16,43 @@ ev995 exp-vit-995: check-env ## Run ViT experiment achieving SOTA 99.5% validati
 #           trainer.gradient_clip_val=1.0 data.batch_size=128 seed=12345
 #           tags="[mnist,vit,995,optimized]"
 
-ecm exp-cnn-mnist: ## Run single-head CNN MNIST classification experiment - accuracy ~99.1%
+ecm exp-cnn-mnist: check-env ## Run single-head CNN MNIST classification experiment - accuracy ~99.1%
 	time python src/train.py experiment=cnn_mnist
 
-emhcm exp-multihead-cnn-mnist: ## Run MultiHead CNN MNIST classification experiment - accuracies ~99.1%, 99.2%, 99.2%
+emhcm exp-multihead-cnn-mnist: check-env ## Run MultiHead CNN MNIST classification experiment - accuracies ~99.1%, 99.2%, 99.2%
 	time python src/train.py experiment=multihead_cnn_mnist
 
-emhcc10 exp-multihead-cnn-cifar10: ## Run MultiHead CNN CIFAR-10 classification experiment
+emhcc10 exp-multihead-cnn-cifar10: check-env ## Run MultiHead CNN CIFAR-10 classification experiment
 	time python src/train.py experiment=multihead_cnn_cifar10
 
-evimh exp-vimh-16kdss: ## Run VIMH CNN training with 16K dataset samples (SimpleSynth)
+evimh exp-vimh-16kdss: check-env ## Run VIMH CNN training with 16K dataset samples (SimpleSynth)
 	time python src/train.py experiment=vimh_cnn_16kdss # ./configs/experiment/vimh_cnn_16kdss.yaml
 
-evimho exp-vimh-16kdss-ordinal: ## Run VIMH CNN training with ordinal regression loss (distance-aware)
+evimho exp-vimh-16kdss-ordinal: check-env ## Run VIMH CNN training with ordinal regression loss (distance-aware)
 	time python src/train.py experiment=vimh_cnn_16kdss_ordinal # ./configs/experiment/vimh_cnn_16kdss.yaml
 
-evimhr exp-vimh-16kdss-regression: ## Run VIMH CNN training with pure regression heads (sigmoid + parameter mapping)
+evimhr exp-vimh-16kdss-regression: check-env ## Run VIMH CNN training with pure regression heads (sigmoid + parameter mapping)
 	time python src/train.py experiment=vimh_cnn_16kdss_regression # ./configs/experiment/vimh_cnn_16kdss_regression.yaml
 
-evimhst exp-vimh-16kdss-soft-target: ## Run VIMH CNN training with soft target loss (smooth probability distributions)
+evimhst exp-vimh-16kdss-soft-target: check-env ## Run VIMH CNN training with soft target loss (smooth probability distributions)
 	time python src/train.py experiment=vimh_cnn_16kdss_soft_target
 
-evimhwce exp-vimh-16kdss-weighted-ce: ## Run VIMH CNN training with weighted cross entropy loss (distance-based penalties)
+evimhwce exp-vimh-16kdss-weighted-ce: check-env ## Run VIMH CNN training with weighted cross entropy loss (distance-based penalties)
 	time python src/train.py experiment=vimh_cnn_16kdss_weighted_ce
 
-evimhqr exp-vimh-16kdss-quantized-regression: ## Run VIMH CNN training with quantized regression loss (direct continuous prediction)
+evimhqr exp-vimh-16kdss-quantized-regression: check-env ## Run VIMH CNN training with quantized regression loss (direct continuous prediction)
 	time python src/train.py experiment=vimh_cnn_16kdss_quantized_regression
 
-excn exp-convnext: ## Run ConvNeXt-V2 experiment
+excn exp-convnext: check-env ## Run ConvNeXt-V2 experiment
 	time python src/train.py experiment=convnext_mnist
 
-ecnb exp-convnext-benchmark: ## Run official ConvNeXt V2-Tiny benchmark (acid test)
+ecnb exp-convnext-benchmark: check-env ## Run official ConvNeXt V2-Tiny benchmark (acid test)
 	time python src/train.py experiment=convnext_v2_official_tiny_benchmark
 
-ea exp-all: ## Run ALL experiments, capturing outputs in experiment_logs/
+ea exp-all: check-env ## Run ALL experiments, capturing outputs in experiment_logs/
 	time bash scripts/run_all_experiments.sh --force
 
-en exp-new: ## Run all new experiments not having a log yet, capturing their outputs in experiment_logs/
+en exp-new: check-env ## Run all new experiments not having a log yet, capturing their outputs in experiment_logs/
 	time bash scripts/run_all_experiments.sh --jobs 1
 
 exp-clean: ## Clean all experiment logs in ./experiment_logs/
