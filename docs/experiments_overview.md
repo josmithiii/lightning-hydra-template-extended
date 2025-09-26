@@ -9,45 +9,45 @@ after running
 
 ## Experiment Summary Table
 
-| Experiment Name | Loss Type | Aggregate Metric | log10_decay_time | wah_position | Batch Size | Num Epochs | Runtime | Parameters |
-|-----------------|-----------|------------------|------------------|----------------|------------|------------|---------|------------|
-| cifar100_benchmark_cnn         | cross_entropy | 1.7620*↓         | N/ANone          | N/ANone        | N/A        | 200        | 37m5.808s | 1.2 M |
-| cifar100_benchmark_cnn_improved | cross_entropy | 2.1996*↓         | N/ANone          | N/ANone        | N/A        | 200        | 33m31s   | 2.6 M |
-| cifar100_benchmark_convnext    | cross_entropy | 2.6845*↓         | N/ANone          | N/ANone        | N/A        | 100        | 20m30.106s | 296 K |
-| cifar100_cnn                   | cross_entropy | 2.0759*↓         | N/ANone          | N/ANone        | N/A        | 100        | 17m21.252s | 1.2 M |
-| cifar100_coarse_cnn            | cross_entropy | 1.9254*↓         | N/ANone          | N/ANone        | N/A        | 60         | 41m2s    | 3.3 M |
-| cifar100mh_cnn                 | cross_entropy | 354.3169*↓       | N/ANone          | N/ANone        | N/A        | 100        | 14m5.995s | 1.2 M |
-| cifar100mh_convnext            | cross_entropy | 346.8721*↓       | N/ANone          | N/ANone        | N/A        | 100        | 111m48.814s | 299 K |
-| cifar100mh_efficientnet        | cross_entropy | 363.3585*↓       | N/ANone          | N/ANone        | N/A        | N/A        | 339m35.024s | 7.3 M |
-| cifar100mh_vit                 | cross_entropy | 478.5045*↓       | N/ANone          | N/ANone        | N/A        | 100        | 135m6.623s | 14.7 M |
-| cifar10_benchmark_cnn          | cross_entropy | 0.6148*↓         | N/ANone          | N/ANone        | N/A        | 50         | 5m11.831s | 1.1 M |
-| cifar10_benchmark_convnext     | cross_entropy | 0.8397*↓         | N/ANone          | N/ANone        | N/A        | 50         | 9m28.298s | 288 K |
-| cifar10_benchmark_efficientnet | Incomplete  | N/A↑             | N/A↑             | N/A↑           | N/A        | 50         | 40m24s   | 5.0 M |
-| cifar10_benchmark_vit          | cross_entropy | 0.7496*↓         | N/ANone          | N/ANone        | N/A        | 50         | 9m3.062s | 213 K |
-| cifar10_cnn                    | cross_entropy | 0.6279*↓         | N/ANone          | N/ANone        | N/A        | 50         | 5m17.412s | 1.1 M |
-| cifar10_cnn_cpu                | cross_entropy | 0.6162*↓         | N/ANone          | N/ANone        | N/A        | 50         | 27m4.933s | 1.1 M |
-| cifar10_convnext_128k_optimized | cross_entropy | 0.7360*↓         | N/ANone          | N/ANone        | N/A        | 50         | 12m9.069s | 309 K |
-| cifar10_convnext_64k_optimized | cross_entropy | 0.8407*↓         | N/ANone          | N/ANone        | N/A        | 50         | 9m34.547s | 122 K |
-| cnn_mnist                      | cross_entropy | 0.0306*↓         | N/ANone          | N/ANone        | N/A        | 10         | 2m27.687s | 421 K |
-| convnext_mnist                 | cross_entropy | 0.0428*↓         | N/ANone          | N/ANone        | N/A        | 20         | 5m6.750s | 288 K |
-| convnext_v2_official_tiny_benchmark | cross_entropy | 0.5250*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 10m22.690s | 288 K |
-| example                        | cross_entropy | 0.0631*↓         | N/ANone          | N/ANone        | N/A        | 10         | 1m16.779s | 151 K |
-| multihead_cnn_cifar10          | cross_entropy | 1.0279*↓         | N/ANone          | N/ANone        | N/A        | 20         | 5m36.892s | 1.1 M |
-| multihead_cnn_mnist            | cross_entropy | 0.0615*↓         | N/ANone          | N/ANone        | N/A        | 10         | 2m22.067s | 422 K |
-| vimh_cnn                       | cross_entropy | 5.3176*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 0m46.201s | 1.5 M |
-| vimh_cnn_16kdss                | cross_entropy | 7.2989*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 16m28.097s | 1.5 M |
-| vimh_cnn_16kdss_ordinal        | ordinal     | 7.5690*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 12m10.277s | 1.5 M |
-| vimh_cnn_16kdss_regression     | normalized_regression | 0.0000*↓         | N/ANone          | N/ANone        | N/A        | N/A        | 3m47.873s | 1.1 M |
-| vit_mnist                      | cross_entropy | 0.0593*↓         | N/ANone          | N/ANone        | N/A        | 20         | 3m8.591s | 210 K |
-| vit_mnist_995                  | cross_entropy | 0.0190*↓         | N/ANone          | N/ANone        | N/A        | 200        | 41m46.551s | 210 K |
+| Experiment Name | Loss Type | Aggregate Metric | texture | fine_label | coarse_label | Batch Size | Num Epochs | Runtime | Parameters |
+|-----------------|-----------|------------------|------------------|------------|--------------|------------|------------|---------|------------|
+| cifar100_benchmark_cnn         | cross_entropy | 1.7670*↓         | N/A              | N/A            | N/A            | N/A        | 201        | 26m0.852s | 1.2 M |
+| cifar100_benchmark_cnn_improved | cross_entropy | 2.1922*↓         | N/A              | N/A            | N/A            | N/A        | 201        | 49m25.965s | 2.6 M |
+| cifar100_benchmark_convnext    | cross_entropy | 2.6950*↓         | N/A              | N/A            | N/A            | N/A        | 101        | 30m23.386s | 296 K |
+| cifar100_cnn                   | cross_entropy | 1.9128*↓         | N/A              | N/A            | N/A            | N/A        | 101        | 13m40.061s | 1.2 M |
+| cifar100_coarse_cnn            | cross_entropy | 1.9353*↓         | N/A              | N/A            | N/A            | N/A        | 61         | 8m14.151s | 1.1 M |
+| cifar100mh_cnn                 | cross_entropy | 0.2240↑          | 0.1276↑          | 0.2879↑        | 0.2564↑        | N/A        | 101        | 15m8.166s | 1.2 M |
+| cifar100mh_convnext            | cross_entropy | 0.2621↑          | 0.1244↑          | 0.3424↑        | 0.3194↑        | N/A        | 101        | 29m55.743s | 299 K |
+| cifar100mh_efficientnet        | cross_entropy | 0.2561↑          | 0.1261↑          | 0.3103↑        | 0.3318↑        | N/A        | 90         | 75m30.767s | 7.3 M |
+| cifar100mh_vit                 | cross_entropy | 0.1138↑          | 0.1258↑          | 0.0937↑        | 0.1220↑        | N/A        | 101        | 161m46.319s | 14.7 M |
+| cifar10_benchmark_cnn          | cross_entropy | 0.6169*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 6m9.671s | 1.1 M |
+| cifar10_benchmark_convnext     | cross_entropy | 0.8473*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 13m3.261s | 288 K |
+| cifar10_benchmark_efficientnet | cross_entropy | 0.5822*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 28m1.196s | 5.0 M |
+| cifar10_benchmark_vit          | cross_entropy | 0.7681*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 11m53.129s | 213 K |
+| cifar10_cnn                    | cross_entropy | 0.6129*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 6m15.131s | 1.1 M |
+| cifar10_cnn_cpu                | cross_entropy | 0.5842*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 29m2.232s | 1.1 M |
+| cifar10_convnext_128k_optimized | cross_entropy | 0.7492*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 12m50.950s | 309 K |
+| cifar10_convnext_64k_optimized | cross_entropy | 0.8127*↓         | N/A              | N/A            | N/A            | N/A        | 51         | 10m56.824s | 122 K |
+| cnn_mnist                      | cross_entropy | 0.0271*↓         | N/A              | N/A            | N/A            | N/A        | 11         | 2m37.585s | 421 K |
+| convnext_mnist                 | cross_entropy | 0.0471*↓         | N/A              | N/A            | N/A            | N/A        | 21         | 9m5.772s | 288 K |
+| convnext_v2_official_tiny_benchmark | cross_entropy | 0.5267*↓         | N/A              | N/A            | N/A            | N/A        | 67         | 29m42.055s | 288 K |
+| example                        | cross_entropy | 0.0751*↓         | N/A              | N/A            | N/A            | N/A        | 11         | 2m40.227s | 151 K |
+| multihead_cnn_cifar10          | Incomplete  | N/A↑             | N/A              | N/A            | N/A            | N/A        | N/A        | 0m44.565s | 1.1 M |
+| multihead_cnn_mnist            | Incomplete  | N/A↑             | N/A              | N/A            | N/A            | N/A        | N/A        | 0m28.123s | 422 K |
+| vimh_cnn                       | Incomplete  | N/A↑             | N/A              | N/A            | N/A            | N/A        | N/A        | 0m2.586s | N/A |
+| vimh_cnn_16kdss                | cross_entropy | 0.2501↑          | 0.1214↑          | 0.3193↑        | 0.3096↑        | N/A        | 101        | 31m35.290s | 1.5 M |
+| vimh_cnn_16kdss_ordinal        | ordinal_regression | 0.0000↑          | 0.0000↑          | 0.0001↑        | 0.0000↑        | N/A        | 17         | 4m36.903s | 1.5 M |
+| vimh_cnn_16kdss_regression     | unknown     | 30.1922↓         | 0.3275↓          | 79.0091↓       | 11.2399↓       | N/A        | 17         | 3m57.254s | 1.1 M |
+| vit_mnist                      | cross_entropy | 0.0606*↓         | N/A              | N/A            | N/A            | N/A        | 21         | 7m12.446s | 210 K |
+| vit_mnist_995                  | Incomplete  | N/A↑             | N/A              | N/A            | N/A            | N/A        | N/A        | 0m3.454s | N/A |
 
 Notes:
 - Loss Type shows the configured loss function from model config (e.g., cross_entropy, normalized_regression, ordinal).
 - Classification models (cross_entropy, ordinal) use JND-weighted accuracy metrics; regression models use MSE/MAE loss functions.
 - Arrows indicate optimization direction: ↑ for higher-is-better (accuracies), ↓ for lower-is-better (losses/errors).
-- Aggregate Metric is the mean of the available per-head test metrics for log10_decay_time and wah_position (falls back to test/loss when heads are missing).
+- Aggregate Metric is the mean of the available per-head test metrics from detected heads (falls back to test/loss when heads are missing).
 - Values marked with * indicate fallback to test/loss due to missing head metrics.
-- Per-head columns report the exact metric logged (accuracy for classification heads, MAE for regression heads); values are rounded to 4 decimals.
+- Head columns show metrics for different dataset types: texture/fine_label/coarse_label (VIMH), digit (MNIST), main (CIFAR-10); values are rounded to 4 decimals.
 - Batch Size is parsed from the Hydra data configuration line.
 - Num Epochs shows actual epochs completed when available (from training completion log), otherwise falls back to configured max_epochs.
 - Runtime uses the shell `real` timer when present (falls back to log timestamps otherwise); Parameters come from the Lightning model summary output.
