@@ -40,4 +40,4 @@
 .PHONY: f format fp format-preview fdc format-docstrings-check fm format-markdown fn flake8-now fc format-configs
 
 # Utilities
-.PHONY: sy sync tb tensorboard a activate d deactivate lc list-configs p po pres presentation sep
+.PHONY: sy sync tb tensorboard a activate d deactivate lc list-configs p po pres presentation sep check-env

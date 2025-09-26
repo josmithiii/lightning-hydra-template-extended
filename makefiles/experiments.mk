@@ -1,15 +1,15 @@
 # EXPERIMENTS "e" - Reproducible Configuration Examples
 
-e esdn exp-sdn: ## Run original example experiment (reproducible baseline)
+e esdn exp-sdn: check-env ## Run original example experiment (reproducible baseline)
 	time python src/train.py experiment=example
 
-ec10c exp-cifar10-cnn: ## Run CIFAR-10 CNN benchmark (85-92% expected accuracy)
+ec10c exp-cifar10-cnn: check-env ## Run CIFAR-10 CNN benchmark (85-92% expected accuracy)
 	time python src/train.py experiment=cifar10_cnn_cpu
 
-evit exp-vit: ## Run ViT experiment
+evit exp-vit: check-env ## Run ViT experiment
 	time python src/train.py experiment=vit_mnist
 
-ev995 exp-vit-995: ## Run ViT experiment achieving SOTA 99.5% validation accuracy
+ev995 exp-vit-995: check-env ## Run ViT experiment achieving SOTA 99.5% validation accuracy
 	time python src/train.py experiment=vit_mnist_995
 # == python src/train.py model=mnist_vit_995 data=mnist_vit_995
 #           trainer.max_epochs=200 trainer.min_epochs=10

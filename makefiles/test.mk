@@ -6,10 +6,10 @@ t test: cfg-audit ## Run fast pytest tests
 ta test-all: ## Run all pytest tests
 	pytest
 
-cfg-audit: ## Verify Hydra config references
+cfg-audit: check-env ## Verify Hydra config references
 	python scripts/config_audit.py
 
-ca compare-arch: ## Compare medium sized architectures on three epochs
+ca compare-arch: check-env ## Compare medium sized architectures on three epochs
 	@echo "=== Training SimpleDenseNet ==="
 	python src/train.py trainer.max_epochs=3 tags="[arch_comparison,dense]"
 	@echo "=== Training SimpleCNN ==="

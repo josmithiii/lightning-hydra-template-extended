@@ -1,5 +1,23 @@
 # UTILITY TARGETS
 
+# Environment activation check
+check-env: ## Check if virtual environment is activated
+	@if [ -z "$$VIRTUAL_ENV" ] || [ ! -d ".venv" ]; then \
+		echo ""; \
+		echo "❌ ERROR: Virtual environment is not activated or doesn't exist."; \
+		echo ""; \
+		echo "🔧 To fix this:"; \
+		echo "   1. Run: bash setup.bash  (if .venv doesn't exist)"; \
+		echo "   2. Run: source .venv/bin/activate"; \
+		echo "   3. Then run your make command again"; \
+		echo ""; \
+		echo "💡 Quick setup:"; \
+		echo "   bash setup.bash && source .venv/bin/activate"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@echo "✅ Virtual environment is activated: $$VIRTUAL_ENV"
+
 # Formatting and linting
 f format: ## Run pre-commit hooks
 	pre-commit run -a

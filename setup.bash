@@ -22,8 +22,14 @@ uv venv .venv --python 3.9
 echo "Installing dependencies..."
 uv pip install -r requirements.txt
 
-echo "Setup complete! To activate the environment, run:"
-echo "source .venv/bin/activate"
+echo "Setup complete! Virtual environment created with all dependencies including Hydra."
 echo ""
-echo "Or for csh/tcsh:"
-echo "source .venv/bin/activate.csh"
+echo "IMPORTANT: You must activate the environment before running any Python commands:"
+echo "  source .venv/bin/activate     # For bash/zsh"
+echo "  source .venv/bin/activate.csh # For csh/tcsh"
+echo ""
+echo "Then you can run training commands like:"
+echo "  python src/train.py experiment=vimh_cnn"
+echo "  make train"
+echo ""
+echo "To deactivate later, just run: deactivate"
