@@ -66,11 +66,15 @@ class VIMHDataModule(LightningDataModule):
         num_workers: int = 0,
         pin_memory: bool = False,
         persistent_workers: bool = True,
+        prefetch_factor: int = 4,
+        cache_dataset: bool = True,
         train_transform: Optional[transforms.Compose] = None,
         val_transform: Optional[transforms.Compose] = None,
         test_transform: Optional[transforms.Compose] = None,
         target_width: float = 0.0,
+        auxiliary_features: Optional[List[str]] = None,
         label_mode: str = "classification",
+        **kwargs,  # Accept any additional kwargs to prevent Hydra errors
     ) -> None:
         """Initialize a `VIMHDataModule`.
 
@@ -79,19 +83,29 @@ class VIMHDataModule(LightningDataModule):
         :param num_workers: The number of workers. Defaults to `0`.
         :param pin_memory: Whether to pin memory. Defaults to `False`.
         :param persistent_workers: Whether to use persistent workers. Defaults to `True`.
+        :param prefetch_factor: Number of batches to prefetch per worker. Defaults to `4`.
+        :param cache_dataset: Whether to cache dataset in memory for faster access. Defaults to `True`.
         :param train_transform: Optional transforms for training data.
         :param val_transform: Optional transforms for validation data.
         :param test_transform: Optional transforms for test data.
         :param target_width: Standard deviation for soft targets (0.0 = hard targets).
+        :param auxiliary_features: List of auxiliary feature types to extract (e.g., ["decay_time"]).
         """
         super().__init__()
+
+        # Handle any unexpected kwargs (helps with Hydra compatibility)
+        if kwargs:
+            warnings.warn(
+                f"VIMHDataModule received unexpected parameters: {list(kwargs.keys())}. "
+                f"These will be ignored. Check your config for typos."
+            )
 
         # persistent_workers requires num_workers > 0
         self.persistent_workers = persistent_workers and num_workers > 0
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False)
+        self.save_hyperparameters(logger=False, ignore=["kwargs"])
 
         # Default transforms for variable-size images
         # These will be adjusted based on the actual image dimensions
@@ -638,45 +652,54 @@ class VIMHDataModule(LightningDataModule):
 
         :return: The train dataloader.
         """
-        return DataLoader(
-            dataset=self.data_train,
-            batch_size=self.batch_size_per_device,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-            shuffle=True,
-            persistent_workers=self.persistent_workers,
-            collate_fn=self._multihead_collate_fn,
-        )
+        dataloader_kwargs = {
+            "dataset": self.data_train,
+            "batch_size": self.batch_size_per_device,
+            "num_workers": self.hparams.num_workers,
+            "pin_memory": self.hparams.pin_memory,
+            "shuffle": True,
+            "persistent_workers": self.persistent_workers,
+            "collate_fn": self._multihead_collate_fn,
+        }
+        if self.hparams.num_workers > 0:
+            dataloader_kwargs["prefetch_factor"] = getattr(self.hparams, "prefetch_factor", 4)
+        return DataLoader(**dataloader_kwargs)
 
     def val_dataloader(self) -> DataLoader[Any]:
         """Create and return the validation dataloader.
 
         :return: The validation dataloader.
         """
-        return DataLoader(
-            dataset=self.data_val,
-            batch_size=self.batch_size_per_device,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-            shuffle=False,
-            persistent_workers=self.persistent_workers,
-            collate_fn=self._multihead_collate_fn,
-        )
+        dataloader_kwargs = {
+            "dataset": self.data_val,
+            "batch_size": self.batch_size_per_device,
+            "num_workers": self.hparams.num_workers,
+            "pin_memory": self.hparams.pin_memory,
+            "shuffle": False,
+            "persistent_workers": self.persistent_workers,
+            "collate_fn": self._multihead_collate_fn,
+        }
+        if self.hparams.num_workers > 0:
+            dataloader_kwargs["prefetch_factor"] = getattr(self.hparams, "prefetch_factor", 4)
+        return DataLoader(**dataloader_kwargs)
 
     def test_dataloader(self) -> DataLoader[Any]:
         """Create and return the test dataloader.
 
         :return: The test dataloader.
         """
-        return DataLoader(
-            dataset=self.data_test,
-            batch_size=self.batch_size_per_device,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-            shuffle=False,
-            persistent_workers=self.persistent_workers,
-            collate_fn=self._multihead_collate_fn,
-        )
+        dataloader_kwargs = {
+            "dataset": self.data_test,
+            "batch_size": self.batch_size_per_device,
+            "num_workers": self.hparams.num_workers,
+            "pin_memory": self.hparams.pin_memory,
+            "shuffle": False,
+            "persistent_workers": self.persistent_workers,
+            "collate_fn": self._multihead_collate_fn,
+        }
+        if self.hparams.num_workers > 0:
+            dataloader_kwargs["prefetch_factor"] = getattr(self.hparams, "prefetch_factor", 4)
+        return DataLoader(**dataloader_kwargs)
 
     def predict_dataloader(self) -> DataLoader[Any]:
         """Create and return the predict dataloader.
