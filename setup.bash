@@ -20,7 +20,18 @@ uv venv .venv --python 3.9
 
 # Activate environment and install dependencies
 echo "Installing dependencies..."
-uv pip install -r requirements.txt
+
+# Check if CUDA is available and install appropriate PyTorch version
+if command -v nvidia-smi &> /dev/null; then
+    echo "CUDA detected, installing PyTorch with CUDA support..."
+    uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+    # Install other requirements (excluding torch packages)
+    uv pip install -r requirements.txt --no-deps
+    uv pip install lightning>=2.0.0 torchmetrics>=0.11.4 hydra-core==1.3.2 hydra-colorlog==1.2.0 hydra-optuna-sweeper==1.2.0 tensorboard>=2.15.0 rootutils pre-commit rich pytest torchview torchviz matplotlib
+else
+    echo "No CUDA detected, installing CPU-only PyTorch..."
+    uv pip install -r requirements.txt
+fi
 
 echo "Setup complete! Virtual environment created with all dependencies including Hydra."
 echo ""
