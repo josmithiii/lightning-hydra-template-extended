@@ -1,6 +1,8 @@
 # Lightning Hydra Template Extended - Main Makefile
 # All targets are organized into separate include files for better maintainability
 
+SHELL := /bin/bash
+
 # Include all phony declarations
 include makefiles/phony.mk
 
