@@ -9,7 +9,7 @@ architectures on various datasets.
 
 ```bash
 # Ensure you're in the project root and environment is activated
-sh setup.sh            # One-time env creation with uv
+bash setup.bash            # One-time env creation with uv
 source .venv/bin/activate  # Use .csh variant for tcsh/csh
 ```
 

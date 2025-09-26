@@ -43,7 +43,7 @@ For a fast start, see:
 ````bash
 # Set up the environment (uv)
 # Requires uv (install: curl -LsSf https://astral.sh/uv/install.sh | sh)
-sh setup.sh
+bash setup.bash
 
 # Look over all make targets available (help)
 make h

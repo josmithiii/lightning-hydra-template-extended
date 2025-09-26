@@ -212,7 +212,7 @@ python src/train.py experiment=cifar100_coarse_cnn trainer.max_epochs=50
 ## 📋 Benchmark Checklist
 
 ### Before Running Benchmarks
-- [ ] Environment ready (`sh setup.sh` once, then `source .venv/bin/activate`)
+- [ ] Environment ready (`bash setup.bash` once, then `source .venv/bin/activate`)
 - [ ] GPU/MPS available (check with `make tmps` or `make tg`)
 - [ ] Sufficient disk space for datasets and logs
 - [ ] Time allocated (full benchmarks take hours)

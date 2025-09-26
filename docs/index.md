@@ -4,7 +4,7 @@ Expert-focused documentation for power users. Get up to speed quickly on what's 
 
 ## ⚡ Quick Start (5 min)
 ```bash
-sh setup.sh                     # Create & install deps with uv (once)
+bash setup.bash                     # Create & install deps with uv (once)
 source .venv/bin/activate       # Activate virtualenv for this shell
 make h                          # See all make targets
 make tqa                        # Test all architectures (3 min)

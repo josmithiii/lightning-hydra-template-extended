@@ -21,7 +21,7 @@ Notes:
 To refresh these numbers locally:
 
 ```bash
-sh setup.sh
+bash setup.bash
 source .venv/bin/activate
 make cbqa  # or any workflow above
 ```

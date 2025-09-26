@@ -50,7 +50,7 @@ net:
 
 ## ⚡ Expert Quick Start
 ```bash
-sh setup.sh                 # One-time env bootstrap via uv
+bash setup.bash                 # One-time env bootstrap via uv
 source .venv/bin/activate   # Activate virtualenv (use .csh as needed)
 make tqa                    # Test all architectures (3 min)
 make cbqa                    # Quick CIFAR validation (15 min)

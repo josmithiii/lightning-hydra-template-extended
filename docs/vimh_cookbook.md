@@ -6,7 +6,7 @@ Hands-on recipes for working with Variable Image MultiHead (VIMH) datasets in Li
 
 ```bash
 # Activate environment if needed
-sh setup.sh && source .venv/bin/activate
+bash setup.bash && source .venv/bin/activate
 
 # List generated datasets
 ls data-vimh/

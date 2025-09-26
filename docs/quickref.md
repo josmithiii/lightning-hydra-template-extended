@@ -173,7 +173,7 @@ python src/train.py model=mnist_cnn data=vimh_16kdss
 ```
 
 ## Troubleshooting
-- **"No module named 'rootutils'"** → `sh setup.sh` (if env missing) then `source .venv/bin/activate`
+- **"No module named 'rootutils'"** → `bash setup.bash` (if env missing) then `source .venv/bin/activate`
 - **Mac users** → Always use `trainer=mps`
 - **VIMH training** → Set `num_workers: 0` (MPS limitation)
 - **Memory issues** → Reduce batch size: `data.batch_size=32`
