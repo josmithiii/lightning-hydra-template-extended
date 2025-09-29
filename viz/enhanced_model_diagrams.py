@@ -181,37 +181,51 @@ def generate_from_config(config_name: str, output_dir: str = "diagrams"):
             # Load the specific model config
             cfg = compose(config_name="train.yaml", overrides=[f"model={config_name}"])
 
+            # Extract dynamic input parameters from model config
+            net_config = cfg.model.net
+
+            # Determine input channels (CNN uses input_channels, ViT uses n_channels)
+            if hasattr(net_config, "input_channels"):
+                input_channels = net_config.input_channels
+            elif hasattr(net_config, "n_channels"):
+                input_channels = net_config.n_channels
+            else:
+                input_channels = 1  # fallback
+
+            # Determine input size (CNN uses input_size, ViT uses image_size)
+            if hasattr(net_config, "input_size"):
+                input_size = net_config.input_size
+            elif hasattr(net_config, "image_size"):
+                input_size = net_config.image_size
+            else:
+                input_size = 32  # fallback to VIMH default
+
+            # Create dynamic input shape (batch_size=1, channels, height, width)
+            input_shape = (1, input_channels, input_size, input_size)
+            print(f"Using input shape: {input_shape}")
+
             # Instantiate the model
             model = hydra.utils.instantiate(cfg.model)
 
             # Generate both text and graphical diagrams
-            create_text_summary(model, model_name=f"Model: {config_name}")
+            create_text_summary(model, input_shape=input_shape, model_name=f"Model: {config_name}")
             create_ascii_diagram_cnn()
-            create_graphical_diagram(model, model_name=config_name, output_dir=output_dir)
+            create_graphical_diagram(
+                model, input_shape=input_shape, model_name=config_name, output_dir=output_dir
+            )
 
     except Exception as e:
         print(f"Error loading config {config_name}: {e}")
-        print("Falling back to hardcoded SimpleCNN...")
-
-        # Fallback to hardcoded model
-        model = SimpleCNN(
-            input_channels=1,
-            conv1_channels=3,
-            conv2_channels=6,
-            fc_hidden=25,
-            output_size=10,
-            dropout=0.25,
-        )
-
-        create_text_summary(model, model_name=f"SimpleCNN (fallback)")
-        create_ascii_diagram_cnn()
-        create_graphical_diagram(model, model_name="SimpleCNN", output_dir=output_dir)
+        sys.exit(1)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Generate model architecture diagrams")
     parser.add_argument(
-        "--config", "-c", default="mnist_cnn_8k", help="Model config name (default: mnist_cnn_8k)"
+        "--config",
+        "-c",
+        default=None,
+        help="Model config name (default: generate for all configs)",
     )
     parser.add_argument(
         "--output",
@@ -233,7 +247,29 @@ def main():
             print("No configs/model directory found")
         return
 
-    generate_from_config(args.config, args.output)
+    # If no config specified, generate for all configs
+    if args.config is None:
+        config_path = Path("configs/model")
+        if not config_path.exists():
+            print("No configs/model directory found")
+            sys.exit(1)
+
+        config_files = list(config_path.glob("*.yaml"))
+        if not config_files:
+            print("No model config files found in configs/model/")
+            sys.exit(1)
+
+        print(f"Generating diagrams for all {len(config_files)} model configs...")
+        for i, config_file in enumerate(config_files, 1):
+            config_name = config_file.stem
+            print(f"\n[{i}/{len(config_files)}] Processing {config_name}...")
+            try:
+                generate_from_config(config_name, args.output)
+            except Exception as e:
+                print(f"Failed to generate diagram for {config_name}: {e}")
+                continue
+    else:
+        generate_from_config(args.config, args.output)
 
     print(f"\n{'='*80}")
     print("Model diagram generation complete!")
