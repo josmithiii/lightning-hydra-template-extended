@@ -125,6 +125,8 @@ data-vimh/vimh-32x32x3_8000Hz_1p0s_256dss_resonarium_2p/
 ### Computer Vision
 - **MNIST Extension**: 28x28x1 images with varying parameters (digit style, thickness)
 - **Custom Vision**: Any image size with associated continuous parameters
+- **Video Processing**: Channel dimension can store (optionally downsampled) frame history
+- **Layer Storage**: Can hold a complete CNN layer output (up to 256 channel dimensions)
 - **Multi-task Learning**: Train models with multiple regression outputs
 
 ### Scientific Data
