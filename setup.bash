@@ -20,6 +20,7 @@ uv venv .venv --python 3.9
 
 # Activate environment and install dependencies
 echo "Installing dependencies..."
+source .venv/bin/activate
 
 # Check if CUDA is available and install appropriate PyTorch version
 if command -v nvidia-smi &> /dev/null; then
