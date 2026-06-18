@@ -5,8 +5,9 @@ import torch.nn as nn
 
 
 class EmbedLayer(nn.Module):
-    """Class for Embedding an Image. It breaks image into patches and embeds patches using a Conv2D
-    Operation (Works same as the Linear layer). Next, a learnable positional embedding vector is
+    """Class for Embedding an Image.
+
+    It breaks image into patches and embeds patches using a Conv2D Operation (Works same as the Linear layer). Next, a learnable positional embedding vector is
     added to all the patch embeddings to provide spatial position. Finally, a classification token
     is added which is used to classify the image.
 
