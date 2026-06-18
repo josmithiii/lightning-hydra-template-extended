@@ -1,7 +1,8 @@
+from typing import Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional
 
 
 class DropPath(nn.Module):
@@ -25,7 +26,9 @@ class DropPath(nn.Module):
 class LayerNorm(nn.Module):
     """LayerNorm that supports two data formats: channels_last (default) or channels_first."""
 
-    def __init__(self, normalized_shape: int, eps: float = 1e-6, data_format: str = "channels_last"):
+    def __init__(
+        self, normalized_shape: int, eps: float = 1e-6, data_format: str = "channels_last"
+    ):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(normalized_shape))
         self.bias = nn.Parameter(torch.zeros(normalized_shape))
@@ -33,7 +36,7 @@ class LayerNorm(nn.Module):
         self.data_format = data_format
         if self.data_format not in ["channels_last", "channels_first"]:
             raise NotImplementedError
-        self.normalized_shape = (normalized_shape, )
+        self.normalized_shape = (normalized_shape,)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.data_format == "channels_last":
@@ -55,7 +58,7 @@ class GRN(nn.Module):
         self.beta = nn.Parameter(torch.zeros(1, 1, 1, dim))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        Gx = torch.norm(x, p=2, dim=(1,2), keepdim=True)
+        Gx = torch.norm(x, p=2, dim=(1, 2), keepdim=True)
         Nx = Gx / (Gx.mean(dim=-1, keepdim=True) + 1e-6)
         return self.gamma * (x * Nx) + self.beta + x
 
@@ -125,16 +128,18 @@ class ConvNeXtV2(nn.Module):
 
         self.downsample_layers = nn.ModuleList()
 
-        # Stem layer - adapted for different input sizes
-        if input_size == 28:  # MNIST
+        # Stem layer - adapted for different input sizes. Small inputs (e.g. MNIST 28x28) use a
+        # gentle 2x2 stem; only larger ImageNet-scale inputs can afford the aggressive 4x4 stem
+        # without collapsing the spatial dimensions to zero in the later downsampling stages.
+        if input_size <= 32:  # MNIST and other small inputs
             stem = nn.Sequential(
                 nn.Conv2d(in_chans, dims[0], kernel_size=2, stride=2),
-                LayerNorm(dims[0], eps=1e-6, data_format="channels_first")
+                LayerNorm(dims[0], eps=1e-6, data_format="channels_first"),
             )
         else:  # ImageNet and other larger inputs
             stem = nn.Sequential(
                 nn.Conv2d(in_chans, dims[0], kernel_size=4, stride=4),
-                LayerNorm(dims[0], eps=1e-6, data_format="channels_first")
+                LayerNorm(dims[0], eps=1e-6, data_format="channels_first"),
             )
         self.downsample_layers.append(stem)
 
@@ -142,7 +147,7 @@ class ConvNeXtV2(nn.Module):
         for i in range(3):
             downsample_layer = nn.Sequential(
                 LayerNorm(dims[i], eps=1e-6, data_format="channels_first"),
-                nn.Conv2d(dims[i], dims[i+1], kernel_size=2, stride=2),
+                nn.Conv2d(dims[i], dims[i + 1], kernel_size=2, stride=2),
             )
             self.downsample_layers.append(downsample_layer)
 
@@ -182,8 +187,10 @@ class ConvNeXtV2(nn.Module):
 
 
 # Factory functions for different sizes optimized for MNIST
-def convnext_v2_mnist_tiny(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
-    """ConvNeXt-V2 Tiny for MNIST (~8K parameters)"""
+def convnext_v2_mnist_tiny(
+    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
+):
+    """ConvNeXt-V2 Tiny for MNIST (~18K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -195,8 +202,10 @@ def convnext_v2_mnist_tiny(input_size: int = 28, in_chans: int = 1, output_size:
     )
 
 
-def convnext_v2_mnist_small(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
-    """ConvNeXt-V2 Small for MNIST (~68K parameters)"""
+def convnext_v2_mnist_small(
+    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
+):
+    """ConvNeXt-V2 Small for MNIST (~73K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -208,8 +217,10 @@ def convnext_v2_mnist_small(input_size: int = 28, in_chans: int = 1, output_size
     )
 
 
-def convnext_v2_mnist_base(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
-    """ConvNeXt-V2 Base for MNIST (~210K parameters)"""
+def convnext_v2_mnist_base(
+    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
+):
+    """ConvNeXt-V2 Base for MNIST (~288K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -221,8 +232,10 @@ def convnext_v2_mnist_base(input_size: int = 28, in_chans: int = 1, output_size:
     )
 
 
-def convnext_v2_mnist_large(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
-    """ConvNeXt-V2 Large for MNIST (~821K parameters)"""
+def convnext_v2_mnist_large(
+    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
+):
+    """ConvNeXt-V2 Large for MNIST (~725K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -234,8 +247,16 @@ def convnext_v2_mnist_large(input_size: int = 28, in_chans: int = 1, output_size
     )
 
 
-def convnext_v2_official_tiny_benchmark(input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs):
-    """ConvNeXt-V2 Official Tiny Benchmark - exact match to Facebook's canonical config"""
+def convnext_v2_official_tiny_benchmark(
+    input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
+):
+    """ConvNeXt-V2 "Official Tiny" benchmark config for MNIST (~288K parameters).
+
+    Mirrors the official ConvNeXt-V2 Tiny *training recipe* (drop_path_rate=0.2,
+    head_init_scale=0.001), but the depths/dims are scaled down for MNIST -- this is NOT the
+    canonical ImageNet Tiny architecture (depths=(3,3,9,3), dims=(96,192,384,768)). It is
+    architecturally identical to ``convnext_v2_mnist_base``; only the training recipe differs.
+    """
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
