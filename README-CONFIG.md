@@ -46,7 +46,7 @@ python src/train.py model.criterion.weight="[1.0,2.0,1.5]"
 | **EfficientNet (CNN)** | 22K, 7M | Super efficient CNN at scale | [`configs/model/mnist_efficientnet_7m.yaml`](configs/model/mnist_efficientnet_7m.yaml) etc.|
 | **SimpleCNN (Multihead)** | 422K | CNN with multiple prediction heads | [`configs/model/mnist_multihead_cnn_422k.yaml`](configs/model/mnist_multihead_cnn_422k.yaml) |
 | **Vision Transformer (ViT)** | 38K, 210K, 821K | Transformer on embedded patches | [`configs/model/mnist_vit_210k.yaml`](configs/model/mnist_vit_210k.yaml) |
-| **ConvNeXt-V2** | 18K, 73K, 288K, 725K | Modern CNN with Global Response Normalization | [`configs/model/mnist_convnext_68k.yaml`](configs/model/mnist_convnext_68k.yaml) |
+| **ConvNeXt-V2** | 18K, 73K, 288K, 725K | Modern CNN with Global Response Normalization | [`configs/model/mnist_convnext_73k.yaml`](configs/model/mnist_convnext_73k.yaml) |
 
 **File Structure:**
 ```
@@ -91,7 +91,7 @@ python src/train.py experiment=multihead_cnn_mnist
 # Compare with identical hyperparameters such as 10 epochs for all
 python src/train.py trainer.max_epochs=10                                # SimpleDenseNet
 python src/train.py model=mnist_cnn_421k trainer.max_epochs=10           # SimpleCNN
-python src/train.py model=mnist_convnext_68k trainer.max_epochs=10       # ConvNeXt-V2
+python src/train.py model=mnist_convnext_73k trainer.max_epochs=10       # ConvNeXt-V2
 python src/train.py experiment=multihead_cnn_mnist trainer.max_epochs=10 # Multihead CNN
 ```
 
@@ -456,7 +456,7 @@ python src/train.py model=mnist_cnn model.optimizer.lr=0.0001
 # Test different architectures with same hyperparameters
 python src/train.py experiment=my_experiment model.optimizer.lr=0.001
 python src/train.py experiment=my_experiment model=mnist_cnn model.optimizer.lr=0.001
-python src/train.py experiment=my_experiment model=mnist_convnext_68k model.optimizer.lr=0.001
+python src/train.py experiment=my_experiment model=mnist_convnext_73k model.optimizer.lr=0.001
 python src/train.py experiment=multihead_mnist model.optimizer.lr=0.001
 
 # Test different loss weightings for multihead

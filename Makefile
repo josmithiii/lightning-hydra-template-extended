@@ -50,13 +50,13 @@ trvp train-vit-pytorch: ## Train ViT using PyTorch layers
 	time python src/train.py model=mnist_vit_pytorch
 
 trcns train-convnext-small: ## Train ConvNeXt-V2 small (~68K params)
-	time python src/train.py model=mnist_convnext_68k
+	time python src/train.py model=mnist_convnext_73k
 
 trcnm train-convnext-medium: ## Train ConvNeXt-V2 medium (~210K params)
-	time python src/train.py model=mnist_convnext_210k
+	time python src/train.py model=mnist_convnext_288k
 
 trcnl train-convnext-large: ## Train ConvNeXt-V2 large (~821K params)
-	time python src/train.py model=mnist_convnext_821k
+	time python src/train.py model=mnist_convnext_725k
 
 
 
@@ -72,7 +72,7 @@ tqv train-quick-vit: ## Train quickly ViT, 1 epoch
 	python src/train.py model=mnist_vit_38k trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
 
 tqcn train-quick-convnext: ## Train quickly ConvNeXt-V2, 1 epoch
-	python src/train.py model=mnist_convnext_68k trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
+	python src/train.py model=mnist_convnext_73k trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
 
 tqa train-quick-all: tq tqc tqv tqcn ## Train quickly all architectures supported
 
@@ -92,7 +92,7 @@ ca compare-arch: ## Compare architectures on quick runs
 	@echo "=== Training ViT ==="
 	python src/train.py model=mnist_vit_38k trainer.max_epochs=3 tags="[arch_comparison,vit]"
 	@echo "=== Training ConvNeXt-V2 ==="
-	python src/train.py model=mnist_convnext_68k trainer.max_epochs=3 tags="[arch_comparison,convnext]"
+	python src/train.py model=mnist_convnext_73k trainer.max_epochs=3 tags="[arch_comparison,convnext]"
 	@echo "=== Check logs/ directory for results comparison ==="
 
 # EXPERIMENTS "e" - Reproducible Configuration Examples
