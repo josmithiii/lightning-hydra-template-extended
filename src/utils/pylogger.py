@@ -17,8 +17,10 @@ class RankedLogger(logging.LoggerAdapter):
         with their rank prefixed in the log message.
 
         :param name: The name of the logger. Default is ``__name__``.
-        :param rank_zero_only: Whether to force all logs to only occur on the rank zero process. Default is `False`.
-        :param extra: (Optional) A dict-like object which provides contextual information. See `logging.LoggerAdapter`.
+        :param rank_zero_only: Whether to force all logs to only occur on the rank zero process.
+            Default is `False`.
+        :param extra: (Optional) A dict-like object which provides contextual information. See
+            `logging.LoggerAdapter`.
         """
         logger = logging.getLogger(name)
         super().__init__(logger=logger, extra=extra)

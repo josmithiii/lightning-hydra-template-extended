@@ -9,12 +9,14 @@
 **What Changed:** The loss function ("criterion" in [`configs/model/*.yaml`](./configs/model/)) is now configurable through Hydra, following the same pattern as the optimizer and scheduler.
 
 **Before:**
+
 ```python
 # Hardcoded in MNISTLitModule.__init__()
 self.criterion = torch.nn.CrossEntropyLoss()
 ```
 
 **After:**
+
 ```yaml
 # configs/model/mnist_sdn_68k.yaml
 criterion:
@@ -26,6 +28,7 @@ criterion:
 **Benefits:** Easy experimentation with different loss functions without code changes, consistent with Hydra configuration philosophy, and parameters are logged and version controlled.
 
 **Usage Examples:**
+
 ```bash
 # Use different loss functions
 python src/train.py model.criterion._target_=torch.nn.NLLLoss
@@ -39,16 +42,17 @@ python src/train.py model.criterion.weight="[1.0,2.0,1.5]"
 
 **Architecture Options:**
 
-| Architecture | Parameters | Description | Config File |
-|-------------|------------|-------------|-------------|
-| **SimpleDenseNet (SDN)** | 8K, 68K | Fully-connected network | [`configs/model/mnist_sdn_68k.yaml`](./configs/model/mnist_sdn_68k.yaml) etc. |
-| **SimpleCNN** | 8K, 421K | Convolutional Neural Network (CNN) | [`configs/model/mnist_cnn_421k.yaml`](configs/model/mnist_cnn_421k.yaml) etc. |
-| **EfficientNet (CNN)** | 22K, 7M | Super efficient CNN at scale | [`configs/model/mnist_efficientnet_7m.yaml`](configs/model/mnist_efficientnet_7m.yaml) etc.|
-| **SimpleCNN (Multihead)** | 422K | CNN with multiple prediction heads | [`configs/model/mnist_multihead_cnn_422k.yaml`](configs/model/mnist_multihead_cnn_422k.yaml) |
-| **Vision Transformer (ViT)** | 38K, 210K, 821K | Transformer on embedded patches | [`configs/model/mnist_vit_210k.yaml`](configs/model/mnist_vit_210k.yaml) |
-| **ConvNeXt-V2** | 18K, 73K, 288K, 725K | Modern CNN with Global Response Normalization | [`configs/model/mnist_convnext_73k.yaml`](configs/model/mnist_convnext_73k.yaml) |
+| Architecture                 | Parameters           | Description                                   | Config File                                                                                  |
+| ---------------------------- | -------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **SimpleDenseNet (SDN)**     | 8K, 68K              | Fully-connected network                       | [`configs/model/mnist_sdn_68k.yaml`](./configs/model/mnist_sdn_68k.yaml) etc.                |
+| **SimpleCNN**                | 8K, 421K             | Convolutional Neural Network (CNN)            | [`configs/model/mnist_cnn_421k.yaml`](configs/model/mnist_cnn_421k.yaml) etc.                |
+| **EfficientNet (CNN)**       | 22K, 7M              | Super efficient CNN at scale                  | [`configs/model/mnist_efficientnet_7m.yaml`](configs/model/mnist_efficientnet_7m.yaml) etc.  |
+| **SimpleCNN (Multihead)**    | 422K                 | CNN with multiple prediction heads            | [`configs/model/mnist_multihead_cnn_422k.yaml`](configs/model/mnist_multihead_cnn_422k.yaml) |
+| **Vision Transformer (ViT)** | 38K, 210K, 821K      | Transformer on embedded patches               | [`configs/model/mnist_vit_210k.yaml`](configs/model/mnist_vit_210k.yaml)                     |
+| **ConvNeXt-V2**              | 18K, 73K, 288K, 725K | Modern CNN with Global Response Normalization | [`configs/model/mnist_convnext_73k.yaml`](configs/model/mnist_convnext_73k.yaml)             |
 
 **File Structure:**
+
 ```
 src/models/components/
 ├── simple_dense_net.py     # Original fully-connected network
@@ -78,6 +82,7 @@ configs/experiment/
 ```
 
 **Architecture Switching:**
+
 ```bash
 # Default: SimpleDenseNet
 python src/train.py
@@ -99,23 +104,23 @@ python src/train.py experiment=multihead_cnn_mnist trainer.max_epochs=10 # Multi
 
 **Training Targets:**
 
-| Target | Description | Architecture |
-|--------|-------------|--------------|
-| `make train` or `make train-sdn` | Train SimpleDenseNet (default) | Dense |
-| `make trc` or `make train-cnn` | Train SimpleCNN | CNN |
-| `make trcns` or `make train-convnext-small` | Train ConvNeXt-V2 Small (~73K) | ConvNeXt-V2 |
-| `make trcnm` or `make train-convnext-medium` | Train ConvNeXt-V2 Medium (~288K) | ConvNeXt-V2 |
-| `make trcnl` or `make train-convnext-large` | Train ConvNeXt-V2 Large (~725K) | ConvNeXt-V2 |
+| Target                                       | Description                      | Architecture |
+| -------------------------------------------- | -------------------------------- | ------------ |
+| `make train` or `make train-sdn`             | Train SimpleDenseNet (default)   | Dense        |
+| `make trc` or `make train-cnn`               | Train SimpleCNN                  | CNN          |
+| `make trcns` or `make train-convnext-small`  | Train ConvNeXt-V2 Small (~73K)   | ConvNeXt-V2  |
+| `make trcnm` or `make train-convnext-medium` | Train ConvNeXt-V2 Medium (~288K) | ConvNeXt-V2  |
+| `make trcnl` or `make train-convnext-large`  | Train ConvNeXt-V2 Large (~725K)  | ConvNeXt-V2  |
 
 **Quick Testing Targets:**
 
-| Target | Description | Duration |
-|--------|-------------|----------|
-| `make tq` or `make train-quick` | Quick SimpleDenseNet test | 1 epoch, 10 batches |
-| `make tqc` or `make train-quick-cnn` | Quick CNN test | 1 epoch, 10 batches |
-| `make tqcn` or `make train-quick-convnext` | Quick ConvNeXt-V2 test | 1 epoch, 10 batches |
-| `make tqa` or `make train-quick-all` | Train quickly all architectures | All (tq + tqc + tqcn) |
-| `make ca` or `make compare-arch` | Side-by-side comparison | 3 epochs each (includes ConvNeXt) |
+| Target                                     | Description                     | Duration                          |
+| ------------------------------------------ | ------------------------------- | --------------------------------- |
+| `make tq` or `make train-quick`            | Quick SimpleDenseNet test       | 1 epoch, 10 batches               |
+| `make tqc` or `make train-quick-cnn`       | Quick CNN test                  | 1 epoch, 10 batches               |
+| `make tqcn` or `make train-quick-convnext` | Quick ConvNeXt-V2 test          | 1 epoch, 10 batches               |
+| `make tqa` or `make train-quick-all`       | Train quickly all architectures | All (tq + tqc + tqcn)             |
+| `make ca` or `make compare-arch`           | Side-by-side comparison         | 3 epochs each (includes ConvNeXt) |
 
 **Reproducible Experiments:**
 
@@ -129,23 +134,25 @@ See [Experiment Configuration System](#experiment-config) below for more about E
 
 **Other Targets:**
 
-| Target | Description |
-|--------|-------------|
-| `make t` or `make test` | Run fast pytest tests |
-| `make ta` or `make test-all` | Run all pytest tests |
-| `make f` or `make format` | Run pre-commit hooks |
-| `make c` or `make clean` | Clean autogenerated files |
-| `make cl` or `make clean-logs` | Clean logs |
-| `make s` or `make sync` | Merge changes from main branch |
-| `make a` or `make activate` | Show activation alias setup |
-| `make d` or `make deactivate` | Show deactivation alias setup |
+| Target                         | Description                    |
+| ------------------------------ | ------------------------------ |
+| `make t` or `make test`        | Run fast pytest tests          |
+| `make ta` or `make test-all`   | Run all pytest tests           |
+| `make f` or `make format`      | Run pre-commit hooks           |
+| `make c` or `make clean`       | Clean autogenerated files      |
+| `make cl` or `make clean-logs` | Clean logs                     |
+| `make s` or `make sync`        | Merge changes from main branch |
+| `make a` or `make activate`    | Show activation alias setup    |
+| `make d` or `make deactivate`  | Show deactivation alias setup  |
 
 **View All Make Targets and their Abbreviations:**
+
 ```bash
 make help
 ```
 
 <a name="experiment-config"></a>
+
 ### 4. Experiment Configuration System
 
 **What are Experiment Configs?**
@@ -159,16 +166,17 @@ The `./configs/experiment/` directory contains **complete experiment configurati
 
 **When to Use Command-Line Hydra Overrides or Experiment Configs:**
 
-| Use Case | Individual Configs | Experiment Configs |
-|----------|-------------------|-------------------|
-| **Exploration** | ✅ `python src/train.py model=mnist_cnn` | ❌ Too rigid |
-| **Quick testing** | ✅ `make train-quick-cnn` | ❌ Overkill |
-| **Reproducible research** | ❌ Parameters can vary | ✅ `make texample` |
-| **Paper results** | ❌ Hard to reproduce exactly | ✅ Fixed seed + params |
-| **Baseline comparisons** | ❌ Inconsistent setup | ✅ Standardized config |
-| **Hyperparameter winners** | ❌ Easy to lose good configs | ✅ Version controlled |
+| Use Case                   | Individual Configs                       | Experiment Configs     |
+| -------------------------- | ---------------------------------------- | ---------------------- |
+| **Exploration**            | ✅ `python src/train.py model=mnist_cnn` | ❌ Too rigid           |
+| **Quick testing**          | ✅ `make train-quick-cnn`                | ❌ Overkill            |
+| **Reproducible research**  | ❌ Parameters can vary                   | ✅ `make texample`     |
+| **Paper results**          | ❌ Hard to reproduce exactly             | ✅ Fixed seed + params |
+| **Baseline comparisons**   | ❌ Inconsistent setup                    | ✅ Standardized config |
+| **Hyperparameter winners** | ❌ Easy to lose good configs             | ✅ Version controlled  |
 
 **Example Experiment Structure:**
+
 ```yaml
 # configs/experiment/example.yaml
 defaults:
@@ -198,6 +206,7 @@ data:
 ```
 
 **Usage:**
+
 ```bash
 # Run the complete experiment
 python src/train.py experiment=example
@@ -241,6 +250,7 @@ README-CONFIG.md                # This documentation
 ### Configuration for New Model Architecture
 
 **Model Configuration Pattern:**
+
 ```yaml
 # configs/model/{architecture}.yaml
 _target_: src.models.mnist_module.MNISTLitModule
@@ -271,6 +281,7 @@ compile: false
 ## 🚀 Usage Examples
 
 ### Basic Training
+
 ```bash
 # Test quickly for all architectures
 make tqa
@@ -285,9 +296,11 @@ make trc
 make trcns   # Small (~73K params)
 make trcnm   # Medium (~288K params)
 ```
+
 See the [Makefile](./Makefile) for the rest.
 
 ### Advanced Configuration
+
 ```bash
 # Custom loss function
 python src/train.py model=mnist_cnn \
@@ -306,6 +319,7 @@ python src/train.py model=mnist_cnn trainer.max_epochs=5 tags="[comparison,cnn]"
 ```
 
 ### Performance Comparison
+
 ```bash
 # Systematic comparison
 make ca
@@ -317,6 +331,7 @@ ls logs/train/runs/
 ## 🔧 Adding New Architectures
 
 ### Step 1: Create Architecture Component
+
 ```python
 # src/models/components/my_network.py
 import torch
@@ -333,6 +348,7 @@ class MyNetwork(nn.Module):
 ```
 
 ### Step 2: Create Configuration
+
 ```yaml
 # configs/model/my_model.yaml
 _target_: src.models.mnist_module.MNISTLitModule
@@ -363,6 +379,7 @@ compile: false
 ```
 
 ### Step 3: Use New Architecture
+
 ```bash
 python src/train.py model=my_model
 ```
@@ -370,6 +387,7 @@ python src/train.py model=my_model
 ## 🏗️ Architecture Details
 
 ### SimpleDenseNet (Original)
+
 - **Type:** Fully-connected neural network
 - **Parameters:** 68,048
 - **Layers:** 3 hidden layers with BatchNorm and ReLU
@@ -378,6 +396,7 @@ python src/train.py model=my_model
 - **Speed:** Fast training and inference
 
 ### SimpleCNN (New)
+
 - **Type:** Convolutional neural network
 - **Parameters:** 421,482 (single-head), 422,330 (multihead)
 - **Architecture:**
@@ -392,6 +411,7 @@ python src/train.py model=my_model
 - **Speed:** Slower but potentially higher accuracy
 
 ### SimpleCNN Multihead (New)
+
 - **Type:** Multi-task convolutional neural network
 - **Tasks:** 3 simultaneous predictions from shared features
   - **Digit**: 10-class classification (0-9)
@@ -404,6 +424,7 @@ python src/train.py model=my_model
 - **Loss:** Weighted combination of task-specific losses
 
 ### Vision Transformer (ViT) (New)
+
 - **Type:** Transformer architecture applied to images via patch embeddings
 - **Parameters:** 38K (tiny), 210K (small), 821K (base)
 - **Architecture:**
@@ -422,6 +443,7 @@ python src/train.py model=my_model
 - **SOTA Configuration:** 210K parameters, 200 epochs, custom normalization and augmentation
 
 ### ConvNeXt-V2 (New)
+
 - **Type:** Modern convolutional neural network with Global Response Normalization
 - **Parameters:** 18K (tiny), 73K (small), 288K (base), 725K (large)
 - **Architecture:**
@@ -441,12 +463,14 @@ python src/train.py model=my_model
 ## 🎛️ Configuration Best Practices
 
 ### 1. Experiment Tracking
+
 ```bash
 # Use descriptive tags for easy comparison
 python src/train.py tags="[experiment_name,architecture_type,hyperparam_set]"
 ```
 
 ### 2. Systematic Hyperparameter Search
+
 ```bash
 # Test different learning rates
 python src/train.py model=mnist_cnn model.optimizer.lr=0.01
@@ -465,6 +489,7 @@ python src/train.py experiment=multihead_mnist model.loss_weights.digit=2.0 mode
 ```
 
 ### 3. Hardware Optimization
+
 ```bash
 # Training automatically uses best available accelerator (MPS/GPU/CPU)
 make trc
@@ -481,6 +506,7 @@ python src/train.py model=mnist_cnn data.num_workers=8
 ## 🔍 Development Philosophy
 
 ### Non-Destructive Extensions
+
 - Added new files instead of modifying existing ones
 - Preserved original functionality completely
 - Easy rollback - just delete new files
@@ -493,11 +519,13 @@ python src/train.py model=mnist_cnn data.num_workers=8
 Multihead classification allows a single model to predict multiple related tasks simultaneously, sharing a common feature extractor while having separate prediction heads for each task.
 
 **MNIST Multihead Implementation:**
+
 - **Primary Task**: Digit classification (0-9) - 10 classes
 - **Secondary Task 1**: Thickness estimation (very thin to very thick) - 5 classes
 - **Secondary Task 2**: Smoothness assessment (angular to smooth) - 3 classes
 
 **Key Features:**
+
 - **Backward Compatible**: Existing single-head configs work unchanged
 - **Loss Weighting**: Different tasks can have different importance
 - **Separate Metrics**: Each head tracks its own accuracy independently
@@ -506,6 +534,7 @@ Multihead classification allows a single model to predict multiple related tasks
 **Architecture Benefits:** Shared learning across tasks, efficiency (one model vs. three), regularization through multi-task learning, and enables multi-task learning experiments.
 
 **Usage Examples:**
+
 ```bash
 # Train multihead model
 python src/train.py experiment=multihead_mnist
@@ -523,19 +552,21 @@ python src/train.py experiment=multihead_mnist +trainer.fast_dev_run=true
 **Synthetic Label Mapping:**
 The multihead dataset creates thickness and smoothness labels from MNIST digits:
 
-| Digit | Thickness | Smoothness | Reasoning |
-|-------|-----------|------------|-----------|
-| 0, 6, 8, 9 | Variable | Smooth (2) | Curved digits |
-| 1, 4, 7 | Variable | Angular (0) | Sharp angles |
-| 2, 5 | Variable | Medium (1) | Mixed features |
-| Even digits | Thinner | - | Simpler strokes |
-| Odd digits | Thicker | - | Complex strokes |
+| Digit       | Thickness | Smoothness  | Reasoning       |
+| ----------- | --------- | ----------- | --------------- |
+| 0, 6, 8, 9  | Variable  | Smooth (2)  | Curved digits   |
+| 1, 4, 7     | Variable  | Angular (0) | Sharp angles    |
+| 2, 5        | Variable  | Medium (1)  | Mixed features  |
+| Even digits | Thinner   | -           | Simpler strokes |
+| Odd digits  | Thicker   | -           | Complex strokes |
 
 **Metrics Logged:**
+
 - Single-head: `train/acc`, `val/acc`, `test/acc`
 - Multihead: `train/digit_acc`, `train/thickness_acc`, `train/smoothness_acc` (and val/test variants)
 
 **Configuration Structure:**
+
 ```yaml
 # configs/model/mnist_multihead_cnn_422k.yaml
 criteria:
@@ -560,20 +591,22 @@ net:
 ```
 
 ### Configuration-Driven Development
+
 - No code changes needed for common experiments
 - Version-controlled configurations for reproducibility
 - Hydra best practices followed throughout
 - Consistent patterns across all components
 
-
 ## 🚀 Quick Start
 
 1. **Activate environment:**
+
    ```bash
    source .venv/bin/activate  # or: conda activate myenv
    ```
 
 2. **Test all architectures:**
+
    ```bash
    make tq       # Test SimpleDenseNet
    make tqc      # Test SimpleCNN
@@ -581,11 +614,13 @@ net:
    ```
 
 3. **Full training comparison:**
+
    ```bash
    make ca
    ```
 
 4. **View results:**
+
    ```bash
    ls logs/train/runs/
    ```
@@ -594,18 +629,19 @@ net:
 
 Based on quick tests (1 epoch, limited batches):
 
-| Architecture | Parameters | Test Accuracy | Training Speed | Notes |
-|-------------|------------|---------------|----------------|-------|
-| SimpleDenseNet | 68K | ~56.6% | Fast ⚡ | Single task |
-| SimpleCNN | 421K | ~74.8% | Slower 🐢 | Single task |
-| ConvNeXt-V2 | 73K | ~68.3% | Medium 🚀 | Modern CNN with GRN |
-| SimpleCNN Multihead | 422K | Digit: ~7.8%, Thickness: ~39%, Smoothness: ~52% | Slower 🐢 | Multi-task learning |
+| Architecture        | Parameters | Test Accuracy                                   | Training Speed | Notes               |
+| ------------------- | ---------- | ----------------------------------------------- | -------------- | ------------------- |
+| SimpleDenseNet      | 68K        | ~56.6%                                          | Fast ⚡        | Single task         |
+| SimpleCNN           | 421K       | ~74.8%                                          | Slower 🐢      | Single task         |
+| ConvNeXt-V2         | 73K        | ~68.3%                                          | Medium 🚀      | Modern CNN with GRN |
+| SimpleCNN Multihead | 422K       | Digit: ~7.8%, Thickness: ~39%, Smoothness: ~52% | Slower 🐢      | Multi-task learning |
 
 *Note: Results may vary with different random seeds and full training. Multihead results show performance on individual tasks.*
 
 ## 🔗 Integration with Original Template
 
 All original Lightning-Hydra template features remain fully functional:
+
 - All original make targets work
 - Hydra configuration system enhanced, not replaced
 - Lightning module structure preserved
@@ -614,6 +650,6 @@ All original Lightning-Hydra template features remain fully functional:
 
 The extensions seamlessly integrate with existing workflows while adding powerful new capabilities for architecture experimentation and systematic ML research.
 
----
+______________________________________________________________________
 
 *This documentation covers the configuration extensions to the Lightning-Hydra template. See the original [README.md](README.md) for base template documentation.*

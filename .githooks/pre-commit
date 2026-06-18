@@ -1,41 +1,46 @@
 #!/usr/bin/env python3
 
-import sys
 import os
 import subprocess
+import sys
 from pathlib import Path
+
 
 def get_staged_files():
     """Get list of all staged files."""
-    staged = subprocess.check_output(['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'])
-    return staged.decode('utf-8').splitlines()
+    staged = subprocess.check_output(
+        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"]
+    )
+    return staged.decode("utf-8").splitlines()
+
 
 def remove_trailing_whitespace(filepath):
     """Remove trailing whitespace from the given file."""
     try:
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, encoding="utf-8") as file:
             lines = file.readlines()
 
         # Check if any lines need modification
         modified = False
         cleaned_lines = []
         for line in lines:
-            cleaned = line.rstrip() + '\n'
+            cleaned = line.rstrip() + "\n"
             if cleaned != line:
                 modified = True
             cleaned_lines.append(cleaned)
 
         # Only write back if modifications were needed
         if modified:
-            with open(filepath, 'w', encoding='utf-8') as file:
+            with open(filepath, "w", encoding="utf-8") as file:
                 file.writelines(cleaned_lines)
-            subprocess.run(['git', 'add', filepath])
+            subprocess.run(["git", "add", filepath])
             return True
 
         return False
     except UnicodeDecodeError:
         # Skip binary files
         return False
+
 
 def main():
     staged_files = get_staged_files()
@@ -46,7 +51,17 @@ def main():
             continue
 
         # Check if file is a text file we want to process
-        if Path(filepath).suffix in ['.txt', '.py', '.js', '.css', '.html', '.md', '.yml', '.yaml', '.json']:
+        if Path(filepath).suffix in [
+            ".txt",
+            ".py",
+            ".js",
+            ".css",
+            ".html",
+            ".md",
+            ".yml",
+            ".yaml",
+            ".json",
+        ]:
             if remove_trailing_whitespace(filepath):
                 modified_files.append(filepath)
 
@@ -57,5 +72,6 @@ def main():
 
     return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())

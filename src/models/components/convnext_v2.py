@@ -50,7 +50,7 @@ class LayerNorm(nn.Module):
 
 
 class GRN(nn.Module):
-    """GRN (Global Response Normalization) layer"""
+    """GRN (Global Response Normalization) layer."""
 
     def __init__(self, dim: int):
         super().__init__()
@@ -97,7 +97,7 @@ class Block(nn.Module):
 
 
 class ConvNeXtV2(nn.Module):
-    """ConvNeXt V2
+    """ConvNeXt V2.
 
     Args:
         input_size (int): Input image size. Default: 28 (for MNIST)
@@ -271,7 +271,7 @@ def convnext_v2_official_tiny_benchmark(
 
 # Standard ConvNeXt-V2 variants for ImageNet (keeping original sizes)
 def convnext_v2_atto(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Atto"""
+    """ConvNeXt-V2 Atto."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -283,7 +283,7 @@ def convnext_v2_atto(input_size: int = 224, in_chans: int = 3, output_size: int 
 
 
 def convnext_v2_femto(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Femto"""
+    """ConvNeXt-V2 Femto."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -295,7 +295,7 @@ def convnext_v2_femto(input_size: int = 224, in_chans: int = 3, output_size: int
 
 
 def convnext_v2_pico(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Pico"""
+    """ConvNeXt-V2 Pico."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -307,7 +307,7 @@ def convnext_v2_pico(input_size: int = 224, in_chans: int = 3, output_size: int 
 
 
 def convnext_v2_nano(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Nano"""
+    """ConvNeXt-V2 Nano."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -319,7 +319,7 @@ def convnext_v2_nano(input_size: int = 224, in_chans: int = 3, output_size: int 
 
 
 def convnext_v2_tiny(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Tiny"""
+    """ConvNeXt-V2 Tiny."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -331,7 +331,7 @@ def convnext_v2_tiny(input_size: int = 224, in_chans: int = 3, output_size: int 
 
 
 def convnext_v2_base(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Base"""
+    """ConvNeXt-V2 Base."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -343,7 +343,7 @@ def convnext_v2_base(input_size: int = 224, in_chans: int = 3, output_size: int 
 
 
 def convnext_v2_large(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Large"""
+    """ConvNeXt-V2 Large."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -355,7 +355,7 @@ def convnext_v2_large(input_size: int = 224, in_chans: int = 3, output_size: int
 
 
 def convnext_v2_huge(input_size: int = 224, in_chans: int = 3, output_size: int = 1000, **kwargs):
-    """ConvNeXt-V2 Huge"""
+    """ConvNeXt-V2 Huge."""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,

@@ -42,8 +42,7 @@ def test_mnist_datamodule(batch_size: int) -> None:
 def test_mnist_multihead_datamodule() -> None:
     """Tests `MNISTDataModule` in multihead mode end-to-end: `setup()` wraps the data with
     `MultiheadMNISTDataset` and the dataloader yields `(images, dict-of-label-tensors)` via the
-    custom collate function.
-    """
+    custom collate function."""
     dm = MNISTDataModule(data_dir="data/", batch_size=64, multihead=True)
     dm.prepare_data()
     dm.setup()

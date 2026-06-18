@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is an extended Lightning-Hydra-Template for deep learning projects using PyTorch Lightning and Hydra configuration management. The template provides a clean, organized structure for rapid ML experimentation with minimal boilerplate.  In this template project we've extended the original template as described in ./README-CONFIG.md
+This is an extended Lightning-Hydra-Template for deep learning projects using PyTorch Lightning and Hydra configuration management. The template provides a clean, organized structure for rapid ML experimentation with minimal boilerplate. In this template project we've extended the original template as described in ./README-CONFIG.md
 
 ## Core Technologies
 
@@ -16,6 +16,7 @@ This is an extended Lightning-Hydra-Template for deep learning projects using Py
 ## Common Commands
 
 ### Training
+
 ```bash
 # Basic training
 python src/train.py
@@ -35,6 +36,7 @@ make help           # generate the list of make targets
 ```
 
 ### Testing
+
 ```bash
 # Run tests (excluding slow tests)
 pytest -k "not slow"
@@ -49,6 +51,7 @@ pytest tests/test_train.py
 ```
 
 ### Code Quality
+
 ```bash
 # Run pre-commit hooks (formatting, linting)
 pre-commit run -a
@@ -56,26 +59,30 @@ make format
 ```
 
 ### Evaluation
+
 ```bash
 # Evaluate checkpoint
 python src/eval.py ckpt_path="/path/to/checkpoint.ckpt"
 ```
 
 ### Environment Management
+
 ```bash
 source .venv/bin/activate.csh
 ```
 
 ## Troubleshooting Notes
+
 - When you see "No module named 'rootutils'", it means we need to say `source .venv/bin/activate`
 
 ## Architecture Overview
 
 ### Configuration System (Hydra)
+
 - **Main configs**: `configs/train.yaml` and `configs/eval.yaml` define default training/evaluation settings
 - **Modular configs**: Organized by component type in `configs/` subdirectories:
   - `data/`: Data module configurations
-  - `model/`: Model configurations  
+  - `model/`: Model configurations
   - `trainer/`: Lightning trainer configurations
   - `callbacks/`: Training callbacks
   - `logger/`: Logging configurations
@@ -84,6 +91,7 @@ source .venv/bin/activate.csh
 - **Override system**: Parameters can be overridden via command line (e.g., `python src/train.py trainer.max_epochs=20`)
 
 ### Code Structure
+
 - **`src/train.py`**: Main training entry point using Hydra configuration
 - **`src/eval.py`**: Evaluation entry point for trained models
 - **`src/models/`**: Lightning modules (model implementations)
@@ -92,19 +100,21 @@ source .venv/bin/activate.csh
 - **Dynamic instantiation**: Uses `hydra.utils.instantiate()` to create objects from config `_target_` paths
 
 ### Key Patterns
+
 - **Lightning modules**: Follow standard PyTorch Lightning patterns with `training_step`, `validation_step`, `test_step`, `configure_optimizers`
 - **Data modules**: Implement `prepare_data`, `setup`, and dataloader methods
 - **Metric tracking**: Uses torchmetrics for proper metric calculation across devices
 - **Hyperparameter logging**: All init parameters automatically saved via `self.save_hyperparameters()`
 
 ### Project Structure
+
 ```
 ├── configs/              # Hydra configuration files
 ├── src/
 │   ├── train.py         # Main training script
 │   ├── eval.py          # Evaluation script
 │   ├── models/          # Lightning modules
-│   ├── data/            # Data modules  
+│   ├── data/            # Data modules
 │   └── utils/           # Utility functions
 ├── tests/               # Test suite
 ├── logs/                # Training logs and checkpoints
@@ -112,6 +122,7 @@ source .venv/bin/activate.csh
 ```
 
 ### Dependencies and Tools
+
 - **Core ML**: `torch`, `lightning`, `torchmetrics`, `torchvision`
 - **Config**: `hydra-core`, `hydra-colorlog`, `hydra-optuna-sweeper`
 - **Utilities**: `rootutils` (project root setup), `rich` (terminal formatting)

@@ -1,6 +1,7 @@
+from typing import Dict, Optional
+
 import torch
 from torch import nn
-from typing import Dict, Optional
 
 
 class SimpleCNN(nn.Module):
@@ -27,14 +28,14 @@ class SimpleCNN(nn.Module):
         :param dropout: Dropout probability.
         """
         super().__init__()
-        
+
         # Backward compatibility: convert old single-head config to multihead
         if heads_config is None:
             if output_size is not None:
-                heads_config = {'digit': output_size}
+                heads_config = {"digit": output_size}
             else:
-                heads_config = {'digit': 10}  # Default MNIST
-        
+                heads_config = {"digit": 10}  # Default MNIST
+
         self.heads_config = heads_config
         self.is_multihead = len(heads_config) > 1
 
@@ -44,30 +45,30 @@ class SimpleCNN(nn.Module):
             nn.BatchNorm2d(conv1_channels),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            
             # Second conv block
             nn.Conv2d(conv1_channels, conv2_channels, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(conv2_channels),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            
             # Adaptive pooling to handle any input size
             nn.AdaptiveAvgPool2d((7, 7)),
         )
-        
+
         self.shared_features = nn.Sequential(
             nn.Flatten(),
             nn.Linear(conv2_channels * 7 * 7, fc_hidden),
             nn.ReLU(),
             nn.Dropout(dropout),
         )
-        
+
         # Multiple heads or single head for backward compatibility
         if self.is_multihead:
-            self.heads = nn.ModuleDict({
-                head_name: nn.Linear(fc_hidden, num_classes)
-                for head_name, num_classes in heads_config.items()
-            })
+            self.heads = nn.ModuleDict(
+                {
+                    head_name: nn.Linear(fc_hidden, num_classes)
+                    for head_name, num_classes in heads_config.items()
+                }
+            )
         else:
             # Single head (backward compatibility)
             head_name, num_classes = next(iter(heads_config.items()))
@@ -81,12 +82,9 @@ class SimpleCNN(nn.Module):
         """
         x = self.conv_layers(x)
         shared_features = self.shared_features(x)
-        
+
         if self.is_multihead:
-            return {
-                head_name: head(shared_features)
-                for head_name, head in self.heads.items()
-            }
+            return {head_name: head(shared_features) for head_name, head in self.heads.items()}
         else:
             # Single head output (backward compatibility)
             return self.classifier(shared_features)
@@ -100,11 +98,11 @@ if __name__ == "__main__":
     output_single = model_single(x)
     print(f"Input shape: {x.shape}")
     print(f"Single head output shape: {output_single.shape}")
-    
+
     # Test multihead mode
     print("\nTesting multihead mode:")
-    model_multi = SimpleCNN(heads_config={'digit': 10, 'thickness': 5, 'smoothness': 3})
+    model_multi = SimpleCNN(heads_config={"digit": 10, "thickness": 5, "smoothness": 3})
     output_multi = model_multi(x)
     print(f"Multihead output type: {type(output_multi)}")
     for head_name, logits in output_multi.items():
-        print(f"  {head_name}: {logits.shape}") 
+        print(f"  {head_name}: {logits.shape}")

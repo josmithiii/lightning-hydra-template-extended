@@ -66,11 +66,11 @@ def cfg_train(cfg_train_global: DictConfig, tmp_path: Path) -> DictConfig:
     """A pytest fixture built on top of the `cfg_train_global()` fixture, which accepts a temporary
     logging path `tmp_path` for generating a temporary logging path.
 
-    This is called by each test which uses the `cfg_train` arg. Each test generates its own temporary logging path.
+    This is called by each test which uses the `cfg_train` arg. Each test generates its own
+    temporary logging path.
 
     :param cfg_train_global: The input DictConfig object to be modified.
     :param tmp_path: The temporary logging path.
-
     :return: A DictConfig with updated output and log directories corresponding to `tmp_path`.
     """
     cfg = cfg_train_global.copy()
@@ -89,11 +89,11 @@ def cfg_eval(cfg_eval_global: DictConfig, tmp_path: Path) -> DictConfig:
     """A pytest fixture built on top of the `cfg_eval_global()` fixture, which accepts a temporary
     logging path `tmp_path` for generating a temporary logging path.
 
-    This is called by each test which uses the `cfg_eval` arg. Each test generates its own temporary logging path.
+    This is called by each test which uses the `cfg_eval` arg. Each test generates its own
+    temporary logging path.
 
     :param cfg_train_global: The input DictConfig object to be modified.
     :param tmp_path: The temporary logging path.
-
     :return: A DictConfig with updated output and log directories corresponding to `tmp_path`.
     """
     cfg = cfg_eval_global.copy()

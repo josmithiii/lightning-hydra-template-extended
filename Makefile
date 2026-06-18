@@ -29,7 +29,7 @@ d deactivate: ## Deactivate the uv environment
 
 # TRAINING TARGETS "tr"
 
-tr train train-sdn: ## Train the default model (a small SimpleDenseNet) 
+tr train train-sdn: ## Train the default model (a small SimpleDenseNet)
 	time python src/train.py
 
 
@@ -116,4 +116,3 @@ excn exp-convnext: ## Run ConvNeXt-V2 experiment
 
 ecnb exp-convnext-benchmark: ## Run official ConvNeXt V2-Tiny benchmark (acid test)
 	time python src/train.py experiment=convnext_v2_official_tiny_benchmark
-

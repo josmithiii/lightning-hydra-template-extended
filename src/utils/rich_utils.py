@@ -32,8 +32,8 @@ def print_config_tree(
     """Prints the contents of a DictConfig as a tree structure using the Rich library.
 
     :param cfg: A DictConfig composed by Hydra.
-    :param print_order: Determines in what order config components are printed. Default is ``("data", "model",
-    "callbacks", "logger", "trainer", "paths", "extras")``.
+    :param print_order: Determines in what order config components are printed. Default is
+        ``("data", "model", "callbacks", "logger", "trainer", "paths", "extras")``.
     :param resolve: Whether to resolve reference fields of DictConfig. Default is ``False``.
     :param save_to_file: Whether to export config to the hydra output folder. Default is ``False``.
     """
@@ -44,8 +44,12 @@ def print_config_tree(
 
     # add fields from `print_order` to queue
     for field in print_order:
-        queue.append(field) if field in cfg else log.warning(
-            f"Field '{field}' not found in config. Skipping '{field}' config printing..."
+        (
+            queue.append(field)
+            if field in cfg
+            else log.warning(
+                f"Field '{field}' not found in config. Skipping '{field}' config printing..."
+            )
         )
 
     # add all the other fields to queue (not specified in `print_order`)

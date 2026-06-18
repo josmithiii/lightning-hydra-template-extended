@@ -5,11 +5,10 @@ import torch.nn as nn
 
 
 class EmbedLayer(nn.Module):
-    """
-    Class for Embedding an Image.
-    It breaks image into patches and embeds patches using a Conv2D Operation (Works same as the Linear layer).
-    Next, a learnable positional embedding vector is added to all the patch embeddings to provide spatial position.
-    Finally, a classification token is added which is used to classify the image.
+    """Class for Embedding an Image. It breaks image into patches and embeds patches using a Conv2D
+    Operation (Works same as the Linear layer). Next, a learnable positional embedding vector is
+    added to all the patch embeddings to provide spatial position. Finally, a classification token
+    is added which is used to classify the image.
 
     Parameters:
         n_channels (int) : Number of channels of the input image
@@ -55,8 +54,7 @@ class EmbedLayer(nn.Module):
 
 
 class SelfAttention(nn.Module):
-    """
-    Class for computing self attention Self-Attention
+    """Class for computing self attention Self-Attention.
 
     Parameters:
         embed_dim (int)        : Embedding dimension
@@ -149,18 +147,18 @@ class Encoder(nn.Module):
 
 
 class Classifier(nn.Module):
-    """
-    Classification module of the Vision Transformer. Uses the embedding of the classification token to generate logits.
+    """Classification module of the Vision Transformer.
 
-    Parameters:
-        embed_dim (int) : Embedding dimension
-        n_classes (int) : Number of classes
+    Uses the embedding of the classification token to generate logits.
+        Parameters:
+            embed_dim (int) : Embedding dimension
+            n_classes (int) : Number of classes
 
-    Input:
-        x (tensor): Tensor of shape B, S, E
+        Input:
+            x (tensor): Tensor of shape B, S, E
 
-    Returns:
-        Tensor: Logits of shape B, CL
+        Returns:
+            Tensor: Logits of shape B, CL
     """
 
     def __init__(self, embed_dim: int, n_classes: int):
