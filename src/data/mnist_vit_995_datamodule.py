@@ -2,9 +2,30 @@ from typing import Any, Dict, Optional, Tuple
 
 import torch
 from lightning import LightningDataModule
-from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
+from torch.utils.data import ConcatDataset, DataLoader, Dataset, Subset, random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import transforms
+
+
+class _TransformSubset(Dataset):
+    """Apply a transform to a `Subset`, so augmentation follows the split (train) rather than the
+    source dataset (MNIST train-vs-test).
+
+    The dataset underlying the subset must yield un-transformed samples (e.g. PIL images).
+    """
+
+    def __init__(self, subset: Subset, transform: Optional[Any]) -> None:
+        self.subset = subset
+        self.transform = transform
+
+    def __len__(self) -> int:
+        return len(self.subset)
+
+    def __getitem__(self, idx: int) -> Tuple[Any, Any]:
+        img, label = self.subset[idx]
+        if self.transform is not None:
+            img = self.transform(img)
+        return img, label
 
 
 class MNISTViTDataModule(LightningDataModule):
@@ -22,36 +43,34 @@ class MNISTViTDataModule(LightningDataModule):
         """Initialize a `MNISTViTDataModule`.
 
         :param data_dir: The data directory. Defaults to `"data/"`.
-        :param train_val_test_split: The train, validation and test split. Defaults to `(55_000, 5_000, 10_000)`.
+        :param train_val_test_split: The train, validation and test split. Defaults to `(55_000,
+            5_000, 10_000)`.
         :param batch_size: The batch size. Defaults to `64`.
         :param num_workers: The number of workers. Defaults to `0`.
         :param pin_memory: Whether to pin memory. Defaults to `False`.
-        :param persistent_workers: Whether to use persistent workers. Defaults to `False`.
+        :param persistent_workers: Whether to use persistent workers. Defaults to `True`.
         """
         super().__init__()
 
-        self.persistent_workers = persistent_workers
+        # persistent_workers requires at least one worker; guard to avoid a PyTorch error.
+        self.persistent_workers = persistent_workers and num_workers > 0
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False)
 
-        # ViT-specific data transformations matching original implementation
+        # ViT-specific data transformations matching original implementation.
+        # MNIST is already 28x28, so no Resize is needed.
         self.train_transforms = transforms.Compose(
             [
-                transforms.Resize([28, 28]),
-                transforms.RandomCrop(28, padding=2),  # Data augmentation
+                transforms.RandomCrop(28, padding=2),  # Data augmentation (train only)
                 transforms.ToTensor(),
                 transforms.Normalize([0.5], [0.5]),  # ViT normalization
             ]
         )
 
         self.val_test_transforms = transforms.Compose(
-            [
-                transforms.Resize([28, 28]),
-                transforms.ToTensor(),
-                transforms.Normalize([0.5], [0.5]),  # ViT normalization
-            ]
+            [transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]  # ViT normalization
         )
 
         self.data_train: Optional[Dataset] = None
@@ -85,15 +104,20 @@ class MNISTViTDataModule(LightningDataModule):
 
         # load and split datasets only if not loaded already
         if not self.data_train and not self.data_val and not self.data_test:
-            trainset = MNIST(self.hparams.data_dir, train=True, transform=self.train_transforms)
-            testset = MNIST(self.hparams.data_dir, train=False, transform=self.val_test_transforms)
+            # Load WITHOUT transforms so the split, not the source dataset, decides augmentation.
+            trainset = MNIST(self.hparams.data_dir, train=True, transform=None)
+            testset = MNIST(self.hparams.data_dir, train=False, transform=None)
 
             dataset = ConcatDataset(datasets=[trainset, testset])
-            self.data_train, self.data_val, self.data_test = random_split(
+            train_subset, val_subset, test_subset = random_split(
                 dataset=dataset,
                 lengths=self.hparams.train_val_test_split,
                 generator=torch.Generator().manual_seed(42),
             )
+            # Augmentation is applied to the train split only; val/test stay deterministic.
+            self.data_train = _TransformSubset(train_subset, self.train_transforms)
+            self.data_val = _TransformSubset(val_subset, self.val_test_transforms)
+            self.data_test = _TransformSubset(test_subset, self.val_test_transforms)
 
     def train_dataloader(self) -> DataLoader[Any]:
         """Create and return the train dataloader."""
