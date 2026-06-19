@@ -239,7 +239,7 @@ class ConvNeXtV2(nn.Module):
 def convnext_v2_mnist_tiny(
     input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
 ):
-    """ConvNeXt-V2 Tiny for MNIST (~8K parameters)"""
+    """ConvNeXt-V2 Tiny for MNIST (~18K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -254,7 +254,7 @@ def convnext_v2_mnist_tiny(
 def convnext_v2_mnist_small(
     input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
 ):
-    """ConvNeXt-V2 Small for MNIST (~68K parameters)"""
+    """ConvNeXt-V2 Small for MNIST (~73K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -269,7 +269,7 @@ def convnext_v2_mnist_small(
 def convnext_v2_mnist_base(
     input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
 ):
-    """ConvNeXt-V2 Base for MNIST (~210K parameters)"""
+    """ConvNeXt-V2 Base for MNIST (~288K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -284,7 +284,7 @@ def convnext_v2_mnist_base(
 def convnext_v2_mnist_large(
     input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
 ):
-    """ConvNeXt-V2 Large for MNIST (~821K parameters)"""
+    """ConvNeXt-V2 Large for MNIST (~725K parameters)"""
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,
@@ -299,7 +299,13 @@ def convnext_v2_mnist_large(
 def convnext_v2_official_tiny_benchmark(
     input_size: int = 28, in_chans: int = 1, output_size: int = 10, **kwargs
 ):
-    """ConvNeXt-V2 Official Tiny Benchmark - exact match to Facebook's canonical config"""
+    """ConvNeXt-V2 Official Tiny Benchmark for MNIST (~288K parameters).
+
+    Mirrors the official ConvNeXt-V2 Tiny *training recipe* (drop_path_rate=0.2,
+    head_init_scale=0.001), but the depths/dims are scaled down for MNIST -- this is NOT the
+    canonical ImageNet Tiny architecture (depths=(3,3,9,3), dims=(96,192,384,768)). It is
+    architecturally identical to ``convnext_v2_mnist_base``; only the training recipe differs.
+    """
     return ConvNeXtV2(
         input_size=input_size,
         in_chans=in_chans,

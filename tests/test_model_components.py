@@ -7,7 +7,7 @@ import torch
 
 from src.models.components.simple_cnn import SimpleCNN
 from src.models.components.simple_dense_net import SimpleDenseNet
-from src.models.components.simple_efficientnet import SimpleEfficientNet
+from src.models.components.simple_efficientnet import DropPath, SimpleEfficientNet
 
 
 @pytest.mark.parametrize("batch_size", [2, 4])  # Skip batch_size=1 due to BatchNorm
@@ -176,6 +176,39 @@ def test_gradient_flow_simple_efficientnet() -> None:
     for name, param in model.named_parameters():
         assert param.grad is not None, f"No gradient for parameter {name}"
         assert not torch.isnan(param.grad).any(), f"NaN gradient for parameter {name}"
+
+
+def test_droppath_is_per_sample_stochastic_depth() -> None:
+    """Regression guard for the EfficientNet stochastic-depth fix.
+
+    ``DropPath`` must be a no-op in eval mode and at drop_prob=0, and in train mode must drop or
+    keep WHOLE samples (per-sample mask broadcast over channels/H/W), rescaling survivors by
+    ``1/keep_prob`` -- unlike the old ``nn.Dropout2d`` which zeroed individual channels.
+    """
+    x = torch.randn(16, 4, 8, 8)
+
+    # Eval mode: identity regardless of drop_prob.
+    dp = DropPath(drop_prob=0.5).eval()
+    assert torch.equal(dp(x), x)
+
+    # drop_prob == 0: identity even while training.
+    assert torch.equal(DropPath(drop_prob=0.0).train()(x), x)
+
+    # Training with 0 < drop_prob < 1: each sample is either fully zero or a uniform rescale of
+    # the original by 1/keep_prob (never a partial per-channel mask), and across the batch some
+    # samples are dropped and some kept.
+    keep_prob = 0.7
+    dropped = kept = 0
+    for seed in range(8):
+        torch.manual_seed(seed)
+        out = DropPath(drop_prob=1.0 - keep_prob).train()(x)
+        for i in range(x.shape[0]):
+            sample_zero = torch.equal(out[i], torch.zeros_like(out[i]))
+            sample_kept = torch.allclose(out[i], x[i] / keep_prob)
+            assert sample_zero or sample_kept, "DropPath must act per-sample, not per-channel"
+            dropped += int(sample_zero)
+            kept += int(sample_kept)
+    assert dropped > 0 and kept > 0, "DropPath should both drop and keep samples stochastically"
 
 
 def test_multihead_consistency() -> None:

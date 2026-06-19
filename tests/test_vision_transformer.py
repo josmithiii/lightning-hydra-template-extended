@@ -175,6 +175,31 @@ def test_self_attention(embed_dim: int, n_attention_heads: int) -> None:
     assert output.dtype == torch.float32
 
 
+@pytest.mark.parametrize("embed_dim,n_attention_heads", [(30, 4), (50, 8), (66, 5)])
+def test_self_attention_indivisible(embed_dim: int, n_attention_heads: int) -> None:
+    """Regression guard: SelfAttention must work when embed_dim is NOT divisible by the head count.
+
+    The forward pass previously reshaped its output to ``embed_dim`` instead of the actual
+    attention width (``n_attention_heads * head_embed_dim``), crashing whenever
+    ``embed_dim % n_attention_heads != 0``. ``out_projection`` maps that width back to embed_dim,
+    so the final output shape still matches the input.
+
+    :param embed_dim: Embedding dimension (not a multiple of ``n_attention_heads``).
+    :param n_attention_heads: Number of attention heads.
+    """
+    assert embed_dim % n_attention_heads != 0  # the case under test
+
+    batch_size = 2
+    seq_len = 7
+
+    attention = SelfAttention(embed_dim, n_attention_heads)
+    x = torch.randn(batch_size, seq_len, embed_dim)
+    output = attention(x)
+
+    assert output.shape == x.shape
+    assert output.dtype == torch.float32
+
+
 def test_encoder() -> None:
     """Test Encoder component."""
     embed_dim = 64
