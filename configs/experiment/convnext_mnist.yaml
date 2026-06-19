@@ -5,7 +5,7 @@
 
 defaults:
   - override /data: mnist
-  - override /model: mnist_convnext_210k
+  - override /model: mnist_convnext_288k
   - override /callbacks: default
   - override /trainer: default
 

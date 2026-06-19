@@ -17,5 +17,5 @@ ca compare-arch: check-env ## Compare medium sized architectures on three epochs
 	@echo "=== Training ViT ==="
 	python src/train.py model=mnist_vit_38k trainer.max_epochs=3 tags="[arch_comparison,vit]"
 	@echo "=== Training ConvNeXt-V2 ==="
-	python src/train.py model=mnist_convnext_68k trainer.max_epochs=3 tags="[arch_comparison,convnext]"
+	python src/train.py model=mnist_convnext_73k trainer.max_epochs=3 tags="[arch_comparison,convnext]"
 	@echo "=== Check logs/ directory for results comparison ==="

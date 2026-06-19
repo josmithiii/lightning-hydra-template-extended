@@ -154,7 +154,7 @@ GRN improves training stability and feature learning by normalizing responses ac
 ```bash
 # Different sizes
 python src/train.py model=mnist_convnext_18k    # Tiny
-python src/train.py model=mnist_convnext_68k    # Small
+python src/train.py model=mnist_convnext_73k    # Small
 python src/train.py model=mnist_convnext_288k   # Base
 python src/train.py model=mnist_convnext_725k   # Large
 
@@ -231,7 +231,7 @@ make tqv
 **Usage**:
 ```bash
 # Different sizes
-python src/train.py model=mnist_efficientnet_22k    # Tiny
+python src/train.py model=mnist_efficientnet_66k    # Tiny
 python src/train.py model=mnist_efficientnet_210k   # Small
 python src/train.py model=mnist_efficientnet_7m     # Large
 ```

@@ -6,7 +6,7 @@ td text-diagram: ## Generate model architecture diagrams (text + graphical)
 tda text-diagram-all: ## Generate diagrams for all model architectures
 	python viz/enhanced_model_diagrams.py -c mnist_cnn_8k
 	python viz/enhanced_model_diagrams.py -c mnist_vit_38k
-	python viz/enhanced_model_diagrams.py -c mnist_convnext_68k
+	python viz/enhanced_model_diagrams.py -c mnist_convnext_73k
 	python viz/enhanced_model_diagrams.py -c mnist_sdn_8k
 
 tdl text-diagram-list: ## List available model configs for diagrams
@@ -27,7 +27,7 @@ tdss text-diagram-simple-samples: ## Generate simple diagrams for sample archite
 	@echo "\n=== MNIST ViT (38K params) ==="
 	python viz/simple_model_diagram.py --config mnist_vit_38k
 	@echo "\n=== MNIST ConvNeXt (68K params) ==="
-	python viz/simple_model_diagram.py --config mnist_convnext_68k
+	python viz/simple_model_diagram.py --config mnist_convnext_73k
 	@echo "\n=== CIFAR-10 CNN (64K params) ==="
 	python viz/simple_model_diagram.py --config cifar10_cnn_64k
 	@echo "\n=== MNIST Multihead CNN (422K params) ==="
@@ -38,7 +38,7 @@ tdsm text-diagram-simple-mnist: ## Generate simple diagrams for all MNIST archit
 	python viz/simple_model_diagram.py --config mnist_cnn_8k
 	python viz/simple_model_diagram.py --config mnist_sdn_8k
 	python viz/simple_model_diagram.py --config mnist_vit_38k
-	python viz/simple_model_diagram.py --config mnist_convnext_68k
+	python viz/simple_model_diagram.py --config mnist_convnext_73k
 	python viz/simple_model_diagram.py --config mnist_mh_cnn_422k
 
 tdsc10 text-diagram-simple-cifar10: ## Generate simple diagrams for CIFAR-10 architectures

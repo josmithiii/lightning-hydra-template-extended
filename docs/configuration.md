@@ -208,7 +208,7 @@ python src/train.py model.optimizer.lr=0.0001 tags="[lr_study,0.0001]"
 ```bash
 # Same hyperparameters, different architectures
 python src/train.py experiment=baseline_config model=mnist_cnn tags="[arch_study,cnn]"
-python src/train.py experiment=baseline_config model=mnist_convnext_68k tags="[arch_study,convnext]"
+python src/train.py experiment=baseline_config model=mnist_convnext_73k tags="[arch_study,convnext]"
 python src/train.py experiment=baseline_config model=mnist_vit_210k tags="[arch_study,vit]"
 ```
 

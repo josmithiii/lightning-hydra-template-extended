@@ -132,7 +132,7 @@ For detailed information, see:
 # Compare architectures with same hyperparameters
 python src/train.py trainer.max_epochs=10                    # SimpleDenseNet
 python src/train.py model=mnist_cnn trainer.max_epochs=10    # SimpleCNN
-python src/train.py model=mnist_convnext_68k trainer.max_epochs=10  # ConvNeXt
+python src/train.py model=mnist_convnext_73k trainer.max_epochs=10  # ConvNeXt
 ```
 
 ### Custom Configuration

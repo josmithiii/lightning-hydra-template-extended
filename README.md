@@ -120,7 +120,7 @@ make tensorboard
 ### Config Groups (Map)
 - Data (`configs/data/`): `mnist`, `cifar10`, `cifar100`, `cifar100mh`, `multihead_mnist`, `multihead_cifar10`, `vimh`, `vimh_16kdss`
 - Model (`configs/model/`):
-  - MNIST: `mnist_cnn_68k`, `mnist_vit_38k`, `mnist_efficientnet_22k`, `mnist_sdn_68k`, `mnist_mh_cnn_422k`
+  - MNIST: `mnist_cnn_68k`, `mnist_vit_38k`, `mnist_efficientnet_66k`, `mnist_sdn_68k`, `mnist_mh_cnn_422k`
   - CIFAR-10: `cifar10_cnn_64k`, `cifar10_convnext_210k`, `cifar10_vit_210k`, `cifar10_efficientnet_210k`, `cifar10_mh_cnn_64k`
   - VIMH: `vimh_cnn_64k`, `vimh_cnn_64k_ordinal`, `vimh_cnn_64k_regression`
 - Trainer (`configs/trainer/`): `cpu`, `gpu`, `mps`

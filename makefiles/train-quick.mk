@@ -10,7 +10,7 @@ tqv train-quick-vit: check-env ## Train quickly ViT, 1 epoch
 	python src/train.py model=mnist_vit_38k trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
 
 tqcn train-quick-convnext: check-env ## Train quickly ConvNeXt-V2, 1 epoch
-	python src/train.py model=mnist_convnext_68k trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
+	python src/train.py model=mnist_convnext_73k trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5
 
 tqvh train-quick-vimh: check-env ## Train quickly SimpleCNN on VIMH examples dataset, 1 epoch
 	python src/train.py experiment=vimh_cnn trainer.max_epochs=1 +trainer.limit_train_batches=10 +trainer.limit_val_batches=5

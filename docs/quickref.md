@@ -105,7 +105,7 @@ python src/train.py logger=tensorboard
   - CIFAR-100-MH → [configs/data/cifar100mh.yaml](../configs/data/cifar100mh.yaml)
   - VIMH / VIMH (16K) → [configs/data/vimh.yaml](../configs/data/vimh.yaml), [configs/data/vimh_16kdss.yaml](../configs/data/vimh_16kdss.yaml)
 - Model (`configs/model/`):
-  - MNIST → [mnist_cnn_68k](../configs/model/mnist_cnn_68k.yaml), [mnist_vit_38k](../configs/model/mnist_vit_38k.yaml), [mnist_efficientnet_22k](../configs/model/mnist_efficientnet_22k.yaml), [mnist_mh_cnn_422k](../configs/model/mnist_mh_cnn_422k.yaml)
+  - MNIST → [mnist_cnn_68k](../configs/model/mnist_cnn_68k.yaml), [mnist_vit_38k](../configs/model/mnist_vit_38k.yaml), [mnist_efficientnet_66k](../configs/model/mnist_efficientnet_66k.yaml), [mnist_mh_cnn_422k](../configs/model/mnist_mh_cnn_422k.yaml)
   - CIFAR-10 → [cifar10_cnn_64k](../configs/model/cifar10_cnn_64k.yaml), [cifar10_convnext_210k](../configs/model/cifar10_convnext_210k.yaml), [cifar10_vit_210k](../configs/model/cifar10_vit_210k.yaml), [cifar10_efficientnet_210k](../configs/model/cifar10_efficientnet_210k.yaml), [cifar10_mh_cnn_64k](../configs/model/cifar10_mh_cnn_64k.yaml)
   - VIMH → [vimh_cnn_64k](../configs/model/vimh_cnn_64k.yaml), [vimh_cnn_64k_ordinal](../configs/model/vimh_cnn_64k_ordinal.yaml), [vimh_cnn_64k_regression](../configs/model/vimh_cnn_64k_regression.yaml)
 - Trainer (`configs/trainer/`):
