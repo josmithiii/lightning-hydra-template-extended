@@ -399,4 +399,4 @@ class MNISTLitModule(LightningModule):
 
 
 if __name__ == "__main__":
-    _ = MNISTLitModule(None, None, None, None, None)
+    _ = MNISTLitModule(None, None, None, criterion=torch.nn.CrossEntropyLoss())
